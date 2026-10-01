@@ -25,6 +25,11 @@ from challenge_engine.core.schemas import (
     PublicChallenge,
     PublicUIConfig,
 )
+from challenge_engine.levels.level_3a.base import RoutingPuzzleSubtypeGenerator
+from challenge_engine.levels.level_3a.conveyor_routing import ConveyorRoutingGenerator
+from challenge_engine.levels.level_3a.device_cables import DeviceCablesGenerator
+from challenge_engine.levels.level_3a.laser_maze import LaserMazeGenerator
+from challenge_engine.levels.level_3a.pipe_flow import PipeFlowGenerator
 
 
 def _cubic_bezier_segment(
@@ -459,3 +464,60 @@ class Level3ATangledCablesGenerator:
     def generate_batch(self, count: int, base_seed: int) -> list[ChallengeBundle]:
         """Generate `count` deterministic Level 3A challenges starting from `base_seed`."""
         return [self.generate_one(base_seed + i) for i in range(count)]
+
+
+class Level3ARoutingGenerator:
+    """Procedural generator for the Level 3A Routing Puzzles family.
+
+    Subtypes:
+      - 'laser-maze': Grid-based optical ray tracing (Story Mode default)
+      - 'conveyor-routing': Industrial directed diverter routing
+      - 'pipe-flow': Plumbing network with open/closed valve gates
+      - 'device-cables': Clean device-to-outlet cable tracing with crossing halos
+    """
+
+    level_key = LEVEL_3A_KEY
+
+    def __init__(self, config: Level3AConfig) -> None:
+        self.config = config
+        self._subgenerators: dict[str, type[RoutingPuzzleSubtypeGenerator]] = {
+            "laser-maze": LaserMazeGenerator,
+            "conveyor-routing": ConveyorRoutingGenerator,
+            "pipe-flow": PipeFlowGenerator,
+            "device-cables": DeviceCablesGenerator,
+        }
+
+    def _resolve_generator(self, subtype: str | None = None) -> Any:
+        st = subtype or self.config.subtype or self.config.defaultSubtype or "laser-maze"
+        if st in self._subgenerators:
+            return self._subgenerators[st](self.config)
+        if st == "tangled-cables" or (
+            self.config.cableCount is not None and not subtype and not self.config.subtype
+        ):
+            return Level3ATangledCablesGenerator(self.config)
+        return LaserMazeGenerator(self.config)
+
+    def generate_one(self, seed: int, subtype: str | None = None) -> ChallengeBundle:
+        """Generate a single deterministic Level 3A routing puzzle."""
+        gen = self._resolve_generator(subtype)
+        return gen.generate_one(seed)
+
+    def generate_batch(self, count: int, base_seed: int) -> list[ChallengeBundle]:
+        """Generate `count` deterministic Level 3A challenges.
+
+        If subtype is 'all', round-robins across the 4 distinct routing puzzle subtypes.
+        Otherwise generates challenges of the selected subtype (defaulting to 'laser-maze').
+        """
+        target_subtype = self.config.subtype or self.config.defaultSubtype or "laser-maze"
+        if target_subtype == "all":
+            subtypes = ["laser-maze", "conveyor-routing", "pipe-flow", "device-cables"]
+            bundles: list[ChallengeBundle] = []
+            for i in range(count):
+                st = subtypes[i % len(subtypes)]
+                gen = self._resolve_generator(st)
+                bundles.append(gen.generate_one(base_seed + i))
+            return bundles
+        else:
+            gen = self._resolve_generator(target_subtype)
+            return [gen.generate_one(base_seed + i) for i in range(count)]
+

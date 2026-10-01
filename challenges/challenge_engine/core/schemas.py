@@ -55,6 +55,10 @@ _LEVEL_ALIASES: dict[str, str] = {
     "level-3a": LEVEL_3A_KEY,
     "level_3a": LEVEL_3A_KEY,
     "tangled-cables": LEVEL_3A_KEY,
+    "routing-puzzle": LEVEL_3A_KEY,
+    "routing-puzzles": LEVEL_3A_KEY,
+    "routing": LEVEL_3A_KEY,
+    "level_3a_routing_puzzles": LEVEL_3A_KEY,
     LEVEL_3A_KEY: LEVEL_3A_KEY,
     "3b": LEVEL_3B_KEY,
     "lvl3b": LEVEL_3B_KEY,
@@ -63,6 +67,15 @@ _LEVEL_ALIASES: dict[str, str] = {
     "level_3b": LEVEL_3B_KEY,
     "degraded-vision": LEVEL_3B_KEY,
     LEVEL_3B_KEY: LEVEL_3B_KEY,
+}
+
+VARIANT_TO_LEVEL_KEY: dict[str, str] = {
+    "street-grid": LEVEL_1_KEY,
+    "hard-street-grid": LEVEL_2A_KEY,
+    "checker-shadow": LEVEL_2B_KEY,
+    "tangled-cables": LEVEL_3A_KEY,
+    "routing-puzzle": LEVEL_3A_KEY,
+    "degraded-vision": LEVEL_3B_KEY,
 }
 
 
@@ -99,8 +112,10 @@ class PublicChallenge(BaseModel):
         "hard-street-grid",
         "checker-shadow",
         "tangled-cables",
+        "routing-puzzle",
         "degraded-vision",
     ]
+    subtype: str | None = None
     type: Literal["image-selection", "single-choice"]
     instruction: str = Field(..., min_length=5)
     seed: int
@@ -286,6 +301,8 @@ class PrivateAnswer(BaseModel):
     connections: dict[str, str] | None = None
     query: CableQuery | None = None
     annotations: CableAnnotations | None = None
+    subtype: str | None = None
+    routing: dict[str, Any] | None = None
 
 
 class BenchmarkManifestEntry(BaseModel):
@@ -437,6 +454,70 @@ class Level2BConfig(BaseModel):
         return self
 
 
+class LaserMazeSubtypeConfig(BaseModel):
+    """Subtype configuration for Laser Maze puzzle."""
+
+    model_config = ConfigDict(extra="ignore")
+    gridSize: tuple[int, int] | None = None
+    reflectionsRange: tuple[int, int] | None = None
+    targetCount: int | None = None
+    distractorMirrors: tuple[int, int] | None = None
+
+
+class ConveyorRoutingSubtypeConfig(BaseModel):
+    """Subtype configuration for Conveyor Routing puzzle."""
+
+    model_config = ConfigDict(extra="ignore")
+    switchCount: int | None = None
+    binCount: int | None = None
+    decoyBranches: int | None = None
+
+
+class PipeFlowSubtypeConfig(BaseModel):
+    """Subtype configuration for Pipe Flow routing puzzle."""
+
+    model_config = ConfigDict(extra="ignore")
+    junctionCount: int | None = None
+    tankCount: int | None = None
+    closedValves: int | None = None
+
+
+class DeviceCablesSubtypeConfig(BaseModel):
+    """Subtype configuration for Device Cables routing puzzle."""
+
+    model_config = ConfigDict(extra="ignore")
+    cableCountRange: tuple[int, int] | None = None
+    waypointRange: tuple[int, int] | None = None
+    lineWidth: int | None = None
+
+
+ROUTING_DIFFICULTY_PRESETS: dict[str, dict[str, dict[str, Any]]] = {
+    "laser-maze": {
+        "easy": {"grid": (7, 7), "reflections": (1, 2), "targets": 3, "distractors": (0, 2)},
+        "medium": {"grid": (8, 8), "reflections": (3, 4), "targets": 4, "distractors": (2, 4)},
+        "hard": {"grid": (10, 10), "reflections": (5, 7), "targets": 4, "distractors": (4, 7)},
+        "extreme": {"grid": (12, 12), "reflections": (7, 10), "targets": 5, "distractors": (6, 9)},
+    },
+    "conveyor-routing": {
+        "easy": {"switches": 2, "bins": 3, "decoys": 1},
+        "medium": {"switches": 4, "bins": 4, "decoys": 2},
+        "hard": {"switches": 6, "bins": 5, "decoys": 2},
+        "extreme": {"switches": 8, "bins": 5, "decoys": 3},
+    },
+    "pipe-flow": {
+        "easy": {"junctions": 3, "tanks": 3, "closedValves": 1},
+        "medium": {"junctions": 4, "tanks": 4, "closedValves": 2},
+        "hard": {"junctions": 6, "tanks": 4, "closedValves": 3},
+        "extreme": {"junctions": 8, "tanks": 5, "closedValves": 4},
+    },
+    "device-cables": {
+        "easy": {"cableCountRange": (5, 6), "waypointRange": (2, 3), "lineWidth": 7},
+        "medium": {"cableCountRange": (7, 8), "waypointRange": (3, 4), "lineWidth": 6},
+        "hard": {"cableCountRange": (9, 10), "waypointRange": (3, 5), "lineWidth": 5},
+        "extreme": {"cableCountRange": (11, 12), "waypointRange": (4, 6), "lineWidth": 5},
+    },
+}
+
 LEVEL_3A_DIFFICULTY_PRESETS: dict[str, dict[str, Any]] = {
     "easy": {"cableCountRange": (8, 10), "waypointRange": (2, 4), "lineWidth": 7},
     "medium": {"cableCountRange": (12, 20), "waypointRange": (3, 5), "lineWidth": 6},
@@ -446,16 +527,39 @@ LEVEL_3A_DIFFICULTY_PRESETS: dict[str, dict[str, Any]] = {
 
 
 class Level3AConfig(BaseModel):
-    """Configuration for Level 3A — Tangled Cables (procedurally generated)."""
+    """Configuration for Level 3A — Routing Puzzles family."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="ignore")
 
-    canvasWidth: int = Field(default=1600, ge=800, le=3200)
-    canvasHeight: int = Field(default=1000, ge=600, le=2400)
-    cableCount: int | None = Field(default=30, ge=4, le=60)
+    defaultSubtype: Literal[
+        "laser-maze",
+        "conveyor-routing",
+        "pipe-flow",
+        "device-cables",
+    ] = "laser-maze"
+    subtype: str | None = None
+    difficulty: Literal["easy", "medium", "hard", "extreme"] = "medium"
+    enabledSubtypes: list[str] = Field(
+        default_factory=lambda: [
+            "laser-maze",
+            "conveyor-routing",
+            "pipe-flow",
+            "device-cables",
+        ]
+    )
+
+    canvasWidth: int = Field(default=1200, ge=600, le=3200)
+    canvasHeight: int = Field(default=800, ge=500, le=2400)
+
+    laserMaze: LaserMazeSubtypeConfig = Field(default_factory=LaserMazeSubtypeConfig)
+    conveyorRouting: ConveyorRoutingSubtypeConfig = Field(default_factory=ConveyorRoutingSubtypeConfig)
+    pipeFlow: PipeFlowSubtypeConfig = Field(default_factory=PipeFlowSubtypeConfig)
+    deviceCables: DeviceCablesSubtypeConfig = Field(default_factory=DeviceCablesSubtypeConfig)
+
+    # Legacy fields preserved for compatibility:
+    cableCount: int | None = Field(default=None, ge=4, le=60)
     waypointRange: tuple[int, int] = (3, 7)
-    lineWidth: int = Field(default=5, ge=2, le=14)
-    difficulty: Literal["easy", "medium", "hard", "extreme"] = "hard"
+    lineWidth: int = Field(default=6, ge=2, le=14)
     queryType: Literal[
         "find_source",
         "find-source",

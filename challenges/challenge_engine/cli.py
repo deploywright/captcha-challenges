@@ -35,7 +35,7 @@ from challenge_engine.levels.level_2b.generator import (
     Level2BCheckerShadowGenerator,
     inspect_level_2b_asset_status,
 )
-from challenge_engine.levels.level_3a.generator import Level3ATangledCablesGenerator
+from challenge_engine.levels.level_3a.generator import Level3ARoutingGenerator
 from challenge_engine.levels.level_3b.generator import Level3BDegradedVisionGenerator
 
 
@@ -47,7 +47,7 @@ def _create_generator(level_key: str, config: Any) -> Any:
     if level_key == LEVEL_2B_KEY:
         return Level2BCheckerShadowGenerator(config)
     if level_key == LEVEL_3A_KEY:
-        return Level3ATangledCablesGenerator(config)
+        return Level3ARoutingGenerator(config)
     if level_key == LEVEL_3B_KEY:
         return Level3BDegradedVisionGenerator(config)
     raise ValueError(f"Unsupported level key: {level_key}")
@@ -69,6 +69,8 @@ def _cmd_generate(args: argparse.Namespace) -> int:
     overrides: dict[str, Any] = {}
     if args.difficulty is not None:
         overrides["difficulty"] = args.difficulty
+    if getattr(args, "subtype", None) is not None:
+        overrides["subtype"] = args.subtype
     if args.resolution is not None:
         overrides["resolution"] = args.resolution
     if args.resolutions is not None:
@@ -90,6 +92,7 @@ def _cmd_generate(args: argparse.Namespace) -> int:
             level_overrides.pop("bdd100kRoot", None)
         if level_key != LEVEL_3A_KEY:
             level_overrides.pop("difficulty", None)
+            level_overrides.pop("subtype", None)
 
         cfg = load_level_config(level_key, config_path=args.config, overrides=level_overrides)
         try:
@@ -264,6 +267,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--difficulty",
         default=None,
         help="Optional difficulty override for Level 3A (easy, medium, hard, extreme).",
+    )
+    gen_parser.add_argument(
+        "--subtype",
+        default=None,
+        help="Optional subtype for Level 3A (laser-maze, conveyor-routing, pipe-flow, device-cables, or all).",
     )
     gen_parser.add_argument(
         "--resolution",

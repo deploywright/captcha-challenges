@@ -13,6 +13,7 @@ interface PublicChallenge {
   id: string;
   level: number;
   variant: string;
+  subtype?: string;
   type: string;
   instruction: string;
   seed: number;
@@ -27,6 +28,8 @@ interface RawAnswer {
   correctSelection?: number[];
   answer?: string;
   source_image_id?: string;
+  subtype?: string;
+  routing?: unknown;
   transformation?: {
     resolution?: number;
     type?: string;
@@ -41,6 +44,7 @@ export interface CatalogEntry {
   level: number;
   levelKey: string;
   variant: string;
+  subtype?: string;
   displayName: string;
   levelLabel: string;
   type: string;
@@ -57,6 +61,7 @@ export interface PrivateAnswerRecord {
   challengeId: string;
   levelKey: string;
   variant: string;
+  subtype?: string;
   type: string;
   correctSelection?: number[];
   answer?: string;
@@ -76,6 +81,15 @@ const FORBIDDEN_PUBLIC_KEYS = new Set([
   "boundingboxes",
   "difficulty",
   "targetclass",
+  "routing",
+  "finaltarget",
+  "rayspath",
+  "raysegments",
+  "mirrorhits",
+  "solutionpath",
+  "switchstates",
+  "openvalves",
+  "closedvalves",
 ]);
 
 const FORBIDDEN_FILENAME_TERMS = [
@@ -96,6 +110,7 @@ function getLevelLabel(variant: string): string {
     case "checker-shadow":
       return "Level 2B";
     case "tangled-cables":
+    case "routing-puzzle":
       return "Level 3A";
     case "degraded-vision":
       return "Level 3B";
@@ -114,6 +129,8 @@ function getDisplayName(variant: string): string {
       return "Visual Illusion";
     case "tangled-cables":
       return "Tangled Cables";
+    case "routing-puzzle":
+      return "Routing Puzzles";
     case "degraded-vision":
       return "Degraded Vision";
     default:
@@ -307,6 +324,7 @@ export function syncChallenges(): { totalSynced: number; catalogCount: number } 
         level: challenge.level,
         levelKey: answer.levelKey,
         variant: challenge.variant,
+        subtype: challenge.subtype || answer.subtype,
         displayName: getDisplayName(challenge.variant),
         levelLabel: getLevelLabel(challenge.variant),
         type: challenge.type,
@@ -325,6 +343,7 @@ export function syncChallenges(): { totalSynced: number; catalogCount: number } 
         challengeId: challenge.id,
         levelKey: answer.levelKey,
         variant: challenge.variant,
+        subtype: challenge.subtype || answer.subtype,
         type: challenge.type,
         correctSelection: answer.correctSelection,
         answer: answer.answer,

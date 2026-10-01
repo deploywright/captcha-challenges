@@ -3,7 +3,14 @@ export type ChallengeVariant =
   | "hard-street-grid"
   | "checker-shadow"
   | "tangled-cables"
+  | "routing-puzzle"
   | "degraded-vision";
+
+export type RoutingPuzzleSubtype =
+  | "laser-maze"
+  | "conveyor-routing"
+  | "pipe-flow"
+  | "device-cables";
 
 export type ChallengeType = "image-selection" | "single-choice";
 
@@ -19,6 +26,7 @@ export interface ClientChallenge {
   level: number;
   levelKey: string;
   variant: ChallengeVariant;
+  subtype?: RoutingPuzzleSubtype | string;
   displayName: string;
   levelLabel: string;
   type: ChallengeType;
@@ -35,6 +43,7 @@ export interface ChallengeCatalogEntry {
   level: number;
   levelKey: string;
   variant: ChallengeVariant;
+  subtype?: RoutingPuzzleSubtype | string;
   displayName: string;
   levelLabel: string;
   type: ChallengeType;

@@ -9,9 +9,9 @@ import {
 import { toClientChallenge } from "../lib/challenges/adapter";
 
 describe("Catalog Queries & Client Adapter", () => {
-  it("loads all 73 catalog entries correctly", () => {
+  it("loads all 114 catalog entries correctly", () => {
     const all = getAllChallenges();
-    expect(all.length).toBe(73);
+    expect(all.length).toBe(114);
   });
 
   it("finds challenge by ID and verifies fields", () => {
@@ -27,12 +27,12 @@ describe("Catalog Queries & Client Adapter", () => {
   it("returns challenges filtered by variant", () => {
     expect(getChallengesByVariant("street-grid").length).toBe(20);
     expect(getChallengesByVariant("hard-street-grid").length).toBe(20);
-    expect(getChallengesByVariant("checker-shadow").length).toBe(1);
-    expect(getChallengesByVariant("tangled-cables").length).toBe(4);
+    expect(getChallengesByVariant("checker-shadow").length).toBe(6);
+    expect(getChallengesByVariant("routing-puzzle").length).toBe(40);
     expect(getChallengesByVariant("degraded-vision").length).toBe(28);
   });
 
-  it("progresses sequentially across all five levels", () => {
+  it("progresses sequentially across all five levels with laser-maze default", () => {
     // Level 1 -> Level 2A
     const lvl1 = getChallengesByVariant("street-grid")[0];
     const next1 = getNextProgressionChallenge(lvl1.id);
@@ -43,13 +43,14 @@ describe("Catalog Queries & Client Adapter", () => {
     const next2a = getNextProgressionChallenge(lvl2a.id);
     expect(next2a?.variant).toBe("checker-shadow");
 
-    // Level 2B -> Level 3A
+    // Level 2B -> Level 3A (routing-puzzle with laser-maze subtype as Story Mode default)
     const lvl2b = getChallengesByVariant("checker-shadow")[0];
     const next2b = getNextProgressionChallenge(lvl2b.id);
-    expect(next2b?.variant).toBe("tangled-cables");
+    expect(next2b?.variant).toBe("routing-puzzle");
+    expect(next2b?.subtype).toBe("laser-maze");
 
     // Level 3A -> Level 3B
-    const lvl3a = getChallengesByVariant("tangled-cables")[0];
+    const lvl3a = getChallengesByVariant("routing-puzzle")[0];
     const next3a = getNextProgressionChallenge(lvl3a.id);
     expect(next3a?.variant).toBe("degraded-vision");
 
@@ -96,6 +97,10 @@ describe("Catalog Queries & Client Adapter", () => {
 
     const lvl1Info = infos.find((i) => i.levelNumber === "1");
     expect(lvl1Info?.count).toBe(20);
+
+    const lvl3aInfo = infos.find((i) => i.levelNumber === "3A");
+    expect(lvl3aInfo?.count).toBe(40);
+    expect(lvl3aInfo?.variant).toBe("routing-puzzle");
 
     const lvl3bInfo = infos.find((i) => i.levelNumber === "3B");
     expect(lvl3bInfo?.count).toBe(28);

@@ -1,9 +1,12 @@
 {
-  "canvasWidth": 1600,
-  "canvasHeight": 1000,
-  "cableCount": 30,
-  "waypointRange": [3, 7],
-  "lineWidth": 5,
-  "difficulty": "hard",
-  "queryType": "find_source"
+  "canvasWidth": 1200,
+  "canvasHeight": 800,
+  "defaultSubtype": "laser-maze",
+  "difficulty": "medium",
+  "enabledSubtypes": [
+    "laser-maze",
+    "conveyor-routing",
+    "pipe-flow",
+    "device-cables"
+  ]
 }

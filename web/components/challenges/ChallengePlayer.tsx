@@ -9,6 +9,7 @@ import { ChallengeResult } from "./ChallengeResult";
 import { ImageGridChallenge } from "./ImageGridChallenge";
 import { BinaryChoiceChallenge } from "./BinaryChoiceChallenge";
 import { TangledCablesChallenge } from "./TangledCablesChallenge";
+import { RoutingPuzzleChallenge } from "./RoutingPuzzleChallenge";
 
 interface ChallengePlayerProps {
   challenge: ClientChallenge;
@@ -117,8 +118,7 @@ export function ChallengePlayer({
       const nextChallenge = siblings[randomIndex];
       router.push(`/challenge/${nextChallenge.id}`);
     } else {
-      // If there are no other challenges in this level (e.g. Level 2B Checker Shadow has 1 challenge),
-      // reset in place so the user can retry!
+      // If there are no other challenges in this level, reset in place
       handleTryAgain();
     }
   };
@@ -135,7 +135,7 @@ export function ChallengePlayer({
   const hasOtherInLevel = getChallengesByVariant(challenge.variant).length > 1;
 
   const containerMaxWidth =
-    challenge.variant === "tangled-cables"
+    challenge.variant === "routing-puzzle" || challenge.variant === "tangled-cables"
       ? "max-w-5xl"
       : challenge.variant === "checker-shadow"
       ? "max-w-xl"
@@ -182,8 +182,8 @@ export function ChallengePlayer({
             onAssetsReady={handleAssetsReady}
             disabled={result !== null}
           />
-        ) : challenge.variant === "tangled-cables" ? (
-          <TangledCablesChallenge
+        ) : challenge.variant === "routing-puzzle" || challenge.variant === "tangled-cables" ? (
+          <RoutingPuzzleChallenge
             key={`${challenge.id}-${attemptKey}`}
             challenge={challenge}
             isSubmitting={isSubmitting}

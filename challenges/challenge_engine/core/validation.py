@@ -55,6 +55,7 @@ FORBIDDEN_PUBLIC_KEYS = {
     "degradation",
     "targetClass",
     "target",
+    "routing",
 }
 
 VARIANT_TO_LEVEL_KEY = {
@@ -62,6 +63,7 @@ VARIANT_TO_LEVEL_KEY = {
     "hard-street-grid": LEVEL_2A_KEY,
     "checker-shadow": LEVEL_2B_KEY,
     "tangled-cables": LEVEL_3A_KEY,
+    "routing-puzzle": LEVEL_3A_KEY,
     "degraded-vision": LEVEL_3B_KEY,
 }
 
@@ -173,7 +175,7 @@ def validate_single_challenge_dir(
             f"answer.challengeId '{priv.challengeId}' does not match challenge.id '{pub.id}'"
         )
 
-    if not re.match(r"^lvl(1|2a|2b|3a|3b)_[0-9a-z]{6}$", pub.id):
+    if not re.match(r"^lvl(1|2a|2b|3a|3b)(_[a-z0-9]+)?_[0-9a-z]{6}$", pub.id):
         res.add_error(f"Challenge ID '{pub.id}' does not match neutral ID format")
 
     loaded_assets: dict[str, Image.Image] = {}
@@ -213,6 +215,8 @@ def validate_single_challenge_dir(
         _validate_checker_shadow_level(res, pub, priv, loaded_assets)
     elif pub.variant == "tangled-cables":
         _validate_tangled_cables_level(res, pub, priv, loaded_assets)
+    elif pub.variant == "routing-puzzle":
+        _validate_routing_puzzle_level(res, pub, priv, loaded_assets)
     elif pub.variant == "degraded-vision":
         _validate_degraded_vision_level(res, pub, priv, loaded_assets, bdd100k_dataset)
 
@@ -459,6 +463,58 @@ def _validate_tangled_cables_level(
                 break
 
 
+def _validate_routing_puzzle_level(
+    res: ChallengeValidationResult,
+    pub: PublicChallenge,
+    priv: PrivateAnswer,
+    loaded_assets: dict[str, Image.Image],
+) -> None:
+    """Validate Level 3A Routing Puzzle challenges (laser maze, conveyor, pipe flow, device cables)."""
+    if pub.type != "single-choice":
+        res.add_error(f"Expected type='single-choice' for routing-puzzle, got '{pub.type}'")
+
+    if not pub.ui.options or len(pub.ui.options) < 2:
+        res.add_error("Public challenge ui.options must have at least 2 options")
+        return
+
+    if len(set(pub.ui.options)) != len(pub.ui.options):
+        res.add_error("Public challenge ui.options contains duplicate options")
+
+    if not priv.correctSelection or len(priv.correctSelection) != 1:
+        res.add_error(f"Expected exactly 1 correctSelection index, got {priv.correctSelection}")
+        return
+
+    expected_idx = priv.correctSelection[0]
+    if not (0 <= expected_idx < len(pub.ui.options)):
+        res.add_error(f"correctSelection index {expected_idx} out of range for options {pub.ui.options}")
+        return
+
+    if str(priv.answer) != pub.ui.options[expected_idx]:
+        res.add_error(
+            f"Public option '{pub.ui.options[expected_idx]}' does not match private answer '{priv.answer}'"
+        )
+
+    if not pub.assets:
+        res.add_error("Missing public asset for routing puzzle")
+        return
+
+    rel_asset = pub.assets[0]
+    if rel_asset not in loaded_assets:
+        res.add_error(f"Failed to load asset image '{rel_asset}'")
+        return
+
+    img = loaded_assets[rel_asset]
+    w, h = img.size
+    if w < 400 or h < 300:
+        res.add_error(f"Routing puzzle image dimensions ({w}x{h}) are too small")
+
+    subtype = priv.subtype or pub.subtype
+    if subtype:
+        valid_subtypes = {"laser-maze", "conveyor-routing", "pipe-flow", "device-cables"}
+        if subtype not in valid_subtypes:
+            res.add_error(f"Unknown routing puzzle subtype '{subtype}'")
+
+
 def _validate_degraded_vision_level(
     res: ChallengeValidationResult,
     pub: PublicChallenge,
@@ -530,12 +586,19 @@ def _validate_determinism(
         gen_2b = Level2BCheckerShadowGenerator(cfg)  # type: ignore[arg-type]
         re_bundle = gen_2b.generate_one(pub.seed)
     elif level_key == LEVEL_3A_KEY:
-        if priv.connections:
-            cfg.cableCount = len(priv.connections)  # type: ignore[attr-defined]
-        if priv.query:
-            cfg.queryType = priv.query.type  # type: ignore[attr-defined]
-        gen_3a = Level3ATangledCablesGenerator(cfg)  # type: ignore[arg-type]
-        re_bundle = gen_3a.generate_one(pub.seed)
+        if pub.variant == "routing-puzzle":
+            from challenge_engine.levels.level_3a.generator import Level3ARoutingGenerator
+
+            subtype_val = priv.subtype or pub.subtype
+            gen_3a = Level3ARoutingGenerator(cfg)
+            re_bundle = gen_3a.generate_one(pub.seed, subtype=subtype_val)
+        else:
+            if priv.connections:
+                cfg.cableCount = len(priv.connections)  # type: ignore[attr-defined]
+            if priv.query:
+                cfg.queryType = priv.query.type  # type: ignore[attr-defined]
+            gen_3a = Level3ATangledCablesGenerator(cfg)  # type: ignore[arg-type]
+            re_bundle = gen_3a.generate_one(pub.seed)
     elif level_key == LEVEL_3B_KEY:
         gen_3b = Level3BDegradedVisionGenerator(cfg, dataset=bdd100k_dataset)  # type: ignore[arg-type]
         res_val = priv.degradation.downsampleWidth if priv.degradation else None

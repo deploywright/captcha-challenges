@@ -1,4 +1,4 @@
-﻿import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vitest";
 import { gradeSubmission } from "../lib/challenges/validation.server";
 import { ANSWERS_REGISTRY } from "../src/generated-private/answers";
 
@@ -9,8 +9,8 @@ describe("Server-Side Answer Grading Evaluation", () => {
   const checkerShadowEntry = Object.values(ANSWERS_REGISTRY).find(
     (e) => e.variant === "checker-shadow"
   )!;
-  const tangledCablesEntry = Object.values(ANSWERS_REGISTRY).find(
-    (e) => e.variant === "tangled-cables"
+  const routingPuzzleEntry = Object.values(ANSWERS_REGISTRY).find(
+    (e) => e.variant === "routing-puzzle" || e.variant === "tangled-cables"
   )!;
 
   it("grades image-grid correctly and ignores selection index order", () => {
@@ -70,20 +70,20 @@ describe("Server-Side Answer Grading Evaluation", () => {
     expect(gradeSubmission(challengeId, wrongIdx).correct).toBe(false);
   });
 
-  it("grades tangled cables challenge correctly", () => {
-    expect(tangledCablesEntry).toBeDefined();
-    const challengeId = tangledCablesEntry.challengeId;
-    const answer = tangledCablesEntry.answer!;
+  it("grades routing puzzles correctly", () => {
+    expect(routingPuzzleEntry).toBeDefined();
+    const challengeId = routingPuzzleEntry.challengeId;
+    const answer = routingPuzzleEntry.answer!;
 
     // Exact string match
     expect(gradeSubmission(challengeId, answer).correct).toBe(true);
 
-    // Incorrect server string
-    expect(gradeSubmission(challengeId, "server_999").correct).toBe(false);
+    // Incorrect answer string
+    expect(gradeSubmission(challengeId, "Definitely Wrong Option").correct).toBe(false);
 
     // Option index match
-    if (tangledCablesEntry.correctSelection && tangledCablesEntry.correctSelection.length > 0) {
-      const correctIdx = tangledCablesEntry.correctSelection[0];
+    if (routingPuzzleEntry.correctSelection && routingPuzzleEntry.correctSelection.length > 0) {
+      const correctIdx = routingPuzzleEntry.correctSelection[0];
       expect(gradeSubmission(challengeId, correctIdx).correct).toBe(true);
       expect(gradeSubmission(challengeId, 999).correct).toBe(false);
     }

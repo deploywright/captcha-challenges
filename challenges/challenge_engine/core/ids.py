@@ -29,10 +29,22 @@ def generate_challenge_id(
     level_key: str,
     seed: int,
     extra_discriminator: str = "",
+    subtype: str | None = None,
 ) -> str:
-    """Generate a deterministic, answer-agnostic challenge ID like 'lvl1_x82k91'."""
+    """Generate a deterministic, answer-agnostic challenge ID like 'lvl1_x82k91' or 'lvl3a_laser_x82k91'."""
     prefix = LEVEL_PREFIX_MAP.get(level_key, "chl")
-    payload = f"{level_key}:{seed}:{extra_discriminator}".encode("utf-8")
+    if subtype:
+        if "laser" in subtype:
+            prefix = f"{prefix}_laser"
+        elif "conveyor" in subtype:
+            prefix = f"{prefix}_conveyor"
+        elif "pipe" in subtype:
+            prefix = f"{prefix}_pipe"
+        elif "cable" in subtype:
+            prefix = f"{prefix}_cables"
+        else:
+            prefix = f"{prefix}_{subtype[:6]}"
+    payload = f"{level_key}:{seed}:{subtype or ''}:{extra_discriminator}".encode("utf-8")
     digest = hashlib.sha256(payload).digest()
     numeric = int.from_bytes(digest[:8], byteorder="big", signed=False)
     token = _int_to_base36(numeric, length=6)

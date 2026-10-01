@@ -12,7 +12,7 @@ export const PROGRESSION_VARIANTS: ChallengeVariant[] = [
   "street-grid",
   "hard-street-grid",
   "checker-shadow",
-  "tangled-cables",
+  "routing-puzzle",
   "degraded-vision",
 ];
 
@@ -59,7 +59,12 @@ export function getNextProgressionChallenge(
   const current = getChallengeById(currentId);
   if (!current) return undefined;
 
-  const currentVariantIndex = PROGRESSION_VARIANTS.indexOf(current.variant);
+  let currentVariantIndex = PROGRESSION_VARIANTS.indexOf(current.variant);
+  // Backward compatibility: map legacy 'tangled-cables' to same progression position as 'routing-puzzle'
+  if (currentVariantIndex === -1 && current.variant === "tangled-cables") {
+    currentVariantIndex = PROGRESSION_VARIANTS.indexOf("routing-puzzle");
+  }
+
   if (currentVariantIndex === -1 || currentVariantIndex === PROGRESSION_VARIANTS.length - 1) {
     // End of progression reached or unknown variant
     return undefined;
@@ -68,6 +73,12 @@ export function getNextProgressionChallenge(
   const nextVariant = PROGRESSION_VARIANTS[currentVariantIndex + 1];
   const candidates = getChallengesByVariant(nextVariant);
   if (candidates.length === 0) return undefined;
+
+  // In Story Mode, prefer the default subtype (laser-maze) for routing-puzzle
+  if (nextVariant === "routing-puzzle") {
+    const laserCandidate = candidates.find((c) => c.subtype === "laser-maze");
+    if (laserCandidate) return laserCandidate;
+  }
 
   // Pick deterministic or first candidate from next variant
   return candidates[0];
@@ -83,6 +94,11 @@ export function getLevelInfos(): LevelInfo[] {
       firstIdByVariant[c.variant] = c.id;
     }
   }
+
+  const routingCount =
+    (countsByVariant["routing-puzzle"] || 0) + (countsByVariant["tangled-cables"] || 0);
+  const routingSampleId =
+    firstIdByVariant["routing-puzzle"] || firstIdByVariant["tangled-cables"];
 
   return [
     {
@@ -120,14 +136,14 @@ export function getLevelInfos(): LevelInfo[] {
     },
     {
       levelNumber: "3A",
-      variant: "tangled-cables",
-      levelKey: "level_3a_tangled_cables",
-      title: "Level 3A: Tangled Cables",
-      subtitle: "Dense Procedural Network Patch Panel",
+      variant: "routing-puzzle",
+      levelKey: "level_3a_routing_puzzle",
+      title: "Level 3A: Routing Puzzles",
+      subtitle: "Laser Maze & Visual Routing",
       description:
-        "Trace continuous visual paths through intricate cable bridges between server ports.",
-      count: countsByVariant["tangled-cables"] || 0,
-      sampleId: firstIdByVariant["tangled-cables"],
+        "Trace continuous optical paths, mechanical diverters, fluid valves, and device connections.",
+      count: routingCount,
+      sampleId: routingSampleId,
     },
     {
       levelNumber: "3B",
