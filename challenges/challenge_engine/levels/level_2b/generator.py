@@ -97,7 +97,7 @@ def inspect_level_2b_asset_status(config: Level2BConfig | None = None) -> Level2
 
 
 class Level2BCheckerShadowGenerator:
-    """Packages the existing Adelson Checker Shadow Illusion asset without procedural synthesis."""
+    """Packages canonical Visual Illusion assets with measurable ground truth (without procedural synthesis)."""
 
     level_key = LEVEL_2B_KEY
 
@@ -106,6 +106,7 @@ class Level2BCheckerShadowGenerator:
         self.asset_path = _resolve_path(self.config.assetPath)
         self.metadata_path = _resolve_path(self.config.metadataPath)
         self.asset_metadata = self._load_and_verify_metadata()
+        self.catalog = self._load_catalog()
 
     def _load_and_verify_metadata(self) -> Level2BAssetMetadata:
         if not self.asset_path.exists():
@@ -121,19 +122,90 @@ class Level2BCheckerShadowGenerator:
         raw = json.loads(self.metadata_path.read_text(encoding="utf-8"))
         return Level2BAssetMetadata.model_validate(raw)
 
-    def _load_existing_asset_image(self) -> Image.Image:
-        with Image.open(self.asset_path) as img:
+    def _load_catalog(self) -> dict[str, dict]:
+        cat_file = self.metadata_path.parent / "illusions_catalog.json"
+        if cat_file.exists():
+            return json.loads(cat_file.read_text(encoding="utf-8"))
+        return {}
+
+    def _load_image_from_path(self, path: Path) -> Image.Image:
+        with Image.open(path) as img:
             if img.mode == "RGBA":
                 bg = Image.new("RGB", img.size, (255, 255, 255))
                 bg.paste(img, mask=img.split()[3])
                 return bg
             return img.convert("RGB")
 
-    def generate_one(self, seed: int) -> ChallengeBundle:
-        """Package the existing Adelson Checker Shadow Illusion asset into a challenge bundle."""
+    def generate_one(self, seed: int, subtype: str | None = None) -> ChallengeBundle:
+        """Package a canonical Visual Illusion asset into a challenge bundle."""
         challenge_id = generate_challenge_id(self.level_key, seed)
-        img = self._load_existing_asset_image()
 
+        target_subtype = subtype or self.config.illusionSubtype or "checker-shadow"
+        if target_subtype != "checker-shadow" and target_subtype not in self.catalog:
+            raise ValueError(f"Unknown illusion subtype: {target_subtype}")
+
+        if target_subtype and target_subtype in self.catalog and target_subtype != "checker-shadow":
+            meta = self.catalog[target_subtype]
+            img_path = self.metadata_path.parent / meta["asset_file"]
+            img = self._load_image_from_path(img_path)
+
+            rel_asset = asset_relpath_for_index(0, ext="webp")
+            options = list(meta.get("options", ["Yes", "No"]))
+            correct_val = meta.get("answer", "yes").strip().lower()
+            yes_index = next(
+                (i for i, opt in enumerate(options) if opt.lower() == correct_val),
+                None,
+            )
+            if len(options) < 2 or yes_index is None:
+                raise ValueError(f"Illusion {target_subtype} must contain its answer among at least two options")
+
+            instruction = meta.get("question") or "Are the visual features identical?"
+
+            public_challenge = PublicChallenge(
+                schemaVersion=1,
+                id=challenge_id,
+                level=2,
+                variant="checker-shadow",
+                type="single-choice",
+                instruction=instruction,
+                seed=seed,
+                assets=[rel_asset],
+                ui=PublicUIConfig(
+                    rows=1,
+                    columns=1,
+                    selectionMode="single",
+                    options=options,
+                ),
+            )
+
+            private_answer = PrivateAnswer(
+                challengeId=challenge_id,
+                levelKey=self.level_key,
+                datasetSource=f"canonical-illusion-{target_subtype}",
+                correctSelection=[yes_index],
+                answer=options[yes_index],
+                illusion=IllusionMetadata(
+                    assetName=meta["name"],
+                    illusionType=target_subtype,
+                    source=meta["source"],
+                    license=meta["license"],
+                    assetFile=meta["asset_file"],
+                    proceduralGenerationUsed=False,
+                    groundTruthMetric=meta.get("ground_truth_metric"),
+                    measuredValues=meta.get("measured_values"),
+                    explanation=meta.get("explanation"),
+                ),
+            )
+
+            return ChallengeBundle(
+                public_challenge=public_challenge,
+                private_answer=private_answer,
+                assets={rel_asset: img},
+                lossless_webp=True,
+            )
+
+        # Default canonical: Adelson Checker Shadow
+        img = self._load_image_from_path(self.asset_path)
         regions = self.asset_metadata.regions or {}
         box_a = regions.get("square_a_interior", [240, 110, 250, 120])
         box_b = regions.get("square_b_interior", [230, 195, 240, 205])
@@ -173,6 +245,7 @@ class Level2BCheckerShadowGenerator:
             answer=options[yes_index],
             illusion=IllusionMetadata(
                 assetName=self.asset_metadata.name,
+                illusionType="checker-shadow",
                 source=self.asset_metadata.source,
                 license=self.asset_metadata.license,
                 assetFile=self.asset_path.name,
@@ -192,6 +265,7 @@ class Level2BCheckerShadowGenerator:
                 luminanceDifference=round(lum_diff, 6),
                 rgbMaxDifference=round(rgb_diff, 6),
                 tolerance=self.config.luminanceTolerance,
+                explanation="Squares A and B have identical physical luminance and RGB reflectance. The perceptual shadow context creates an illusion of different shades.",
             ),
         )
 
@@ -203,5 +277,13 @@ class Level2BCheckerShadowGenerator:
         )
 
     def generate_batch(self, count: int, base_seed: int) -> list[ChallengeBundle]:
-        """Package `count` Level 2B challenge bundles starting from `base_seed`."""
-        return [self.generate_one(base_seed + i) for i in range(count)]
+        """Package `count` Level 2B challenge bundles, cycling through the canonical illusions library."""
+        subtypes = list(self.catalog.keys()) if self.catalog else ["checker-shadow"]
+        bundles: list[ChallengeBundle] = []
+        for i in range(count):
+            subtype = self.config.illusionSubtype or subtypes[i % len(subtypes)]
+            bundles.append(self.generate_one(base_seed + i, subtype=subtype))
+        return bundles
+
+
+Level2BIllusionGenerator = Level2BCheckerShadowGenerator

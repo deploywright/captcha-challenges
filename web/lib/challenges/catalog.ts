@@ -143,7 +143,7 @@ export function getLevelInfos(): LevelInfo[] {
       variant: "hard-street-grid",
       levelKey: "level_2a_hard_street_grid",
       title: "Level 2A: Hard CAPTCHA",
-      subtitle: "4×4 High-Complexity Grid",
+      subtitle: "3×3 High-Complexity Grid",
       description:
         "Challenging real-world scenes with distance, heavy occlusion, night-time glare, and confusing distractors.",
       count: countsByVariant["hard-street-grid"] || 0,
@@ -153,10 +153,10 @@ export function getLevelInfos(): LevelInfo[] {
       levelNumber: "2B",
       variant: "checker-shadow",
       levelKey: "level_2b_checker_shadow",
-      title: "Level 2B: Visual Illusion",
-      subtitle: "Adelson Checker Shadow",
+      title: "Level 2B: Visual Illusions",
+      subtitle: "Visual Illusions",
       description:
-        "Test human perceptual constancy against raw pixel luminance: Are squares A and B the same shade?",
+        "Perception can lie. Measure what is actually there across six canonical visual illusions.",
       count: countsByVariant["checker-shadow"] || 0,
       sampleId: firstIdByVariant["checker-shadow"],
     },

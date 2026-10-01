@@ -6,6 +6,10 @@ from PIL import Image
 
 from challenge_engine.core.exporter import ChallengeBundle
 from challenge_engine.core.ids import asset_relpath_for_index, generate_challenge_id
+from challenge_engine.core.image_prep import (
+    prepare_context_crop,
+    prepare_negative_crop,
+)
 from challenge_engine.core.random import DeterministicRNG
 from challenge_engine.core.schemas import (
     LEVEL_2A_KEY,
@@ -18,6 +22,7 @@ from challenge_engine.core.schemas import (
 from challenge_engine.datasets.bdd100k import (
     BDD100KDataSplitError,
     BDD100KDataset,
+    CLASS_PROFILES,
     load_bdd100k_dataset,
     normalize_bdd100k_category,
 )
@@ -25,7 +30,7 @@ from challenge_engine.levels.level_1.generator import format_grid_instruction
 
 
 class Level2AHardStreetGridGenerator:
-    """Selects difficult real BDD100K `val` scenes (small/occluded/truncated/night/rain/distractors) for 4x4 or 5x5 grids."""
+    """Selects difficult real BDD100K `val` scenes (small/occluded/truncated/night/rain/distractors) for 3x3 grids."""
 
     level_key = LEVEL_2A_KEY
 
@@ -55,7 +60,12 @@ class Level2AHardStreetGridGenerator:
         rows = self.config.resolved_rows
         cols = self.config.resolved_columns
         total_tiles = rows * cols
+
         norm_target = normalize_bdd100k_category(self.config.target)
+        if getattr(self.config, "targets", None):
+            chosen = normalize_bdd100k_category(rng.fork("target").choice(self.config.targets))
+            norm_target = chosen
+        profile = CLASS_PROFILES.get(norm_target)
 
         if self.config.positiveCountRange is not None:
             p_min, p_max = self.config.positiveCountRange
@@ -73,6 +83,8 @@ class Level2AHardStreetGridGenerator:
             preferred_attributes=self.config.preferredAttributes,
             min_easy_area_ratio=self.config.minEasyAreaRatio,
             allow_duplicates=self.config.allowDuplicates,
+            max_difficulty_factors=self.config.maxDifficultyFactors,
+            rendered_tile_size=(self.config.tileWidth, self.config.tileHeight),
         )
 
         asset_paths: list[str] = []
@@ -88,17 +100,48 @@ class Level2AHardStreetGridGenerator:
             rel_asset = asset_relpath_for_index(idx, ext="webp")
             asset_paths.append(rel_asset)
 
-            # Do NOT artificially distort Level 2A images; only resize cleanly to grid tile size
             img = self.dataset.load_image(frame)
-            if img.size != (self.config.tileWidth, self.config.tileHeight):
-                img = img.resize(
-                    (self.config.tileWidth, self.config.tileHeight),
-                    resample=Image.Resampling.BILINEAR,
-                )
-            assets_map[rel_asset] = img
+            crop_rng = rng.fork(f"crop_{idx}")
 
             if is_positive:
                 correct_indices.append(idx)
+                target_box = eval_meta.get("target_box")
+                if target_box is None:
+                    for obj in frame.objects:
+                        if obj.category == norm_target:
+                            target_box = obj.box2d
+                            break
+                context_factor = profile.default_context_factor if profile else 1.0
+                crop_res = prepare_context_crop(
+                    img=img,
+                    target_box=target_box,
+                    output_size=(self.config.tileWidth, self.config.tileHeight),
+                    context_padding=context_factor,
+                    rng=crop_rng,
+                )
+                rendered_metrics = crop_res.target_metrics
+                r_size = rendered_metrics.rendered_max_dim if rendered_metrics else None
+                r_w = rendered_metrics.rendered_width if rendered_metrics else None
+                r_h = rendered_metrics.rendered_height if rendered_metrics else None
+            else:
+                confusable = profile.confusable_distractors if profile else ()
+                forbidden = [
+                    obj.box2d
+                    for obj in frame.objects
+                    if obj.category == norm_target or obj.category in confusable
+                ]
+                crop_res = prepare_negative_crop(
+                    img=img,
+                    output_size=(self.config.tileWidth, self.config.tileHeight),
+                    forbidden_boxes=forbidden,
+                    rng=crop_rng,
+                )
+                context_factor = None
+                r_size = None
+                r_w = None
+                r_h = None
+
+            assets_map[rel_asset] = crop_res.image
 
             tile_meta.append(
                 TilePrivateMetadata(
@@ -116,11 +159,17 @@ class Level2AHardStreetGridGenerator:
                     targetClass=norm_target,
                     classes=sorted(frame.categories),
                     difficulty="hard",
-                    attributes=list(eval_meta["difficulty_tags"]),
-                    maxTargetAreaRatio=float(eval_meta["max_target_area_ratio"]),
+                    attributes=list(eval_meta.get("difficulty_tags", [])),
+                    maxTargetAreaRatio=float(eval_meta.get("max_target_area_ratio", 0.0)),
                     weather=frame.weather,
                     timeofday=frame.timeofday,
                     isPositive=is_positive,
+                    crop_box=list(crop_res.crop_window),
+                    crop_context_factor=context_factor,
+                    rendered_object_size=r_size,
+                    rendered_object_width=r_w,
+                    rendered_object_height=r_h,
+                    difficulty_budget_factors=list(eval_meta.get("difficulty_tags", [])),
                 )
             )
 

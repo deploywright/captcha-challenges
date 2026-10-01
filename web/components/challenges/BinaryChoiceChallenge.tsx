@@ -63,7 +63,7 @@ export function BinaryChoiceChallenge({
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={assetUrl}
-            alt="Adelson checker shadow illusion visual stimulus"
+            alt={`Visual illusion: ${challenge.instruction}`}
             onLoad={handleImageLoaded}
             loading="eager"
             className="w-full h-auto object-contain select-none"
@@ -119,4 +119,3 @@ export function BinaryChoiceChallenge({
     </form>
   );
 }
-

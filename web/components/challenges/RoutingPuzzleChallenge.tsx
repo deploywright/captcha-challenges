@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import type { ClientChallenge } from "@/lib/challenges/types";
 
 interface RoutingPuzzleChallengeProps {
@@ -37,7 +37,7 @@ export function RoutingPuzzleChallenge({
     }
   };
 
-  const options = challenge.ui.options || [];
+  const options = useMemo(() => challenge.ui.options || [], [challenge.ui.options]);
   const assetUrl = challenge.assets[0];
   const subtype = challenge.subtype || "laser-maze";
 

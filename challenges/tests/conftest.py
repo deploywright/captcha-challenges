@@ -50,15 +50,15 @@ def sample_bdd100k_root(tmp_path: Path) -> Path:
     # 2. Hard motorcycle frames (10 frames: small/distant, occluded, truncated, night, rain, confusable bicycle)
     hard_configs = [
         ("night", "clear", True, False, (500.0, 320.0, 560.0, 380.0), ["bicycle"]),
-        ("daytime", "rainy", True, True, (420.0, 300.0, 490.0, 365.0), []),
-        ("dawn/dusk", "overcast", False, True, (10.0, 310.0, 65.0, 370.0), ["bicycle", "rider"]),
-        ("night", "rainy", True, False, (600.0, 340.0, 650.0, 390.0), ["car"]),
+        ("daytime", "rainy", True, False, (420.0, 300.0, 490.0, 380.0), []),
+        ("dawn/dusk", "overcast", False, True, (10.0, 310.0, 85.0, 390.0), []),
+        ("night", "rainy", False, False, (600.0, 340.0, 680.0, 430.0), ["car"]),
         ("daytime", "foggy", True, False, (520.0, 330.0, 565.0, 372.0), []),
-        ("night", "clear", False, True, (1210.0, 300.0, 1278.0, 380.0), ["bicycle"]),
-        ("dawn/dusk", "rainy", True, True, (480.0, 310.0, 535.0, 360.0), []),
+        ("night", "clear", False, True, (1200.0, 300.0, 1278.0, 380.0), []),
+        ("dawn/dusk", "rainy", False, False, (480.0, 310.0, 560.0, 400.0), []),
         ("daytime", "clear", True, False, (610.0, 350.0, 650.0, 386.0), ["bicycle", "rider"]),
         ("night", "overcast", True, False, (400.0, 290.0, 460.0, 350.0), []),
-        ("daytime", "rainy", False, False, (580.0, 345.0, 620.0, 381.0), ["bicycle"]),
+        ("daytime", "rainy", False, False, (580.0, 345.0, 660.0, 430.0), ["bicycle"]),
     ]
     for i, (tod, weather, occ, trunc, box, extra_cats) in enumerate(hard_configs):
         fname = f"bdd_hard_pos_{i:03d}.jpg"
@@ -130,9 +130,13 @@ def sample_bdd100k_root(tmp_path: Path) -> Path:
 
     # Create distinct test images on disk for each annotated frame
     for idx, spec in enumerate(frames_spec):
-        img = Image.new("RGB", (320, 180), (40 + (idx * 3) % 150, 70 + (idx * 5) % 140, 110))
+        # Match annotation coordinates, so crop/visibility tests exercise real geometry.
+        img = Image.new("RGB", (1280, 720), (40 + (idx * 3) % 150, 70 + (idx * 5) % 140, 110))
         draw = ImageDraw.Draw(img)
         draw.rectangle([20 + (idx % 40), 30, 140 + (idx % 40), 130], fill=(200, 120, 50))
+        for label in spec['labels']:
+            box=label['box2d']
+            draw.rectangle((box['x1'],box['y1'],box['x2'],box['y2']),fill=(200,120,50))
         img.save(img_dir / spec["name"], format="JPEG", quality=95)
 
     (lbl_dir / "det_val.json").write_text(json.dumps(frames_spec, indent=2), encoding="utf-8")

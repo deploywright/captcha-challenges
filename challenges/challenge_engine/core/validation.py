@@ -79,6 +79,12 @@ FORBIDDEN_PUBLIC_KEYS = {
     "mirrors",
     "decoyPaths",
     "edges",
+    "crop_box",
+    "crop_context_factor",
+    "rendered_object_size",
+    "rendered_object_width",
+    "rendered_object_height",
+    "difficulty_budget_factors",
 }
 
 VARIANT_TO_LEVEL_KEY = {
@@ -352,14 +358,6 @@ def _validate_checker_shadow_level(
     priv: PrivateAnswer,
     loaded_assets: dict[str, Image.Image],
 ) -> None:
-    if str(priv.answer).lower() != "yes":
-        res.add_error(f"Expected Level 2B ground-truth answer 'Yes', got '{priv.answer}'")
-
-    if priv.datasetSource != "adelson-static-asset":
-        res.add_error(
-            f"Level 2B must use 'adelson-static-asset', got datasetSource='{priv.datasetSource}'"
-        )
-
     if not priv.illusion:
         res.add_error("Missing illusion metadata in Level 2B answer.json")
         return
@@ -370,11 +368,41 @@ def _validate_checker_shadow_level(
     if not priv.illusion.source or not priv.illusion.license:
         res.add_error("Level 2B illusion metadata is missing documented source or license")
 
+    illusion = priv.illusion
+    catalog = Level2BCheckerShadowGenerator(load_level_config(LEVEL_2B_KEY)).catalog
+    subtype = illusion.illusionType
+    meta = catalog.get(subtype)
+    if not meta:
+        res.add_error(f"Unknown illusion subtype '{subtype}'")
+        return
+    options = pub.ui.options or []
+    if len(options) < 2 or priv.answer not in options or priv.correctSelection != [options.index(priv.answer)]:
+        res.add_error("Illusion answer/index must match an available option")
+    if str(priv.answer).lower() != meta["answer"].lower():
+        res.add_error("Illusion answer differs from source catalog")
+    if (illusion.source, illusion.license, illusion.assetFile) != (meta["source"], meta["license"], meta["asset_file"]):
+        res.add_error("Illusion provenance differs from source catalog")
+    expected_source = "adelson-static-asset" if subtype == "checker-shadow" else f"canonical-illusion-{subtype}"
+    if priv.datasetSource != expected_source:
+        res.add_error(f"Illusion datasetSource must be '{expected_source}'")
+    if subtype != "checker-shadow":
+        if not illusion.groundTruthMetric or not illusion.measuredValues:
+            res.add_error("Missing documented illusion measurement metric/values")
+        if (illusion.groundTruthMetric, illusion.measuredValues) != (meta.get("ground_truth_metric"), meta.get("measured_values")):
+            res.add_error("Illusion measurements differ from catalog")
+        from challenge_engine.levels.level_2b.verification import verify_catalog_measurements
+        for error in verify_catalog_measurements(loaded_assets[pub.assets[0]], subtype, meta):
+            res.add_error(error)
+        return
+
     img = loaded_assets[pub.assets[0]]
     width, height = img.size
 
     sq_a = priv.illusion.squareA
     sq_b = priv.illusion.squareB
+    if sq_a is None or sq_b is None or illusion.tolerance is None:
+        res.add_error("Checker shadow requires square measurements and tolerance")
+        return
 
     for sq in (sq_a, sq_b):
         x1, y1, x2, y2 = sq.safeInteriorBox
@@ -609,6 +637,20 @@ def _validate_determinism(
     level_key = VARIANT_TO_LEVEL_KEY[pub.variant]
     cfg = load_level_config(level_key)
 
+    # Batches can explicitly override target/count/grid. Reproduce their recorded
+    # parameters rather than today's CLI defaults, while retaining source authority.
+    if level_key in {LEVEL_1_KEY, LEVEL_2A_KEY, LEVEL_3B_KEY}:
+        cfg.target = priv.targetClass
+        if hasattr(cfg, "targets"):
+            cfg.targets = None
+        if level_key == LEVEL_1_KEY:
+            cfg.positiveCountRange = (len(priv.correctSelection), len(priv.correctSelection))
+        elif level_key == LEVEL_2A_KEY:
+            cfg.positiveCountRange = None
+        cfg.positiveCount = len(priv.correctSelection)
+        cfg.gridRows = pub.ui.rows
+        cfg.gridColumns = pub.ui.columns
+
     if level_key in {LEVEL_1_KEY, LEVEL_2A_KEY, LEVEL_3B_KEY} and bdd100k_dataset is None:
         return
 
@@ -620,7 +662,7 @@ def _validate_determinism(
         re_bundle = gen_2a.generate_one(pub.seed)
     elif level_key == LEVEL_2B_KEY:
         gen_2b = Level2BCheckerShadowGenerator(cfg)  # type: ignore[arg-type]
-        re_bundle = gen_2b.generate_one(pub.seed)
+        re_bundle = gen_2b.generate_one(pub.seed, subtype=priv.illusion.illusionType)
     elif level_key == LEVEL_3A_KEY:
         if pub.variant == "routing-puzzle":
             from challenge_engine.levels.level_3a.generator import Level3ARoutingGenerator
@@ -659,6 +701,15 @@ def _validate_determinism(
         res.add_error("Deterministic regeneration produced a different correctSelection")
     if re_bundle.private_answer.answer != priv.answer:
         res.add_error("Deterministic regeneration produced a different answer")
+    if level_key != LEVEL_3A_KEY:
+        if priv.tiles:
+            for actual, expected in zip(priv.tiles, re_bundle.private_answer.tiles):
+                if (actual.sourceId, actual.crop_box) != (expected.sourceId, expected.crop_box):
+                    res.add_error(f"Deterministic regeneration changed tile {actual.tileIndex} source/crop")
+        for asset, image in re_bundle.assets.items():
+            with Image.open(res.directory / asset) as stored:
+                if not np.array_equal(np.asarray(stored.convert("RGB")), np.asarray(image.convert("RGB"))):
+                    res.add_error(f"Deterministic regeneration changed asset pixels: {asset}")
 
 
 def _discover_challenge_dirs(root: Path) -> list[Path]:

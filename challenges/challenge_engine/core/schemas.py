@@ -180,6 +180,12 @@ class TilePrivateMetadata(BaseModel):
     weather: str = "undefined"
     timeofday: str = "undefined"
     isPositive: bool
+    crop_box: list[int] | None = None
+    crop_context_factor: float | None = None
+    rendered_object_size: float | None = None
+    rendered_object_width: float | None = None
+    rendered_object_height: float | None = None
+    difficulty_budget_factors: list[str] | None = None
     transformation: TransformationSpec | None = None
     degradation: DegradationInfo | None = None
 
@@ -196,6 +202,7 @@ class Level2BAssetMetadata(BaseModel):
     """Schema for `assets/level-2b/metadata.json` documenting the existing Adelson asset."""
 
     model_config = ConfigDict(extra="allow")
+    illusion_type: str = "checker-shadow"
 
     name: str = Field(..., min_length=1)
     author: str | None = None
@@ -205,7 +212,10 @@ class Level2BAssetMetadata(BaseModel):
     question: str = "Are squares A and B the same shade?"
     answer: str = "yes"
     options: list[str] = Field(default_factory=lambda: ["Yes", "No"])
-    regions: dict[str, list[int]] | None = None
+    regions: dict[str, Any] | None = None
+    explanation: str | None = None
+    ground_truth_metric: str | None = None
+    measured_values: dict[str, Any] | None = None
 
 
 class SquareMeasurement(BaseModel):
@@ -225,15 +235,19 @@ class IllusionMetadata(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     assetName: str
+    illusionType: str = "checker-shadow"
     source: str
     license: str
     assetFile: str
     proceduralGenerationUsed: bool = False
-    squareA: SquareMeasurement
-    squareB: SquareMeasurement
-    luminanceDifference: float
-    rgbMaxDifference: float
-    tolerance: float
+    groundTruthMetric: str | None = None
+    measuredValues: dict[str, Any] | None = None
+    explanation: str | None = None
+    squareA: SquareMeasurement | None = None
+    squareB: SquareMeasurement | None = None
+    luminanceDifference: float | None = None
+    rgbMaxDifference: float | None = None
+    tolerance: float | None = None
 
 
 class CableQuery(BaseModel):
@@ -360,6 +374,7 @@ class Level1Config(BaseModel):
     gridRows: int = Field(default=3, ge=2, le=6)
     gridColumns: int = Field(default=3, ge=2, le=6)
     target: str = Field(default="motorcycle", min_length=1)
+    targets: list[str] | None = None
     positiveCount: int | None = Field(default=None, ge=1)
     positiveCountRange: tuple[int, int] = (2, 4)
     minEasyAreaRatio: float = Field(default=0.012, ge=0.001, le=0.5)
@@ -388,12 +403,14 @@ class Level2AConfig(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    gridSize: int | None = Field(default=4, ge=3, le=6)
+    gridSize: int | None = Field(default=3, ge=3, le=6)
     gridRows: int | None = Field(default=None, ge=3, le=6)
     gridColumns: int | None = Field(default=None, ge=3, le=6)
     target: str = Field(default="motorcycle", min_length=1)
-    positiveCount: int | None = Field(default=5, ge=1)
+    targets: list[str] | None = None
+    positiveCount: int | None = Field(default=3, ge=1)
     positiveCountRange: tuple[int, int] | None = None
+    maxDifficultyFactors: int = Field(default=2, ge=1, le=4)
     preferredAttributes: list[str] = Field(
         default_factory=lambda: [
             "small-object",
@@ -417,11 +434,11 @@ class Level2AConfig(BaseModel):
 
     @property
     def resolved_rows(self) -> int:
-        return self.gridRows or self.gridSize or 4
+        return self.gridRows or self.gridSize or 3
 
     @property
     def resolved_columns(self) -> int:
-        return self.gridColumns or self.gridSize or 4
+        return self.gridColumns or self.gridSize or 3
 
     @model_validator(mode="after")
     def _validate_grid(self) -> "Level2AConfig":
@@ -445,14 +462,15 @@ class Level2BConfig(BaseModel):
 
     assetPath: str = "assets/level-2b/checker-shadow.png"
     metadataPath: str = "assets/level-2b/metadata.json"
-    instruction: str = "Are squares A and B the same shade?"
+    illusionSubtype: str | None = None
+    instruction: str | None = None
     options: list[str] = Field(default_factory=lambda: ["Yes", "No"])
     luminanceTolerance: float = Field(default=1.0, ge=0.0, le=5.0)
 
     @model_validator(mode="after")
     def _validate_options(self) -> "Level2BConfig":
-        if not any(opt.lower() == "yes" for opt in self.options):
-            raise ValueError("options must include 'Yes'")
+        if len(self.options) < 2:
+            raise ValueError("options must contain at least 2 choices")
         return self
 
 

@@ -139,9 +139,7 @@ export function ChallengePlayer({
       ? "max-w-5xl"
       : challenge.variant === "checker-shadow"
       ? "max-w-xl"
-      : challenge.variant === "hard-street-grid"
-      ? "max-w-lg"
-      : "max-w-md";
+      : "max-w-3xl";
 
   return (
     <div className={`flex flex-col items-center w-full ${containerMaxWidth} mx-auto space-y-3.5`}>

@@ -44,7 +44,11 @@ def generate_challenge_id(
             prefix = f"{prefix}_cables"
         else:
             prefix = f"{prefix}_{subtype[:6]}"
-    payload = f"{level_key}:{seed}:{subtype or ''}:{extra_discriminator}".encode("utf-8")
+    # Preserve legacy IDs for street/illusion/degradation bundles; routing IDs include subtype.
+    payload = (
+        f"{level_key}:{seed}:{subtype}:{extra_discriminator}"
+        if subtype else f"{level_key}:{seed}:{extra_discriminator}"
+    ).encode("utf-8")
     digest = hashlib.sha256(payload).digest()
     numeric = int.from_bytes(digest[:8], byteorder="big", signed=False)
     token = _int_to_base36(numeric, length=6)

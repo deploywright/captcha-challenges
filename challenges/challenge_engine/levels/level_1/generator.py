@@ -6,6 +6,10 @@ from PIL import Image
 
 from challenge_engine.core.exporter import ChallengeBundle
 from challenge_engine.core.ids import asset_relpath_for_index, generate_challenge_id
+from challenge_engine.core.image_prep import (
+    prepare_context_crop,
+    prepare_negative_crop,
+)
 from challenge_engine.core.random import DeterministicRNG
 from challenge_engine.core.schemas import (
     LEVEL_1_KEY,
@@ -18,6 +22,7 @@ from challenge_engine.core.schemas import (
 from challenge_engine.datasets.bdd100k import (
     BDD100KDataSplitError,
     BDD100KDataset,
+    CLASS_PROFILES,
     load_bdd100k_dataset,
     normalize_bdd100k_category,
 )
@@ -61,7 +66,12 @@ class Level1StreetGridGenerator:
         rows = self.config.gridRows
         cols = self.config.gridColumns
         total_tiles = rows * cols
+
         norm_target = normalize_bdd100k_category(self.config.target)
+        if getattr(self.config, "targets", None):
+            chosen = normalize_bdd100k_category(rng.fork("target").choice(self.config.targets))
+            norm_target = chosen
+        profile = CLASS_PROFILES.get(norm_target)
 
         if self.config.positiveCount is not None:
             pos_count = self.config.positiveCount
@@ -92,15 +102,47 @@ class Level1StreetGridGenerator:
             asset_paths.append(rel_asset)
 
             img = self.dataset.load_image(frame)
-            if img.size != (self.config.tileWidth, self.config.tileHeight):
-                img = img.resize(
-                    (self.config.tileWidth, self.config.tileHeight),
-                    resample=Image.Resampling.BILINEAR,
-                )
-            assets_map[rel_asset] = img
+            crop_rng = rng.fork(f"crop_{idx}")
 
             if is_positive:
                 correct_indices.append(idx)
+                target_box = eval_meta.get("target_box")
+                if target_box is None:
+                    for obj in frame.objects:
+                        if obj.category == norm_target:
+                            target_box = obj.box2d
+                            break
+                context_factor = profile.default_context_factor if profile else 1.0
+                crop_res = prepare_context_crop(
+                    img=img,
+                    target_box=target_box,
+                    output_size=(self.config.tileWidth, self.config.tileHeight),
+                    context_padding=context_factor,
+                    rng=crop_rng,
+                )
+                rendered_metrics = crop_res.target_metrics
+                r_size = rendered_metrics.rendered_max_dim if rendered_metrics else None
+                r_w = rendered_metrics.rendered_width if rendered_metrics else None
+                r_h = rendered_metrics.rendered_height if rendered_metrics else None
+            else:
+                confusable = profile.confusable_distractors if profile else ()
+                forbidden = [
+                    obj.box2d
+                    for obj in frame.objects
+                    if obj.category == norm_target or obj.category in confusable
+                ]
+                crop_res = prepare_negative_crop(
+                    img=img,
+                    output_size=(self.config.tileWidth, self.config.tileHeight),
+                    forbidden_boxes=forbidden,
+                    rng=crop_rng,
+                )
+                context_factor = None
+                r_size = None
+                r_w = None
+                r_h = None
+
+            assets_map[rel_asset] = crop_res.image
 
             tile_meta.append(
                 TilePrivateMetadata(
@@ -118,11 +160,17 @@ class Level1StreetGridGenerator:
                     targetClass=norm_target,
                     classes=sorted(frame.categories),
                     difficulty="easy",
-                    attributes=list(eval_meta["difficulty_tags"]),
-                    maxTargetAreaRatio=float(eval_meta["max_target_area_ratio"]),
+                    attributes=list(eval_meta.get("difficulty_tags", [])),
+                    maxTargetAreaRatio=float(eval_meta.get("max_target_area_ratio", 0.0)),
                     weather=frame.weather,
                     timeofday=frame.timeofday,
                     isPositive=is_positive,
+                    crop_box=list(crop_res.crop_window),
+                    crop_context_factor=context_factor,
+                    rendered_object_size=r_size,
+                    rendered_object_width=r_w,
+                    rendered_object_height=r_h,
+                    difficulty_budget_factors=[],
                 )
             )
 

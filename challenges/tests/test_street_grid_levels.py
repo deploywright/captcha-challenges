@@ -135,7 +135,7 @@ def test_bdd100k_indexer_parses_annotations_bboxes_and_scene_metadata(
     assert eval_hard["is_hard_positive"] is True
     assert "night" in eval_hard["difficulty_tags"]
     assert "occluded" in eval_hard["difficulty_tags"]
-    assert "small-object" in eval_hard["difficulty_tags"]
+    assert eval_hard["max_target_max_dimension"] == 60
     assert "confusable-object" in eval_hard["difficulty_tags"]
 
 
