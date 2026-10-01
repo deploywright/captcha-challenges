@@ -18,7 +18,7 @@ describe("Challenge Synchronization & Security Leak Audit", () => {
 
     const catalog = JSON.parse(fs.readFileSync(catalogPath, "utf-8"));
     expect(Array.isArray(catalog)).toBe(true);
-    expect(catalog.length).toBe(82);
+    expect(catalog.length).toBe(73);
 
     // Verify all 5 variants are represented
     const variants = new Set(catalog.map((c: any) => c.variant));
@@ -56,7 +56,7 @@ describe("Challenge Synchronization & Security Leak Audit", () => {
     expect(fs.existsSync(answersTsPath)).toBe(true);
 
     const registry = JSON.parse(fs.readFileSync(answersJsonPath, "utf-8"));
-    expect(Object.keys(registry).length).toBe(82);
+    expect(Object.keys(registry).length).toBe(73);
 
     // Verify answers exist in private registry
     const sampleLvl1 = Object.values(registry).find((r: any) => r.variant === "street-grid");

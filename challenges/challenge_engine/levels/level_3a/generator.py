@@ -138,37 +138,6 @@ def _find_polyline_intersections(
     return results
 
 
-DEVICE_NAMES: list[str] = [
-    "Phone",
-    "Laptop",
-    "Camera",
-    "Game Console",
-    "Headphones",
-    "Desk Lamp",
-    "Monitor",
-    "Keyboard",
-    "Speaker",
-    "Tablet",
-    "Microphone",
-    "Printer",
-]
-
-OUTLET_NAMES: list[str] = [
-    "Outlet A",
-    "Outlet B",
-    "Outlet C",
-    "Outlet D",
-    "Outlet E",
-    "Outlet F",
-    "Outlet G",
-    "Outlet H",
-    "Outlet I",
-    "Outlet J",
-    "Outlet K",
-    "Outlet L",
-]
-
-
 class Level3ATangledCablesGenerator:
     """Generates procedural Tangled Cables challenges (logical graph first, visual scene second)."""
 
@@ -182,7 +151,7 @@ class Level3ATangledCablesGenerator:
             return self.config.cableCount
         preset = LEVEL_3A_DIFFICULTY_PRESETS.get(
             self.config.difficulty,
-            LEVEL_3A_DIFFICULTY_PRESETS["medium"],
+            LEVEL_3A_DIFFICULTY_PRESETS["hard"],
         )
         c_min, c_max = preset["cableCountRange"]
         return rng.randint(c_min, c_max)
@@ -197,22 +166,16 @@ class Level3ATangledCablesGenerator:
         n_cables = self._resolve_cable_count(rng.fork("cable_count"))
 
         # STEP 1: Create endpoints
-        top_margin = 84.0
-        bottom_margin = 60.0
+        top_margin = 76.0
+        bottom_margin = 54.0
         usable_h = height - top_margin - bottom_margin
         step_y = usable_h / float(max(1, n_cables - 1)) if n_cables > 1 else 0.0
 
-        left_pin_x = 185.0
-        right_pin_x = float(width - 185)
+        left_pin_x = 175.0
+        right_pin_x = float(width - 175)
 
-        sources = [
-            DEVICE_NAMES[i] if i < len(DEVICE_NAMES) else f"Device {i + 1}"
-            for i in range(n_cables)
-        ]
-        destinations = [
-            OUTLET_NAMES[i] if i < len(OUTLET_NAMES) else f"Outlet {i + 1}"
-            for i in range(n_cables)
-        ]
+        sources = [f"server_{i + 1}" for i in range(n_cables)]
+        destinations = [f"port_{i + 1}" for i in range(n_cables)]
 
         source_positions: dict[str, list[float]] = {}
         dest_positions: dict[str, list[float]] = {}
@@ -233,24 +196,24 @@ class Level3ATangledCablesGenerator:
         w_min, w_max = self.config.waypointRange
         num_cols = rng.fork("waypoints").randint(w_min, w_max)
 
-        route_left_x = left_pin_x + 60.0
-        route_right_x = right_pin_x - 60.0
+        route_left_x = left_pin_x + 55.0
+        route_right_x = right_pin_x - 55.0
         col_xs = np.linspace(route_left_x, route_right_x, num_cols)
 
-        slot_ys_base = np.linspace(top_margin + 12.0, height - bottom_margin - 12.0, n_cables)
+        slot_ys_base = np.linspace(top_margin + 10.0, height - bottom_margin - 10.0, n_cables)
         col_assignments: list[list[float]] = []
         for col_idx in range(num_cols):
             col_rng = rng.fork(f"col_{col_idx}")
             perm_indices = col_rng.shuffle(list(range(n_cables)))
             col_y_for_cable: list[float] = [0.0] * n_cables
-            max_jitter = min(8.0, step_y * 0.25)
+            max_jitter = min(8.0, step_y * 0.28)
             for cable_idx, slot_idx in enumerate(perm_indices):
                 jitter = col_rng.uniform(-max_jitter, max_jitter)
                 y_val = float(
                     np.clip(
                         slot_ys_base[slot_idx] + jitter,
-                        top_margin + 6.0,
-                        height - bottom_margin - 6.0,
+                        top_margin + 4.0,
+                        height - bottom_margin - 4.0,
                     )
                 )
                 col_y_for_cable[cable_idx] = round(y_val, 2)
@@ -266,8 +229,8 @@ class Level3ATangledCablesGenerator:
             start_pt = (source_positions[src][0], source_positions[src][1])
             end_pt = (dest_positions[dst][0], dest_positions[dst][1])
 
-            lead_in = (start_pt[0] + 25.0, start_pt[1])
-            lead_out = (end_pt[0] - 25.0, end_pt[1])
+            lead_in = (start_pt[0] + 22.0, start_pt[1])
+            lead_out = (end_pt[0] - 22.0, end_pt[1])
 
             waypoints: list[tuple[float, float]] = [start_pt, lead_in]
             for col_idx in range(num_cols):
@@ -341,13 +304,13 @@ class Level3ATangledCablesGenerator:
             inverse_map = {dst: src for src, dst in connections.items()}
             correct_answer = inverse_map[target_port]
             options = list(sources)
-            instruction = f"Which device is plugged into {target_port}?"
+            instruction = f"Which server is connected to the highlighted port ({target_port})?"
             query_obj = CableQuery(type=q_type, target=target_port)  # type: ignore[arg-type]
         else:
             target_server = q_rng.choice(sources)
             correct_answer = connections[target_server]
             options = list(destinations)
-            instruction = f"Which outlet is the {target_server} plugged into?"
+            instruction = f"Which port is connected to the highlighted server ({target_server})?"
             query_obj = CableQuery(type=q_type, target=target_server)  # type: ignore[arg-type]
 
         correct_index = options.index(correct_answer)
@@ -358,33 +321,33 @@ class Level3ATangledCablesGenerator:
         draw = ImageDraw.Draw(img)
         font = ImageFont.load_default()
 
-        draw.rectangle([0, 0, width, 48], fill=(28, 34, 46))
+        draw.rectangle([0, 0, width, 44], fill=(28, 34, 46))
         draw.text(
-            (28, 16),
-            f"CABLE ROUTING  |  {instruction}",
+            (24, 15),
+            f"NETWORK PATCH PANEL  |  {instruction}",
             fill=(225, 232, 245),
             font=font,
         )
 
         palette = [
-            (239, 68, 68),    # Red
-            (59, 130, 246),   # Blue
-            (34, 197, 94),    # Green
-            (234, 179, 8),    # Amber
-            (168, 85, 247),   # Purple
-            (249, 115, 22),   # Orange
-            (20, 184, 166),   # Teal
-            (236, 72, 153),   # Pink
-            (132, 204, 22),   # Lime
-            (99, 102, 241),   # Indigo
+            (235, 75, 75),
+            (65, 175, 245),
+            (85, 215, 115),
+            (245, 190, 55),
+            (185, 105, 245),
+            (245, 125, 60),
+            (65, 220, 205),
+            (235, 95, 175),
+            (165, 225, 70),
+            (110, 135, 245),
         ]
 
         lw = self.config.lineWidth
-        bridge_w = lw + 10
+        bridge_w = lw + 8
         casing_w = lw + 4
 
         for src in layer_order:
-            src_idx = sources.index(src)
+            src_idx = int(src.split("_")[1]) - 1
             base_col = palette[src_idx % len(palette)]
             highlight_col = (
                 min(255, base_col[0] + 55),
@@ -393,53 +356,49 @@ class Level3ATangledCablesGenerator:
             )
             pts = [tuple(pt) for pt in centerlines[src]]
 
-            # 1. Background-colored bridge clearance (halo) to clearly separate over from under
             draw.line(pts, fill=bg_color, width=bridge_w, joint="curve")
-            # 2. Dark casing edge
-            draw.line(pts, fill=(10, 12, 16), width=casing_w, joint="curve")
-            # 3. Main vibrant cable body
+            draw.line(pts, fill=(8, 10, 14), width=casing_w, joint="curve")
             draw.line(pts, fill=base_col, width=lw, joint="curve")
-            # 4. Highlight sheen on cable
-            draw.line(pts, fill=highlight_col, width=max(1, lw // 3), joint="curve")
+            draw.line(pts, fill=highlight_col, width=1, joint="curve")
 
-        box_h = max(24, min(42, int(step_y * 0.72))) if n_cables > 1 else 36
+        box_h = max(12, min(22, int(step_y * 0.76))) if n_cables > 1 else 22
         half_bh = box_h // 2
 
         for src in sources:
             px, py = source_positions[src]
             is_highlighted = (not is_find_source) and query_obj.target == src
-            fill_c = (88, 66, 18) if is_highlighted else (38, 45, 58)
-            outline_c = (250, 204, 21) if is_highlighted else (110, 125, 150)
+            fill_c = (75, 58, 18) if is_highlighted else (38, 45, 58)
+            outline_c = (255, 205, 45) if is_highlighted else (110, 125, 150)
             outline_w = 3 if is_highlighted else 1
 
             draw.rounded_rectangle(
-                [18, int(py - half_bh), int(px - 8), int(py + half_bh)],
-                radius=6,
+                [18, int(py - half_bh), int(px - 6), int(py + half_bh)],
+                radius=4,
                 fill=fill_c,
                 outline=outline_c,
                 width=outline_w,
             )
             draw.ellipse([int(px - 5), int(py - 5), int(px + 5), int(py + 5)], fill=outline_c)
-            label_txt = f"{src} *" if is_highlighted else src
-            draw.text((28, int(py - 6)), label_txt, fill=(245, 248, 255), font=font)
+            label_txt = f"{src} [TARGET]" if is_highlighted else src
+            draw.text((28, int(py - 5)), label_txt, fill=(245, 248, 255), font=font)
 
         for dst in destinations:
             px, py = dest_positions[dst]
             is_highlighted = is_find_source and query_obj.target == dst
-            fill_c = (88, 66, 18) if is_highlighted else (38, 45, 58)
-            outline_c = (250, 204, 21) if is_highlighted else (110, 125, 150)
+            fill_c = (85, 62, 16) if is_highlighted else (38, 45, 58)
+            outline_c = (255, 205, 45) if is_highlighted else (110, 125, 150)
             outline_w = 3 if is_highlighted else 1
 
             draw.rounded_rectangle(
-                [int(px + 8), int(py - half_bh), width - 18, int(py + half_bh)],
-                radius=6,
+                [int(px + 6), int(py - half_bh), width - 18, int(py + half_bh)],
+                radius=4,
                 fill=fill_c,
                 outline=outline_c,
                 width=outline_w,
             )
             draw.ellipse([int(px - 5), int(py - 5), int(px + 5), int(py + 5)], fill=outline_c)
-            label_txt = f"* {dst}" if is_highlighted else dst
-            draw.text((int(px + 18), int(py - 6)), label_txt, fill=(245, 248, 255), font=font)
+            label_txt = f"[TARGET] {dst}" if is_highlighted else dst
+            draw.text((int(px + 14), int(py - 5)), label_txt, fill=(245, 248, 255), font=font)
 
         # STEP 7: Export ground truth
         rel_asset = asset_relpath_for_index(0, ext="webp")

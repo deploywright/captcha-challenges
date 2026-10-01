@@ -47,20 +47,18 @@ def test_level_3a_bijection_and_query_correctness(
     if cable_count is not None:
         assert n == cable_count
     elif difficulty == "easy":
-        assert n == 6
+        assert 8 <= n <= 10
     elif difficulty == "medium":
-        assert n == 8
-    elif difficulty == "hard":
-        assert n == 10
+        assert 12 <= n <= 20
     elif difficulty == "extreme":
-        assert n == 12
+        assert n >= 35
 
     sources = list(priv.connections.keys())
     dests = list(priv.connections.values())
     assert len(set(sources)) == n
     assert len(set(dests)) == n
-    assert all(isinstance(s, str) and len(s) > 0 for s in sources)
-    assert all(isinstance(d, str) and d.startswith("Outlet") for d in dests)
+    assert set(sources) == {f"server_{i + 1}" for i in range(n)}
+    assert set(dests) == {f"port_{i + 1}" for i in range(n)}
 
     if query_type in {"find_source", "find-source"}:
         inv = {d: s for s, d in priv.connections.items()}

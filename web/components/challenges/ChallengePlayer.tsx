@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { ClientChallenge, SubmissionResponse } from "@/lib/challenges/types";
+import { getChallengesByVariant } from "@/lib/challenges/catalog";
 import { ChallengeTimer } from "./ChallengeTimer";
 import { ChallengeResult } from "./ChallengeResult";
 import { ImageGridChallenge } from "./ImageGridChallenge";
@@ -18,7 +19,6 @@ interface ChallengePlayerProps {
 export function ChallengePlayer({
   challenge,
   nextProgressionId,
-  anotherInLevelId,
 }: ChallengePlayerProps) {
   const router = useRouter();
 
@@ -49,10 +49,8 @@ export function ChallengePlayer({
   // Callback triggered when images/visuals have loaded into the browser
   const handleAssetsReady = useCallback(() => {
     if (result) return; // Already solved
-    if (startTimeRef.current === null) {
-      startTimeRef.current = performance.now();
-      setIsTimerRunning(true);
-    }
+    startTimeRef.current = performance.now();
+    setIsTimerRunning(true);
   }, [result]);
 
   // Generic submit handler for all challenge interaction types
@@ -104,17 +102,23 @@ export function ChallengePlayer({
     setIsSubmitting(false);
     setErrorMsg(null);
     setFinalTimeMs(undefined);
+    setIsTimerRunning(false);
+    startTimeRef.current = null;
     setAttemptKey((k) => k + 1);
-    // Assets are already loaded in browser memory; start timer immediately for the retry attempt
-    startTimeRef.current = performance.now();
-    setIsTimerRunning(true);
   };
 
-  // Try Another Challenge: Navigate to another challenge in the same level
+  // Try Another Challenge: Pick a different challenge in the same level dynamically
   const handleTryAnother = () => {
-    if (anotherInLevelId) {
-      router.push(`/challenge/${anotherInLevelId}`);
+    const allInVariant = getChallengesByVariant(challenge.variant);
+    const siblings = allInVariant.filter((c) => c.id !== challenge.id);
+
+    if (siblings.length > 0) {
+      const randomIndex = Math.floor(Math.random() * siblings.length);
+      const nextChallenge = siblings[randomIndex];
+      router.push(`/challenge/${nextChallenge.id}`);
     } else {
+      // If there are no other challenges in this level (e.g. Level 2B Checker Shadow has 1 challenge),
+      // reset in place so the user can retry!
       handleTryAgain();
     }
   };
@@ -128,14 +132,16 @@ export function ChallengePlayer({
   };
 
   // Check if there are other challenges in the current level
-  const hasOtherInLevel = Boolean(anotherInLevelId);
+  const hasOtherInLevel = getChallengesByVariant(challenge.variant).length > 1;
 
   const containerMaxWidth =
     challenge.variant === "tangled-cables"
       ? "max-w-5xl"
       : challenge.variant === "checker-shadow"
-      ? "max-w-2xl"
-      : "max-w-2xl sm:max-w-3xl";
+      ? "max-w-xl"
+      : challenge.variant === "hard-street-grid"
+      ? "max-w-lg"
+      : "max-w-md";
 
   return (
     <div className={`flex flex-col items-center w-full ${containerMaxWidth} mx-auto space-y-3.5`}>
@@ -153,7 +159,6 @@ export function ChallengePlayer({
         <div className="flex items-center gap-3">
           <ChallengeTimer
             isRunning={isTimerRunning}
-            startTime={startTimeRef.current}
             finalTimeMs={finalTimeMs}
           />
         </div>

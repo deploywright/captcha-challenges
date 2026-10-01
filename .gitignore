@@ -49,13 +49,8 @@ src/generated-private/
 web/src/generated-public/
 src/generated-public/
 
-# Explicitly preserve required static template assets for Level 2B:
-!challenges/assets/level-2b/*.png
-!challenges/assets/level-2b/*.json
-
-# Generated reports & contact sheets
-*.html
-challenges/*.html
+# Explicitly preserve required static template asset for Level 2B:
+!challenges/assets/level-2b/checker-shadow.png
 
 # ------------------------------------------------------------------------------
 # 3. Python Artifacts & Environments

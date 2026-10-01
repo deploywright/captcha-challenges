@@ -328,13 +328,9 @@ def _validate_checker_shadow_level(
     if str(priv.answer).lower() != "yes":
         res.add_error(f"Expected Level 2B ground-truth answer 'Yes', got '{priv.answer}'")
 
-    valid_source = (
-        priv.datasetSource == "adelson-static-asset"
-        or (bool(priv.datasetSource) and priv.datasetSource.startswith("canonical-illusion-"))
-    )
-    if not valid_source:
+    if priv.datasetSource != "adelson-static-asset":
         res.add_error(
-            f"Level 2B must use 'adelson-static-asset' or 'canonical-illusion-*', got datasetSource='{priv.datasetSource}'"
+            f"Level 2B must use 'adelson-static-asset', got datasetSource='{priv.datasetSource}'"
         )
 
     if not priv.illusion:
@@ -347,28 +343,27 @@ def _validate_checker_shadow_level(
     if not priv.illusion.source or not priv.illusion.license:
         res.add_error("Level 2B illusion metadata is missing documented source or license")
 
-    if priv.illusion.squareA and priv.illusion.squareB:
-        img = loaded_assets[pub.assets[0]]
-        width, height = img.size
+    img = loaded_assets[pub.assets[0]]
+    width, height = img.size
 
-        sq_a = priv.illusion.squareA
-        sq_b = priv.illusion.squareB
+    sq_a = priv.illusion.squareA
+    sq_b = priv.illusion.squareB
 
-        for sq in (sq_a, sq_b):
-            x1, y1, x2, y2 = sq.safeInteriorBox
-            if not (0 <= x1 < x2 <= width and 0 <= y1 < y2 <= height):
-                res.add_error(f"Square {sq.label} safeInteriorBox {sq.safeInteriorBox} is out of bounds")
-                return
+    for sq in (sq_a, sq_b):
+        x1, y1, x2, y2 = sq.safeInteriorBox
+        if not (0 <= x1 < x2 <= width and 0 <= y1 < y2 <= height):
+            res.add_error(f"Square {sq.label} safeInteriorBox {sq.safeInteriorBox} is out of bounds")
+            return
 
-        rgb_a, lum_a = measure_box_rgb_and_luminance(img, sq_a.safeInteriorBox)
-        rgb_b, lum_b = measure_box_rgb_and_luminance(img, sq_b.safeInteriorBox)
+    rgb_a, lum_a = measure_box_rgb_and_luminance(img, sq_a.safeInteriorBox)
+    rgb_b, lum_b = measure_box_rgb_and_luminance(img, sq_b.safeInteriorBox)
 
-        lum_diff = abs(lum_a - lum_b)
-        tol = priv.illusion.tolerance or 1.0
-        if lum_diff > tol:
-            res.add_error(
-                f"Square A luminance ({lum_a:.3f}) != Square B luminance ({lum_b:.3f}), diff={lum_diff:.3f} > tol={tol}"
-            )
+    lum_diff = abs(lum_a - lum_b)
+    tol = priv.illusion.tolerance
+    if lum_diff > tol:
+        res.add_error(
+            f"Square A luminance ({lum_a:.3f}) != Square B luminance ({lum_b:.3f}), diff={lum_diff:.3f} > tol={tol}"
+        )
 
 
 def _validate_tangled_cables_level(
@@ -397,12 +392,12 @@ def _validate_tangled_cables_level(
             f"Connections mapping is not one-to-one: {n_cables} sources map to {len(set(destinations))} unique destinations"
         )
 
-    for s in sources:
-        if not isinstance(s, str) or not s.strip():
-            res.add_error(f"Invalid empty or non-string source: '{s}'")
-    for d in destinations:
-        if not isinstance(d, str) or not d.strip():
-            res.add_error(f"Invalid empty or non-string destination: '{d}'")
+    expected_sources = {f"server_{i + 1}" for i in range(n_cables)}
+    expected_dests = {f"port_{i + 1}" for i in range(n_cables)}
+    if set(sources) != expected_sources:
+        res.add_error(f"Sources {set(sources)} != expected {expected_sources}")
+    if set(destinations) != expected_dests:
+        res.add_error(f"Destinations {set(destinations)} != expected {expected_dests}")
 
     if priv.query.type in {"find_source", "find-source"}:
         matching_sources = [s for s, d in connections.items() if d == priv.query.target]
@@ -532,9 +527,8 @@ def _validate_determinism(
         gen_2a = Level2AHardStreetGridGenerator(cfg, dataset=bdd100k_dataset)  # type: ignore[arg-type]
         re_bundle = gen_2a.generate_one(pub.seed)
     elif level_key == LEVEL_2B_KEY:
-        subtype = priv.illusion.illusionType if priv.illusion else None
         gen_2b = Level2BCheckerShadowGenerator(cfg)  # type: ignore[arg-type]
-        re_bundle = gen_2b.generate_one(pub.seed, subtype=subtype)
+        re_bundle = gen_2b.generate_one(pub.seed)
     elif level_key == LEVEL_3A_KEY:
         if priv.connections:
             cfg.cableCount = len(priv.connections)  # type: ignore[attr-defined]

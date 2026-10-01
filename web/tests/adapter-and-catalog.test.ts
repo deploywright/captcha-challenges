@@ -9,9 +9,9 @@ import {
 import { toClientChallenge } from "../lib/challenges/adapter";
 
 describe("Catalog Queries & Client Adapter", () => {
-  it("loads all catalog entries correctly", () => {
+  it("loads all 73 catalog entries correctly", () => {
     const all = getAllChallenges();
-    expect(all.length).toBe(82);
+    expect(all.length).toBe(73);
   });
 
   it("finds challenge by ID and verifies fields", () => {
@@ -27,8 +27,8 @@ describe("Catalog Queries & Client Adapter", () => {
   it("returns challenges filtered by variant", () => {
     expect(getChallengesByVariant("street-grid").length).toBe(20);
     expect(getChallengesByVariant("hard-street-grid").length).toBe(20);
-    expect(getChallengesByVariant("checker-shadow").length).toBe(6);
-    expect(getChallengesByVariant("tangled-cables").length).toBe(8);
+    expect(getChallengesByVariant("checker-shadow").length).toBe(1);
+    expect(getChallengesByVariant("tangled-cables").length).toBe(4);
     expect(getChallengesByVariant("degraded-vision").length).toBe(28);
   });
 

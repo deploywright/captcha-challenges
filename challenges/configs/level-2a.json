@@ -1,8 +1,7 @@
 {
-  "gridSize": 3,
+  "gridSize": 4,
   "target": "motorcycle",
-  "targets": ["motorcycle", "bicycle", "bus", "truck", "pedestrian", "traffic light"],
-  "positiveCount": 3,
+  "positiveCount": 5,
   "preferredAttributes": [
     "small-object",
     "occluded",

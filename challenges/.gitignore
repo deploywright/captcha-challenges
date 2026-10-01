@@ -21,12 +21,8 @@ generated/
 *.bmp
 *.svg
 
-# Explicitly preserve Level 2B canonical illusion assets
-!assets/level-2b/*.png
-!assets/level-2b/*.json
-
-# Generated reports & contact sheets
-*.html
+# Explicitly preserve Level 2B template asset
+!assets/level-2b/checker-shadow.png
 
 # Python caches & virtual environments
 __pycache__/

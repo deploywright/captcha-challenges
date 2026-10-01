@@ -8,10 +8,6 @@ from PIL import Image, ImageDraw, ImageEnhance, ImageFilter
 
 from challenge_engine.core.exporter import ChallengeBundle
 from challenge_engine.core.ids import asset_relpath_for_index, generate_challenge_id
-from challenge_engine.core.image_prep import (
-    prepare_context_crop,
-    prepare_negative_crop,
-)
 from challenge_engine.core.random import DeterministicRNG
 from challenge_engine.core.schemas import (
     LEVEL_3B_KEY,
@@ -26,7 +22,6 @@ from challenge_engine.core.schemas import (
 from challenge_engine.datasets.bdd100k import (
     BDD100KDataSplitError,
     BDD100KDataset,
-    CLASS_PROFILES,
     load_bdd100k_dataset,
     normalize_bdd100k_category,
 )
@@ -145,12 +140,7 @@ class Level3BDegradedVisionGenerator:
         rows = self.config.gridRows
         cols = self.config.gridColumns
         total_tiles = rows * cols
-
-        if getattr(self.config, "targets", None):
-            norm_target = normalize_bdd100k_category(selection_rng.fork("target").choice(self.config.targets))
-        else:
-            norm_target = normalize_bdd100k_category(self.config.target)
-        profile = CLASS_PROFILES.get(norm_target)
+        norm_target = normalize_bdd100k_category(self.config.target)
 
         selected = self.dataset.select_easy_grid_samples(
             rng=selection_rng,
@@ -198,50 +188,8 @@ class Level3BDegradedVisionGenerator:
             asset_paths.append(rel_asset)
 
             orig_img = self.dataset.load_image(frame)
-            # Use seed (independent of resolution) so multi-resolution comparisons use identical crops
-            crop_rng = DeterministicRNG(seed, f"level_3b:crop:{idx}")
-
-            if is_positive:
-                correct_indices.append(idx)
-                target_box = eval_meta.get("target_box")
-                if target_box is None:
-                    for obj in frame.objects:
-                        if obj.category == norm_target:
-                            target_box = obj.box2d
-                            break
-                context_factor = profile.default_context_factor if profile else 1.0
-                crop_res = prepare_context_crop(
-                    img=orig_img,
-                    target_box=target_box,
-                    output_size=(self.config.tileWidth, self.config.tileHeight),
-                    context_padding=context_factor,
-                    rng=crop_rng,
-                )
-                rendered_metrics = crop_res.target_metrics
-                r_size = rendered_metrics.rendered_max_dim if rendered_metrics else None
-                r_w = rendered_metrics.rendered_width if rendered_metrics else None
-                r_h = rendered_metrics.rendered_height if rendered_metrics else None
-            else:
-                confusable = profile.confusable_distractors if profile else ()
-                forbidden = [
-                    obj.box2d
-                    for obj in frame.objects
-                    if obj.category == norm_target or obj.category in confusable
-                ]
-                crop_res = prepare_negative_crop(
-                    img=orig_img,
-                    output_size=(self.config.tileWidth, self.config.tileHeight),
-                    forbidden_boxes=forbidden,
-                    rng=crop_rng,
-                )
-                context_factor = None
-                r_size = None
-                r_w = None
-                r_h = None
-
-            # Apply controlled degradation to the clean 1:1 square crop
             degraded_img = degrade_image(
-                img=crop_res.image,
+                img=orig_img,
                 downsample_width=res,
                 downsample_height=res,
                 output_width=self.config.tileWidth,
@@ -254,6 +202,9 @@ class Level3BDegradedVisionGenerator:
                 partial_mask_ratio=self.config.partialMaskRatio,
             )
             assets_map[rel_asset] = degraded_img
+
+            if is_positive:
+                correct_indices.append(idx)
 
             tile_meta.append(
                 TilePrivateMetadata(
@@ -271,17 +222,11 @@ class Level3BDegradedVisionGenerator:
                     targetClass=norm_target,
                     classes=sorted(frame.categories),
                     difficulty="easy",
-                    attributes=list(eval_meta.get("difficulty_tags", [])),
-                    maxTargetAreaRatio=float(eval_meta.get("max_target_area_ratio", 0.0)),
+                    attributes=list(eval_meta["difficulty_tags"]),
+                    maxTargetAreaRatio=float(eval_meta["max_target_area_ratio"]),
                     weather=frame.weather,
                     timeofday=frame.timeofday,
                     isPositive=is_positive,
-                    crop_box=list(crop_res.crop_window),
-                    crop_context_factor=context_factor,
-                    rendered_object_size=r_size,
-                    rendered_object_width=r_w,
-                    rendered_object_height=r_h,
-                    difficulty_budget_factors=[],
                     transformation=transformation_spec,
                     degradation=degradation_info,
                 )
