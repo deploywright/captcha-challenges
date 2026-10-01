@@ -52,12 +52,138 @@ _CATEGORY_ALIASES: dict[str, str] = {
     "trailer": "trailer",
 }
 
+@dataclass(frozen=True)
+class ClassProfile:
+    """Class-specific difficulty and cropping profile calibrated on real BDD100K validation data."""
+
+    name: str
+    display_name: str
+    article: str
+    plural: str
+    min_easy_bbox_dim: float       # Min dimension (width/height) for easy candidate in 1280x720
+    min_easy_bbox_max_dim: float   # Max dimension for easy candidate (vital for tall/narrow pedestrians and compact lights)
+    min_easy_area: float           # Minimum area in 1280x720 frame
+    min_usable_bbox_dim: float     # Minimum usable dimension for Level 2A hard candidate
+    min_usable_bbox_max_dim: float # Minimum usable max dimension for Level 2A hard candidate
+    min_rendered_max_dim_l1: float # Target rendered dimension in final tile (Level 1)
+    min_rendered_max_dim_l2a: float# Minimum rendered dimension in final tile (Level 2A)
+    preferred_context_padding: float
+    confusable_distractors: set[str]
+    ambiguous_categories: set[str]
+    description: str
+
+    @property
+    def default_context_factor(self) -> float:
+        return self.preferred_context_padding
+
+
+CLASS_PROFILES: dict[str, ClassProfile] = {
+    "motorcycle": ClassProfile(
+        name="motorcycle",
+        display_name="motorcycle",
+        article="a",
+        plural="motorcycles",
+        min_easy_bbox_dim=40.0,
+        min_easy_bbox_max_dim=65.0,
+        min_easy_area=3000.0,
+        min_usable_bbox_dim=22.0,
+        min_usable_bbox_max_dim=35.0,
+        min_rendered_max_dim_l1=70.0,
+        min_rendered_max_dim_l2a=40.0,
+        preferred_context_padding=1.0,
+        confusable_distractors={"bicycle", "rider"},
+        ambiguous_categories={"rider"},
+        description="Two-wheeled motor vehicle with visible engine/chassis.",
+    ),
+    "bicycle": ClassProfile(
+        name="bicycle",
+        display_name="bicycle",
+        article="a",
+        plural="bicycles",
+        min_easy_bbox_dim=35.0,
+        min_easy_bbox_max_dim=60.0,
+        min_easy_area=2500.0,
+        min_usable_bbox_dim=20.0,
+        min_usable_bbox_max_dim=32.0,
+        min_rendered_max_dim_l1=65.0,
+        min_rendered_max_dim_l2a=38.0,
+        preferred_context_padding=1.0,
+        confusable_distractors={"motorcycle", "rider"},
+        ambiguous_categories={"rider"},
+        description="Human-powered pedal cycle.",
+    ),
+    "bus": ClassProfile(
+        name="bus",
+        display_name="bus",
+        article="a",
+        plural="buses",
+        min_easy_bbox_dim=65.0,
+        min_easy_bbox_max_dim=110.0,
+        min_easy_area=10000.0,
+        min_usable_bbox_dim=30.0,
+        min_usable_bbox_max_dim=55.0,
+        min_rendered_max_dim_l1=90.0,
+        min_rendered_max_dim_l2a=50.0,
+        preferred_context_padding=0.8,
+        confusable_distractors={"truck", "train"},
+        ambiguous_categories=set(),
+        description="Large public transit or coach passenger bus.",
+    ),
+    "truck": ClassProfile(
+        name="truck",
+        display_name="truck",
+        article="a",
+        plural="trucks",
+        min_easy_bbox_dim=60.0,
+        min_easy_bbox_max_dim=100.0,
+        min_easy_area=9000.0,
+        min_usable_bbox_dim=28.0,
+        min_usable_bbox_max_dim=50.0,
+        min_rendered_max_dim_l1=85.0,
+        min_rendered_max_dim_l2a=45.0,
+        preferred_context_padding=0.85,
+        confusable_distractors={"bus", "trailer"},
+        ambiguous_categories=set(),
+        description="Heavy cargo truck or pickup/box truck.",
+    ),
+    "pedestrian": ClassProfile(
+        name="pedestrian",
+        display_name="pedestrian",
+        article="a",
+        plural="pedestrians",
+        min_easy_bbox_dim=22.0,
+        min_easy_bbox_max_dim=70.0,
+        min_easy_area=2000.0,
+        min_usable_bbox_dim=14.0,
+        min_usable_bbox_max_dim=40.0,
+        min_rendered_max_dim_l1=80.0,
+        min_rendered_max_dim_l2a=45.0,
+        preferred_context_padding=1.1,
+        confusable_distractors={"rider", "other person"},
+        ambiguous_categories={"rider", "other person"},
+        description="Standing or walking person on foot.",
+    ),
+    "traffic light": ClassProfile(
+        name="traffic light",
+        display_name="traffic light",
+        article="a",
+        plural="traffic lights",
+        min_easy_bbox_dim=14.0,
+        min_easy_bbox_max_dim=35.0,
+        min_easy_area=600.0,
+        min_usable_bbox_dim=10.0,
+        min_usable_bbox_max_dim=22.0,
+        min_rendered_max_dim_l1=55.0,
+        min_rendered_max_dim_l2a=32.0,
+        preferred_context_padding=1.4,
+        confusable_distractors={"traffic sign"},
+        ambiguous_categories=set(),
+        description="Signal fixture with red/yellow/green illumination.",
+    ),
+}
+
 CONFUSABLE_DISTRACTORS: dict[str, set[str]] = {
-    "motorcycle": {"bicycle", "rider"},
-    "bicycle": {"motorcycle", "rider"},
-    "bus": {"truck", "train", "car"},
-    "car": {"truck", "bus"},
-    "traffic light": {"traffic sign"},
+    k: v.confusable_distractors for k, v in CLASS_PROFILES.items()
 }
 
 
@@ -120,6 +246,10 @@ class BDD100KObjectAnnotation:
         return min(self.width, self.height)
 
     @property
+    def max_dimension(self) -> float:
+        return max(self.width, self.height)
+
+    @property
     def aspect_ratio(self) -> float:
         return self.width / max(1.0, self.height)
 
@@ -161,21 +291,25 @@ class BDD100KFrameRecord:
     def evaluate_for_target(
         self,
         target: str,
-        min_easy_area_ratio: float = 0.012,
-        min_easy_dimension: float = 36.0,
+        class_profile: ClassProfile | None = None,
+        min_easy_area_ratio: float | None = None,
+        min_easy_dimension: float | None = None,
     ) -> dict[str, Any]:
-        """Analyze bounding boxes and scene attributes for `target` to determine easy/hard suitability."""
+        """Analyze bounding boxes and scene attributes for `target` using calibrated class profiles."""
         norm_target = normalize_bdd100k_category(target)
+        profile = class_profile or CLASS_PROFILES.get(norm_target)
         target_objs = self.objects_for_category(norm_target)
         total_objs = len(self.objects)
-        confusable_set = CONFUSABLE_DISTRACTORS.get(norm_target, set())
+
+        confusable_set = profile.confusable_distractors if profile else CONFUSABLE_DISTRACTORS.get(norm_target, set())
+        ambiguous_set = profile.ambiguous_categories if profile else set()
         has_confusable = bool(self.categories & confusable_set)
 
         difficulty_tags: list[str] = []
-        if self.timeofday in {"night", "dawn/dusk"}:
-            difficulty_tags.append("night" if self.timeofday == "night" else "low-light")
-            if "low-light" not in difficulty_tags:
-                difficulty_tags.append("low-light")
+        if self.timeofday == "night":
+            difficulty_tags.append("night")
+        elif self.timeofday == "dawn/dusk":
+            difficulty_tags.append("low-light")
         if self.weather in {"rainy", "snowy", "foggy"}:
             difficulty_tags.append("rain" if self.weather == "rainy" else self.weather)
         if total_objs >= 10:
@@ -184,12 +318,7 @@ class BDD100KFrameRecord:
             difficulty_tags.append("confusable-object")
 
         if not target_objs:
-            is_ambiguous_negative = (
-                norm_target in {"motorcycle", "bicycle"}
-                and "rider" in self.categories
-                and "motorcycle" not in self.categories
-                and "bicycle" not in self.categories
-            )
+            is_ambiguous_negative = bool(self.categories & ambiguous_set)
             is_clear_negative = (
                 not is_ambiguous_negative
                 and self.timeofday not in {"night", "dawn/dusk"}
@@ -197,7 +326,7 @@ class BDD100KFrameRecord:
                 and not has_confusable
             )
             hard_neg_score = (
-                (3 if has_confusable else 0)
+                (4 if has_confusable else 0)
                 + (2 if total_objs >= 8 else 0)
                 + (2 if self.timeofday in {"night", "dawn/dusk"} else 0)
                 + (2 if self.weather in {"rainy", "snowy", "foggy"} else 0)
@@ -210,53 +339,75 @@ class BDD100KFrameRecord:
                 "is_borderline_small_positive": False,
                 "is_ambiguous_negative": is_ambiguous_negative,
                 "is_clear_negative": is_clear_negative,
+                "is_confusable_negative": has_confusable and not is_ambiguous_negative,
                 "easy_score": 1.0 if is_clear_negative else 0.2,
                 "hard_score": float(hard_neg_score),
                 "max_target_area_ratio": 0.0,
                 "max_target_min_dimension": 0.0,
+                "max_target_max_dimension": 0.0,
                 "difficulty_tags": sorted(set(difficulty_tags)),
+                "target_box": None,
+                "best_obj": None,
             }
 
-        best_area_ratio = max(o.area_ratio for o in target_objs)
-        best_min_dim = max(o.min_dimension for o in target_objs)
+        # Select best target object: prioritize unoccluded, untruncated, and larger area
+        best_obj = max(
+            target_objs,
+            key=lambda o: (not o.truncated, not o.occluded, o.area),
+        )
+        best_target_box = best_obj.box2d
+        best_area = best_obj.area
+        best_area_ratio = best_obj.area_ratio
+        best_min_dim = best_obj.min_dimension
+        best_max_dim = best_obj.max_dimension
 
-        is_microscopic = best_area_ratio < 0.0010 or best_min_dim < 28.0
+        # Calibrate against class profile if available
+        if profile is not None:
+            min_easy_min_d = profile.min_easy_bbox_dim
+            min_easy_max_d = profile.min_easy_bbox_max_dim
+            min_easy_ar = profile.min_easy_area
+            min_usable_min_d = profile.min_usable_bbox_dim
+            min_usable_max_d = profile.min_usable_bbox_max_dim
+        else:
+            min_easy_min_d = min_easy_dimension or 36.0
+            min_easy_max_d = (min_easy_dimension or 36.0) * 1.5
+            min_easy_ar = (min_easy_area_ratio or 0.012) * 1280 * 720
+            min_usable_min_d = 20.0
+            min_usable_max_d = 32.0
+
+        is_microscopic = (best_min_dim < min_usable_min_d) and (best_max_dim < min_usable_max_d)
         is_borderline_small = (not is_microscopic) and (
-            best_area_ratio < 0.0025 or best_min_dim < 36.0
+            best_min_dim < min_easy_min_d and best_max_dim < min_easy_max_d
         )
 
-        any_unoccluded_large = any(
-            (not o.occluded)
-            and (not o.truncated)
-            and o.area_ratio >= min_easy_area_ratio
-            and o.min_dimension >= min_easy_dimension
-            for o in target_objs
-        )
-        any_foreground_clear = any(
-            (not o.truncated)
-            and o.area_ratio >= max(0.015, min_easy_area_ratio * 1.2)
-            and o.min_dimension >= 85.0
-            for o in target_objs
+        has_easy_geometry = (
+            (not best_obj.occluded)
+            and (not best_obj.truncated)
+            and (best_min_dim >= min_easy_min_d or best_max_dim >= min_easy_max_d)
+            and best_area >= min_easy_ar
         )
 
         if any(o.occluded for o in target_objs):
             difficulty_tags.append("occluded")
         if any(o.truncated for o in target_objs):
             difficulty_tags.append("truncated")
-        if best_area_ratio < min_easy_area_ratio or best_min_dim < min_easy_dimension:
+        if is_borderline_small:
             difficulty_tags.append("small-object")
-            if best_area_ratio < min_easy_area_ratio * 0.5:
-                difficulty_tags.append("distant-object")
-        if any(o.aspect_ratio > 2.4 or o.aspect_ratio < 0.42 for o in target_objs):
+        elif best_area_ratio < 0.003:
+            difficulty_tags.append("distant-object")
+        if any(o.aspect_ratio > 2.5 or o.aspect_ratio < 0.38 for o in target_objs):
             difficulty_tags.append("unusual-angle")
 
+        # Level 1 Easy Positive requirements
         is_easy_positive = (
             (not is_microscopic)
-            and (any_unoccluded_large or any_foreground_clear)
+            and (not is_borderline_small)
+            and has_easy_geometry
             and self.timeofday not in {"night", "dawn/dusk"}
             and self.weather not in {"rainy", "snowy", "foggy"}
         )
 
+        # Level 2A Hard Positive requirements (respecting difficulty budget)
         hard_tags_present = [
             t
             for t in difficulty_tags
@@ -274,14 +425,19 @@ class BDD100KFrameRecord:
                 "confusable-object",
             }
         ]
+        # Difficulty budget: must have at least 1 difficulty factor, but not more than 4 stacked factors
+        budget_satisfied = 1 <= len(set(hard_tags_present)) <= 4
+
         is_hard_positive = (
             (not is_microscopic)
-            and ((not is_easy_positive) or len(hard_tags_present) >= 1)
+            and (not is_easy_positive)
+            and (best_min_dim >= min_usable_min_d or best_max_dim >= min_usable_max_d)
+            and budget_satisfied
         )
 
         easy_score = best_area_ratio * 100.0 + (2.0 if self.timeofday == "daytime" else 0.0)
         hard_score = float(
-            len(set(hard_tags_present)) * 2.0 + (1.5 if not any_unoccluded_large else 0.0)
+            len(set(hard_tags_present)) * 2.0 + (1.5 if not has_easy_geometry else 0.0)
         )
 
         return {
@@ -292,11 +448,15 @@ class BDD100KFrameRecord:
             "is_borderline_small_positive": is_borderline_small,
             "is_ambiguous_negative": False,
             "is_clear_negative": False,
+            "is_confusable_negative": False,
             "easy_score": easy_score,
             "hard_score": hard_score,
             "max_target_area_ratio": round(best_area_ratio, 6),
             "max_target_min_dimension": round(best_min_dim, 2),
+            "max_target_max_dimension": round(best_max_dim, 2),
             "difficulty_tags": sorted(set(difficulty_tags)),
+            "target_box": best_target_box,
+            "best_obj": best_obj,
         }
 
 

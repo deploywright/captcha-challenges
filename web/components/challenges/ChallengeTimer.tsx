@@ -4,27 +4,23 @@ import { useEffect, useState, useRef } from "react";
 
 export interface ChallengeTimerProps {
   isRunning: boolean;
+  startTime?: number | null;
   finalTimeMs?: number;
 }
 
-export function ChallengeTimer({ isRunning, finalTimeMs }: ChallengeTimerProps) {
+export function ChallengeTimer({ isRunning, startTime, finalTimeMs }: ChallengeTimerProps) {
   const [elapsedMs, setElapsedMs] = useState<number>(0);
-  const startTimeRef = useRef<number | null>(null);
 
   useEffect(() => {
-    if (!isRunning) {
-      startTimeRef.current = null;
+    if (!isRunning || startTime == null) {
       return;
     }
 
-    startTimeRef.current = performance.now();
     let animId: number;
 
     const tick = () => {
-      if (startTimeRef.current !== null) {
-        setElapsedMs(performance.now() - startTimeRef.current);
-        animId = requestAnimationFrame(tick);
-      }
+      setElapsedMs(performance.now() - startTime);
+      animId = requestAnimationFrame(tick);
     };
 
     animId = requestAnimationFrame(tick);
@@ -32,7 +28,7 @@ export function ChallengeTimer({ isRunning, finalTimeMs }: ChallengeTimerProps) 
     return () => {
       cancelAnimationFrame(animId);
     };
-  }, [isRunning]);
+  }, [isRunning, startTime]);
 
   const displayMs = finalTimeMs !== undefined ? finalTimeMs : elapsedMs;
   const seconds = (displayMs / 1000).toFixed(2);

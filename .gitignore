@@ -1,4 +1,4 @@
-﻿# ==============================================================================
+# ==============================================================================
 # Git Ignore Configuration for CAPTCHA Benchmark Monorepo
 # ==============================================================================
 
@@ -49,8 +49,13 @@ src/generated-private/
 web/src/generated-public/
 src/generated-public/
 
-# Explicitly preserve required static template asset for Level 2B:
-!challenges/assets/level-2b/checker-shadow.png
+# Explicitly preserve required static template assets for Level 2B:
+!challenges/assets/level-2b/*.png
+!challenges/assets/level-2b/*.json
+
+# Generated reports & contact sheets
+*.html
+challenges/*.html
 
 # ------------------------------------------------------------------------------
 # 3. Python Artifacts & Environments

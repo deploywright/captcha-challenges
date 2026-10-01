@@ -49,7 +49,7 @@ def sample_bdd100k_root(tmp_path: Path) -> Path:
 
     # 2. Hard motorcycle frames (10 frames: small/distant, occluded, truncated, night, rain, confusable bicycle)
     hard_configs = [
-        ("night", "clear", True, False, (500.0, 320.0, 560.0, 380.0), ["bicycle"]),
+        ("night", "clear", True, False, (500.0, 320.0, 532.0, 355.0), ["bicycle"]),
         ("daytime", "rainy", True, True, (420.0, 300.0, 490.0, 365.0), []),
         ("dawn/dusk", "overcast", False, True, (10.0, 310.0, 65.0, 370.0), ["bicycle", "rider"]),
         ("night", "rainy", True, False, (600.0, 340.0, 650.0, 390.0), ["car"]),

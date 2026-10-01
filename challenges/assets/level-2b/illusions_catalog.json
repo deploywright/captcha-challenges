@@ -1,0 +1,214 @@
+{
+  "checker-shadow": {
+    "name": "Adelson Checker Shadow Illusion",
+    "author": "Edward H. Adelson (1995)",
+    "source": "https://commons.wikimedia.org/wiki/File:Checker_shadow_illusion.svg (MIT Perceptual Science Group, http://persci.mit.edu/gallery/checkershadow)",
+    "license": "Copyright 1995, Edward H. Adelson. May be reproduced and distributed freely with credit to Edward H. Adelson.",
+    "asset_file": "checker-shadow.png",
+    "question": "Are squares A and B the same shade?",
+    "answer": "yes",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "regions": {
+      "square_a_interior": [
+        240,
+        110,
+        250,
+        120
+      ],
+      "square_b_interior": [
+        230,
+        195,
+        240,
+        205
+      ]
+    },
+    "illusion_type": "checker-shadow"
+  },
+  "muller-lyer": {
+    "illusion_type": "muller-lyer",
+    "name": "M\u00fcller-Lyer Illusion",
+    "author": "Franz Carl M\u00fcller-Lyer (1889)",
+    "source": "Archiv f\u00fcr Physiologie (1889). Canonical geometric optical illusion.",
+    "license": "Public Domain. Canonical scientific benchmark illusion.",
+    "asset_file": "muller-lyer.png",
+    "question": "Are horizontal lines A and B the same length?",
+    "answer": "yes",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "ground_truth_metric": "shaft_pixel_length",
+    "measured_values": {
+      "line_a_length": 260.0,
+      "line_b_length": 260.0,
+      "difference": 0.0,
+      "line_a_span": [
+        170,
+        160,
+        430,
+        160
+      ],
+      "line_b_span": [
+        170,
+        320,
+        430,
+        320
+      ]
+    },
+    "explanation": "Both central horizontal line shafts are exactly 260 pixels long. The inward vs outward orientation of the tail fins produces a powerful perceptual illusion of differing lengths."
+  },
+  "ebbinghaus": {
+    "illusion_type": "ebbinghaus",
+    "name": "Ebbinghaus Illusion",
+    "author": "Hermann Ebbinghaus (1902) / Edward Titchener (1901)",
+    "source": "Grundz\u00fcge der Psychologie (1902). Canonical size-contrast illusion.",
+    "license": "Public Domain. Canonical scientific benchmark illusion.",
+    "asset_file": "ebbinghaus.png",
+    "question": "Are the two orange center circles the same size?",
+    "answer": "yes",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "ground_truth_metric": "circle_diameter",
+    "measured_values": {
+      "circle_a_diameter": 60.0,
+      "circle_b_diameter": 60.0,
+      "circle_a_radius": 30.0,
+      "circle_b_radius": 30.0,
+      "difference": 0.0,
+      "circle_a_center": [
+        190,
+        240
+      ],
+      "circle_b_center": [
+        450,
+        240
+      ]
+    },
+    "explanation": "Both central orange circles have an identical diameter of 60 pixels. The size contrast of the surrounding inducers causes Circle A to appear smaller than Circle B."
+  },
+  "ponzo": {
+    "illusion_type": "ponzo",
+    "name": "Ponzo Illusion",
+    "author": "Mario Ponzo (1911)",
+    "source": "Atti della Reale Accademia delle Scienze di Torino (1911). Canonical perspective illusion.",
+    "license": "Public Domain. Canonical scientific benchmark illusion.",
+    "asset_file": "ponzo.png",
+    "question": "Are horizontal bars A and B the same length?",
+    "answer": "yes",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "ground_truth_metric": "bar_pixel_length",
+    "measured_values": {
+      "bar_a_length": 130.0,
+      "bar_b_length": 130.0,
+      "bar_a_span": [
+        205,
+        150,
+        335,
+        150
+      ],
+      "bar_b_span": [
+        205,
+        390,
+        335,
+        390
+      ],
+      "difference": 0.0
+    },
+    "explanation": "Both yellow horizontal bars are exactly 130 pixels long. The linear perspective created by the converging rails induces an illusion that Bar A is larger."
+  },
+  "simultaneous-contrast": {
+    "illusion_type": "simultaneous-contrast",
+    "name": "Simultaneous Contrast Illusion",
+    "author": "Michel Eug\u00e8ne Chevreul (1839)",
+    "source": "De la loi du contraste simultan\u00e9 des couleurs (1839). Canonical brightness contrast illusion.",
+    "license": "Public Domain. Canonical scientific benchmark illusion.",
+    "asset_file": "simultaneous-contrast.png",
+    "question": "Are squares A and B the same shade of grey?",
+    "answer": "yes",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "ground_truth_metric": "rgb_luminance",
+    "measured_values": {
+      "square_a_rgb": [
+        130.0,
+        130.0,
+        130.0
+      ],
+      "square_b_rgb": [
+        130.0,
+        130.0,
+        130.0
+      ],
+      "luminance_difference": 0.0,
+      "rgb_difference": 0.0,
+      "square_a_box": [
+        115,
+        165,
+        205,
+        255
+      ],
+      "square_b_box": [
+        435,
+        165,
+        525,
+        255
+      ]
+    },
+    "regions": {
+      "square_a_interior": [
+        120,
+        170,
+        200,
+        250
+      ],
+      "square_b_interior": [
+        440,
+        170,
+        520,
+        250
+      ]
+    },
+    "explanation": "Both Square A and Square B have the exact same RGB color (130, 130, 130). Lateral inhibition causes Square A to appear significantly lighter against its dark surround."
+  },
+  "cafe-wall": {
+    "illusion_type": "cafe-wall",
+    "name": "Caf\u00e9 Wall Illusion",
+    "author": "Richard Gregory and Priscilla Heard (1979)",
+    "source": "Border locking and the Caf\u00e9 Wall illusion, Perception 8(4), 1979.",
+    "license": "Public Domain. Canonical geometric optical illusion.",
+    "asset_file": "cafe-wall.png",
+    "question": "Are the horizontal mortar lines dividing the rows parallel?",
+    "answer": "yes",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "ground_truth_metric": "line_parallelism",
+    "measured_values": {
+      "mortar_y_positions": [
+        64,
+        111,
+        158,
+        205,
+        252,
+        299,
+        346,
+        393
+      ],
+      "slope": 0.0,
+      "slope_difference": 0.0,
+      "is_strictly_parallel": true
+    },
+    "explanation": "Every horizontal grey mortar line is perfectly horizontal and parallel (slope = 0.0). The staggered black and white tiles create luminance border-locking signals that mislead human edge detectors."
+  }
+}

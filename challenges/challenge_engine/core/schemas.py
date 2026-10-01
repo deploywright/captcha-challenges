@@ -163,6 +163,12 @@ class TilePrivateMetadata(BaseModel):
     weather: str = "undefined"
     timeofday: str = "undefined"
     isPositive: bool
+    crop_box: list[int] | None = None
+    crop_context_factor: float | None = None
+    rendered_object_size: float | None = None
+    rendered_object_width: float | None = None
+    rendered_object_height: float | None = None
+    difficulty_budget_factors: list[str] | None = None
     transformation: TransformationSpec | None = None
     degradation: DegradationInfo | None = None
 
@@ -176,10 +182,11 @@ class TilePrivateMetadata(BaseModel):
 
 
 class Level2BAssetMetadata(BaseModel):
-    """Schema for `assets/level-2b/metadata.json` documenting the existing Adelson asset."""
+    """Schema for `assets/level-2b/metadata.json` documenting the visual illusion assets."""
 
     model_config = ConfigDict(extra="allow")
 
+    illusion_type: str = "checker-shadow"
     name: str = Field(..., min_length=1)
     author: str | None = None
     source: str = Field(..., min_length=1)
@@ -188,7 +195,8 @@ class Level2BAssetMetadata(BaseModel):
     question: str = "Are squares A and B the same shade?"
     answer: str = "yes"
     options: list[str] = Field(default_factory=lambda: ["Yes", "No"])
-    regions: dict[str, list[int]] | None = None
+    regions: dict[str, Any] | None = None
+    explanation: str | None = None
 
 
 class SquareMeasurement(BaseModel):
@@ -203,20 +211,24 @@ class SquareMeasurement(BaseModel):
 
 
 class IllusionMetadata(BaseModel):
-    """Private evaluation metadata for Level 2B Adelson Checker Shadow Illusion."""
+    """Private evaluation metadata for Level 2B Visual Illusions."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="allow")
 
     assetName: str
+    illusionType: str = "checker-shadow"
     source: str
     license: str
     assetFile: str
     proceduralGenerationUsed: bool = False
-    squareA: SquareMeasurement
-    squareB: SquareMeasurement
-    luminanceDifference: float
-    rgbMaxDifference: float
-    tolerance: float
+    groundTruthMetric: str | None = None
+    measuredValues: dict[str, Any] | None = None
+    squareA: SquareMeasurement | None = None
+    squareB: SquareMeasurement | None = None
+    luminanceDifference: float | None = None
+    rgbMaxDifference: float | None = None
+    tolerance: float | None = None
+    explanation: str | None = None
 
 
 class CableQuery(BaseModel):
@@ -341,6 +353,7 @@ class Level1Config(BaseModel):
     gridRows: int = Field(default=3, ge=2, le=6)
     gridColumns: int = Field(default=3, ge=2, le=6)
     target: str = Field(default="motorcycle", min_length=1)
+    targets: list[str] | None = None
     positiveCount: int | None = Field(default=None, ge=1)
     positiveCountRange: tuple[int, int] = (2, 4)
     minEasyAreaRatio: float = Field(default=0.012, ge=0.001, le=0.5)
@@ -369,12 +382,14 @@ class Level2AConfig(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    gridSize: int | None = Field(default=4, ge=3, le=6)
-    gridRows: int | None = Field(default=None, ge=3, le=6)
-    gridColumns: int | None = Field(default=None, ge=3, le=6)
+    gridSize: int | None = Field(default=3, ge=2, le=6)
+    gridRows: int | None = Field(default=None, ge=2, le=6)
+    gridColumns: int | None = Field(default=None, ge=2, le=6)
     target: str = Field(default="motorcycle", min_length=1)
-    positiveCount: int | None = Field(default=5, ge=1)
+    targets: list[str] | None = None
+    positiveCount: int | None = Field(default=3, ge=1)
     positiveCountRange: tuple[int, int] | None = None
+    maxDifficultyFactors: int = Field(default=2, ge=1, le=4)
     preferredAttributes: list[str] = Field(
         default_factory=lambda: [
             "small-object",
@@ -398,11 +413,11 @@ class Level2AConfig(BaseModel):
 
     @property
     def resolved_rows(self) -> int:
-        return self.gridRows or self.gridSize or 4
+        return self.gridRows or self.gridSize or 3
 
     @property
     def resolved_columns(self) -> int:
-        return self.gridColumns or self.gridSize or 4
+        return self.gridColumns or self.gridSize or 3
 
     @model_validator(mode="after")
     def _validate_grid(self) -> "Level2AConfig":
@@ -420,28 +435,29 @@ class Level2AConfig(BaseModel):
 
 
 class Level2BConfig(BaseModel):
-    """Configuration for Level 2B — Adelson Checker Shadow Illusion (existing static asset)."""
+    """Configuration for Level 2B — Canonical Visual Illusions (existing static/canonical assets)."""
 
     model_config = ConfigDict(extra="forbid")
 
     assetPath: str = "assets/level-2b/checker-shadow.png"
     metadataPath: str = "assets/level-2b/metadata.json"
-    instruction: str = "Are squares A and B the same shade?"
+    illusionSubtype: str | None = None
+    instruction: str | None = None
     options: list[str] = Field(default_factory=lambda: ["Yes", "No"])
     luminanceTolerance: float = Field(default=1.0, ge=0.0, le=5.0)
 
     @model_validator(mode="after")
     def _validate_options(self) -> "Level2BConfig":
-        if not any(opt.lower() == "yes" for opt in self.options):
-            raise ValueError("options must include 'Yes'")
+        if not self.options or len(self.options) < 2:
+            raise ValueError("options must contain at least 2 choices")
         return self
 
 
 LEVEL_3A_DIFFICULTY_PRESETS: dict[str, dict[str, Any]] = {
-    "easy": {"cableCountRange": (8, 10), "waypointRange": (2, 4), "lineWidth": 7},
-    "medium": {"cableCountRange": (12, 20), "waypointRange": (3, 5), "lineWidth": 6},
-    "hard": {"cableCountRange": (20, 35), "waypointRange": (3, 7), "lineWidth": 5},
-    "extreme": {"cableCountRange": (35, 50), "waypointRange": (4, 8), "lineWidth": 4},
+    "easy": {"cableCountRange": (6, 6), "waypointRange": (2, 3), "lineWidth": 7},
+    "medium": {"cableCountRange": (8, 8), "waypointRange": (3, 4), "lineWidth": 6},
+    "hard": {"cableCountRange": (10, 10), "waypointRange": (3, 5), "lineWidth": 5},
+    "extreme": {"cableCountRange": (12, 12), "waypointRange": (4, 6), "lineWidth": 5},
 }
 
 
@@ -452,10 +468,10 @@ class Level3AConfig(BaseModel):
 
     canvasWidth: int = Field(default=1600, ge=800, le=3200)
     canvasHeight: int = Field(default=1000, ge=600, le=2400)
-    cableCount: int | None = Field(default=30, ge=4, le=60)
-    waypointRange: tuple[int, int] = (3, 7)
-    lineWidth: int = Field(default=5, ge=2, le=14)
-    difficulty: Literal["easy", "medium", "hard", "extreme"] = "hard"
+    cableCount: int | None = Field(default=8, ge=4, le=60)
+    waypointRange: tuple[int, int] = (3, 5)
+    lineWidth: int = Field(default=6, ge=2, le=14)
+    difficulty: Literal["easy", "medium", "hard", "extreme"] = "medium"
     queryType: Literal[
         "find_source",
         "find-source",

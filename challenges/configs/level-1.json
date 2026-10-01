@@ -2,6 +2,7 @@
   "gridRows": 3,
   "gridColumns": 3,
   "target": "motorcycle",
+  "targets": ["motorcycle", "bicycle", "bus", "truck", "pedestrian", "traffic light"],
   "positiveCountRange": [2, 4],
   "minEasyAreaRatio": 0.012,
   "tileWidth": 256,
