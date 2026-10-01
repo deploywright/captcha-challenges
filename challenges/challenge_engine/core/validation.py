@@ -56,6 +56,29 @@ FORBIDDEN_PUBLIC_KEYS = {
     "targetClass",
     "target",
     "routing",
+    "solutionPath",
+    "reflectionCount",
+    "mirrorCount",
+    "totalMirrorCount",
+    "distractorMirrorCount",
+    "targetCount",
+    "switchGraph",
+    "routeDecisionDepth",
+    "totalSwitchCount",
+    "decoyBranchCount",
+    "binCount",
+    "solutionDecisionDepth",
+    "totalJunctionCount",
+    "criticalClosedValveCount",
+    "tankCount",
+    "cableCount",
+    "waypointColumnCount",
+    "answerOptionCount",
+    "generationConfig",
+    "gridDimensions",
+    "mirrors",
+    "decoyPaths",
+    "edges",
 }
 
 VARIANT_TO_LEVEL_KEY = {
@@ -470,6 +493,19 @@ def _validate_routing_puzzle_level(
     loaded_assets: dict[str, Image.Image],
 ) -> None:
     """Validate Level 3A Routing Puzzle challenges (laser maze, conveyor, pipe flow, device cables)."""
+    if pub.difficulty is None:
+        res.add_error("Routing puzzle must contain public difficulty")
+    if not priv.routing or priv.routing.get("difficulty") != pub.difficulty:
+        res.add_error("Public difficulty does not match private generated difficulty")
+    if pub.subtype != priv.subtype:
+        res.add_error("Public subtype does not match private generated subtype")
+    if pub.subtype == "pipe-flow" and priv.routing:
+        from challenge_engine.levels.level_3a.topology import reachable_tanks
+
+        r = priv.routing
+        reached = reachable_tanks(r["source"], r["edges"], r["tanks"])
+        if len(reached) != 1 or reached != {priv.answer}:
+            res.add_error("Pipe graph must reach exactly the answer tank")
     if pub.type != "single-choice":
         res.add_error(f"Expected type='single-choice' for routing-puzzle, got '{pub.type}'")
 
@@ -590,6 +626,11 @@ def _validate_determinism(
             from challenge_engine.levels.level_3a.generator import Level3ARoutingGenerator
 
             subtype_val = priv.subtype or pub.subtype
+            if priv.routing and "generationConfig" in priv.routing:
+                from challenge_engine.core.schemas import Level3AConfig
+
+                cfg = Level3AConfig.model_validate(priv.routing["generationConfig"])
+            cfg.difficulty = pub.difficulty
             gen_3a = Level3ARoutingGenerator(cfg)
             re_bundle = gen_3a.generate_one(pub.seed, subtype=subtype_val)
         else:

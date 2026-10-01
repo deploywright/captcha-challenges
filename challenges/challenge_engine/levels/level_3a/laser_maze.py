@@ -13,7 +13,7 @@ from PIL import Image, ImageDraw
 
 from challenge_engine.core.exporter import ChallengeBundle
 from challenge_engine.core.random import DeterministicRNG
-from challenge_engine.core.schemas import ROUTING_DIFFICULTY_PRESETS, Level3AConfig
+from challenge_engine.core.schemas import ROUTING_DIFFICULTY_PRESETS
 from challenge_engine.levels.level_3a.base import (
     COLOR_ACCENT_AMBER,
     COLOR_ACCENT_CYAN,
@@ -21,13 +21,10 @@ from challenge_engine.levels.level_3a.base import (
     COLOR_ACCENT_PURPLE,
     COLOR_BG,
     COLOR_BORDER,
-    COLOR_BORDER_LIGHT,
     COLOR_HEADER_BG,
     COLOR_LASER_BEAM,
     COLOR_LASER_GLOW,
     COLOR_LASER_RED,
-    COLOR_TEXT_DIM,
-    COLOR_TEXT_MUTED,
     COLOR_TEXT_PRIMARY,
     RoutingPuzzleSubtypeGenerator,
     draw_header_banner,
@@ -64,6 +61,38 @@ class LaserMazeGenerator(RoutingPuzzleSubtypeGenerator):
     """Procedural generator for Laser Maze routing challenges."""
 
     subtype = "laser-maze"
+
+    def _grid_geometry(self, rows: int, cols: int) -> tuple[int, int, int]:
+        w, h = self.config.canvasWidth, self.config.canvasHeight
+        cell = min((w - 240) // cols, (h - 164) // rows, 72)
+        if cell < 53:
+            raise ValueError("Canvas too small for readable mirrors; increase canvas dimensions")
+        return cell, (w - cols * cell) // 2, 56 + (h - 56 - rows * cell) // 2
+
+    def _target_box(self, rows: int, cols: int, pos: tuple[int, int]) -> tuple[int, int, int, int]:
+        cell, ox, oy = self._grid_geometry(rows, cols)
+        r, c = pos
+        if c == -1:
+            x, y = ox - 124, oy + r * cell + (cell - 34) // 2
+        elif c == cols:
+            x, y = ox + cols * cell + 14, oy + r * cell + (cell - 34) // 2
+        else:
+            x = ox + c * cell + (cell - 110) // 2
+            y = oy - 48 if r == -1 else oy + rows * cell + 14
+        return x, y, x + 110, y + 34
+
+    def _emitter_box(self, rows: int, cols: int, pos: tuple[int, int]) -> tuple[int, int, int, int]:
+        cell, ox, oy = self._grid_geometry(rows, cols)
+        r, c = pos
+        if c == -1:
+            x, y = ox - 110, oy + r * cell + (cell - 38) // 2
+        else:
+            x, y = ox + c * cell + (cell - 100) // 2, oy - 50
+        return x, y, x + 98, y + 38
+
+    @staticmethod
+    def _boxes_separate(a: tuple[int, int, int, int], b: tuple[int, int, int, int]) -> bool:
+        return a[2] + 8 <= b[0] or b[2] + 8 <= a[0] or a[3] + 8 <= b[1] or b[3] + 8 <= a[1]
 
     def _resolve_params(self, rng: DeterministicRNG) -> dict[str, Any]:
         cfg_sub = self.config.laserMaze
@@ -132,7 +161,7 @@ class LaserMazeGenerator(RoutingPuzzleSubtypeGenerator):
         target_count = min(params["targets"], 6)
 
         # Attempt procedural generation until a clean solvable layout is produced
-        for attempt in range(100):
+        for attempt in range(2000):
             attempt_rng = rng.fork(f"attempt_{attempt}")
 
             # 1. Choose emitter on perimeter
@@ -224,7 +253,7 @@ class LaserMazeGenerator(RoutingPuzzleSubtypeGenerator):
                 rows, cols, (start_r, start_c), start_dir, mirrors
             )
 
-            if sim_exit != exit_pos or len(actual_refs) != desired_reflections:
+            if sim_exit != exit_pos or len(actual_refs) != desired_reflections or len(set(actual_refs)) != desired_reflections:
                 continue
 
             # 3. Place Targets
@@ -255,7 +284,21 @@ class LaserMazeGenerator(RoutingPuzzleSubtypeGenerator):
             if len(decoy_candidates) < target_count - 1:
                 continue
 
-            chosen_decoys = attempt_rng.sample(decoy_candidates, target_count - 1)
+            # Select using the actual card/emitter bounds, so labels never
+            # overlap even on the largest grids. Bad layouts retry by seed.
+            occupied = [self._emitter_box(rows, cols, emitter_pos), self._target_box(rows, cols, exit_pos)]
+            if not self._boxes_separate(*occupied):
+                continue
+            chosen_decoys = []
+            for pos in attempt_rng.shuffle(decoy_candidates):
+                box = self._target_box(rows, cols, pos)
+                if all(self._boxes_separate(box, prior) for prior in occupied):
+                    chosen_decoys.append(pos)
+                    occupied.append(box)
+                if len(chosen_decoys) == target_count - 1:
+                    break
+            if len(chosen_decoys) != target_count - 1:
+                continue
             target_positions = [exit_pos] + chosen_decoys
 
             # Assign letters A, B, C, D...
@@ -275,7 +318,9 @@ class LaserMazeGenerator(RoutingPuzzleSubtypeGenerator):
                 for c in range(cols)
                 if (r, c) not in path_cells and (r, c) not in mirrors
             ]
-            n_dist = min(params["distractors"], len(all_empty_cells))
+            if len(all_empty_cells) < params["distractors"]:
+                continue
+            n_dist = params["distractors"]
             if n_dist > 0:
                 dist_cells = attempt_rng.sample(all_empty_cells, n_dist)
                 for dc_r, dc_c in dist_cells:
@@ -306,7 +351,11 @@ class LaserMazeGenerator(RoutingPuzzleSubtypeGenerator):
                 "subtype": self.subtype,
                 "difficulty": self.config.difficulty,
                 "gridDimensions": [rows, cols],
-                "reflectionCount": desired_reflections,
+                "reflectionCount": len(refs_check),
+                "totalMirrorCount": len(mirrors),
+                "distractorMirrorCount": len(mirrors) - len(set(refs_check)),
+                "targetCount": len(labeled_targets),
+                "mirrors": [{"cell": list(pos), "orientation": orientation} for pos, orientation in mirrors.items()],
                 "mirrorCount": len(mirrors),
                 "emitter": {"perimeter": emitter_pos, "direction": start_dir},
                 "solutionTarget": correct_answer,
@@ -354,13 +403,9 @@ class LaserMazeGenerator(RoutingPuzzleSubtypeGenerator):
         )
 
         # Calculate grid geometry centered in canvas
-        avail_w = w - 240
-        avail_h = h - 160
-        cell_size = min(avail_w // (cols + 2), avail_h // (rows + 2), 72)
+        cell_size, offset_x, offset_y = self._grid_geometry(rows, cols)
         grid_pixel_w = cols * cell_size
         grid_pixel_h = rows * cell_size
-        offset_x = (w - grid_pixel_w) // 2
-        offset_y = 68 + (avail_h - grid_pixel_h) // 2
 
         # Grid background panel
         pad = 12
@@ -387,11 +432,10 @@ class LaserMazeGenerator(RoutingPuzzleSubtypeGenerator):
                 draw.rectangle([cx1, cy1, cx2, cy2], outline=(40, 53, 72), width=1)
 
         # Draw mirrors
-        font_mirror = get_font(12, bold=True)
         for (r, c), m_type in mirrors.items():
             cx = offset_x + c * cell_size + cell_size // 2
             cy = offset_y + r * cell_size + cell_size // 2
-            m_len = int(cell_size * 0.38)
+            m_len = 26  # Fixed across difficulties; larger grids keep mirrors readable.
 
             if m_type == "/":
                 p1 = (cx - m_len, cy + m_len)
@@ -416,20 +460,9 @@ class LaserMazeGenerator(RoutingPuzzleSubtypeGenerator):
         for idx, (label, (tr, tc)) in enumerate(labeled_targets.items()):
             color = TARGET_COLORS[idx % len(TARGET_COLORS)]
             # Target position in pixels
-            if tc == -1:  # Left perimeter
-                tx = offset_x - cell_size - 14
-                ty = offset_y + tr * cell_size + (cell_size - 36) // 2
-            elif tc == cols:  # Right perimeter
-                tx = offset_x + grid_pixel_w + 14
-                ty = offset_y + tr * cell_size + (cell_size - 36) // 2
-            elif tr == -1:  # Top perimeter
-                tx = offset_x + tc * cell_size + (cell_size - 78) // 2
-                ty = offset_y - 48
-            else:  # Bottom perimeter
-                tx = offset_x + tc * cell_size + (cell_size - 78) // 2
-                ty = offset_y + grid_pixel_h + 14
+            tx, ty, _, _ = self._target_box(rows, cols, (tr, tc))
 
-            tw, th = 82, 34
+            tw, th = 110, 34
             draw.rounded_rectangle(
                 [tx, ty, tx + tw, ty + th],
                 radius=6,

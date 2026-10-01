@@ -8,6 +8,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 LEVEL_1_KEY = "level_1_street_grid"
 LEVEL_2A_KEY = "level_2a_hard_street_grid"
 LEVEL_2B_KEY = "level_2b_checker_shadow"
+# Legacy internal identifier; the current public variant is routing-puzzle.
 LEVEL_3A_KEY = "level_3a_tangled_cables"
 LEVEL_3B_KEY = "level_3b_degraded_vision"
 
@@ -116,6 +117,7 @@ class PublicChallenge(BaseModel):
         "degraded-vision",
     ]
     subtype: str | None = None
+    difficulty: Literal["easy", "medium", "story", "hard", "extreme"] | None = None
     type: Literal["image-selection", "single-choice"]
     instruction: str = Field(..., min_length=5)
     seed: int
@@ -469,6 +471,8 @@ class ConveyorRoutingSubtypeConfig(BaseModel):
 
     model_config = ConfigDict(extra="ignore")
     switchCount: int | None = None
+    routeDecisionDepth: int | None = Field(default=None, ge=2, le=12)
+    totalSwitchCount: int | None = Field(default=None, ge=3, le=22)
     binCount: int | None = None
     decoyBranches: int | None = None
 
@@ -478,6 +482,9 @@ class PipeFlowSubtypeConfig(BaseModel):
 
     model_config = ConfigDict(extra="ignore")
     junctionCount: int | None = None
+    solutionDecisionDepth: int | None = Field(default=None, ge=2, le=12)
+    totalJunctionCount: int | None = Field(default=None, ge=3, le=20)
+    decoyBranchCount: int | None = Field(default=None, ge=1, le=10)
     tankCount: int | None = None
     closedValves: int | None = None
 
@@ -489,36 +496,42 @@ class DeviceCablesSubtypeConfig(BaseModel):
     cableCountRange: tuple[int, int] | None = None
     waypointRange: tuple[int, int] | None = None
     lineWidth: int | None = None
+    answerOptionCountRange: tuple[int, int] | None = None
 
 
 ROUTING_DIFFICULTY_PRESETS: dict[str, dict[str, dict[str, Any]]] = {
     "laser-maze": {
-        "easy": {"grid": (7, 7), "reflections": (1, 2), "targets": 3, "distractors": (0, 2)},
-        "medium": {"grid": (8, 8), "reflections": (3, 4), "targets": 4, "distractors": (2, 4)},
-        "hard": {"grid": (10, 10), "reflections": (5, 7), "targets": 4, "distractors": (4, 7)},
-        "extreme": {"grid": (12, 12), "reflections": (7, 10), "targets": 5, "distractors": (6, 9)},
+        "easy": {'grid': (7, 7), 'reflections': (1, 2), 'targets': 3, 'distractors': (0, 2)},
+        "medium": {'grid': (8, 8), 'reflections': (3, 4), 'targets': 4, 'distractors': (2, 4)},
+        "story": {'grid': (10, 10), 'reflections': (5, 6), 'targets': 5, 'distractors': (4, 6)},
+        "hard": {'grid': (11, 11), 'reflections': (7, 8), 'targets': 5, 'distractors': (6, 8)},
+        "extreme": {'grid': (12, 12), 'reflections': (9, 12), 'targets': 6, 'distractors': (8, 10)},
     },
     "conveyor-routing": {
-        "easy": {"switches": 2, "bins": 3, "decoys": 1},
-        "medium": {"switches": 4, "bins": 4, "decoys": 2},
-        "hard": {"switches": 6, "bins": 5, "decoys": 2},
-        "extreme": {"switches": 8, "bins": 5, "decoys": 3},
+        "easy": {'routeDecisionDepth': 2, 'totalSwitchCount': 4, 'bins': 3, 'decoyBranchCount': 1},
+        "medium": {'routeDecisionDepth': 4, 'totalSwitchCount': 7, 'bins': 4, 'decoyBranchCount': 2},
+        "story": {'routeDecisionDepth': 6, 'totalSwitchCount': 11, 'bins': 5, 'decoyBranchCount': 4},
+        "hard": {'routeDecisionDepth': 8, 'totalSwitchCount': 14, 'bins': 5, 'decoyBranchCount': 5},
+        "extreme": {'routeDecisionDepth': 11, 'totalSwitchCount': 20, 'bins': 6, 'decoyBranchCount': 7},
     },
     "pipe-flow": {
-        "easy": {"junctions": 3, "tanks": 3, "closedValves": 1},
-        "medium": {"junctions": 4, "tanks": 4, "closedValves": 2},
-        "hard": {"junctions": 6, "tanks": 4, "closedValves": 3},
-        "extreme": {"junctions": 8, "tanks": 5, "closedValves": 4},
+        "easy": {'solutionDecisionDepth': 2, 'totalJunctionCount': 4, 'tanks': 3, 'criticalClosedValveCount': 1, 'decoyBranchCount': 1},
+        "medium": {'solutionDecisionDepth': 4, 'totalJunctionCount': 6, 'tanks': 4, 'criticalClosedValveCount': 2, 'decoyBranchCount': 2},
+        "story": {'solutionDecisionDepth': 6, 'totalJunctionCount': 10, 'tanks': 5, 'criticalClosedValveCount': 4, 'decoyBranchCount': 4},
+        "hard": {'solutionDecisionDepth': 8, 'totalJunctionCount': 14, 'tanks': 5, 'criticalClosedValveCount': 6, 'decoyBranchCount': 6},
+        "extreme": {'solutionDecisionDepth': 11, 'totalJunctionCount': 19, 'tanks': 6, 'criticalClosedValveCount': 8, 'decoyBranchCount': 8},
     },
     "device-cables": {
-        "easy": {"cableCountRange": (5, 6), "waypointRange": (2, 3), "lineWidth": 7},
-        "medium": {"cableCountRange": (7, 8), "waypointRange": (3, 4), "lineWidth": 6},
-        "hard": {"cableCountRange": (9, 10), "waypointRange": (3, 5), "lineWidth": 5},
-        "extreme": {"cableCountRange": (11, 12), "waypointRange": (4, 6), "lineWidth": 5},
+        "easy": {'cableCountRange': (5, 6), 'waypointRange': (2, 3), 'lineWidth': 7, 'answerOptionCountRange': (4, 4)},
+        "medium": {'cableCountRange': (7, 8), 'waypointRange': (3, 4), 'lineWidth': 7, 'answerOptionCountRange': (4, 4)},
+        "story": {'cableCountRange': (9, 10), 'waypointRange': (3, 5), 'lineWidth': 7, 'answerOptionCountRange': (5, 6)},
+        "hard": {'cableCountRange': (10, 11), 'waypointRange': (4, 5), 'lineWidth': 7, 'answerOptionCountRange': (5, 6)},
+        "extreme": {'cableCountRange': (11, 12), 'waypointRange': (5, 6), 'lineWidth': 7, 'answerOptionCountRange': (6, 6)},
     },
 }
 
-LEVEL_3A_DIFFICULTY_PRESETS: dict[str, dict[str, Any]] = {
+# Used only by the backward-compatible Tangled Cables generator, never routing puzzles.
+LEGACY_TANGLED_CABLE_DIFFICULTY_PRESETS: dict[str, dict[str, Any]] = {
     "easy": {"cableCountRange": (8, 10), "waypointRange": (2, 4), "lineWidth": 7},
     "medium": {"cableCountRange": (12, 20), "waypointRange": (3, 5), "lineWidth": 6},
     "hard": {"cableCountRange": (20, 35), "waypointRange": (3, 7), "lineWidth": 5},
@@ -538,7 +551,7 @@ class Level3AConfig(BaseModel):
         "device-cables",
     ] = "laser-maze"
     subtype: str | None = None
-    difficulty: Literal["easy", "medium", "hard", "extreme"] = "medium"
+    difficulty: Literal["easy", "medium", "story", "hard", "extreme"] = "medium"
     enabledSubtypes: list[str] = Field(
         default_factory=lambda: [
             "laser-maze",

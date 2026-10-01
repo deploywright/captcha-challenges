@@ -266,7 +266,7 @@ def build_parser() -> argparse.ArgumentParser:
     gen_parser.add_argument(
         "--difficulty",
         default=None,
-        help="Optional difficulty override for Level 3A (easy, medium, hard, extreme).",
+        help="Optional difficulty override for Level 3A (easy, medium, story, hard, extreme).",
     )
     gen_parser.add_argument(
         "--subtype",

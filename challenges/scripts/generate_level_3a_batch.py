@@ -1,10 +1,7 @@
-"""Script to generate the Level 3A Routing Puzzles development batch (40 challenges)
+"""Generate 60 deterministic Routing Puzzle development/QA samples.
 
 Subtypes generated:
-- 10 Laser Maze (2 easy, 6 medium, 2 hard)
-- 10 Conveyor Routing (2 easy, 6 medium, 2 hard)
-- 10 Pipe Flow (2 easy, 6 medium, 2 hard)
-- 10 Device Cables (2 easy, 6 medium, 2 hard)
+- 15 of each subtype: 2 easy, 3 medium, 5 story, 3 hard, 2 extreme.
 
 Outputs:
 - Challenges to challenges/generated/level-3a/
@@ -16,9 +13,9 @@ from __future__ import annotations
 import base64
 import html
 import io
-import json
+import shutil
+from uuid import uuid4
 from pathlib import Path
-from PIL import Image
 
 from challenge_engine.core.config import PROJECT_ROOT
 from challenge_engine.core.exporter import export_challenge_bundle
@@ -30,9 +27,23 @@ from challenge_engine.levels.level_3a.laser_maze import LaserMazeGenerator
 from challenge_engine.levels.level_3a.pipe_flow import PipeFlowGenerator
 
 
+DIFFICULTY_SCHEDULE = [("easy", 2), ("medium", 3), ("story", 5), ("hard", 3), ("extreme", 2)]
+
+METRIC_LABELS = {
+    "laser-maze": [("reflectionCount", "Reflections"), ("mirrorCount", "Mirrors"), ("distractorMirrorCount", "Distractors"), ("targetCount", "Targets")],
+    "conveyor-routing": [("routeDecisionDepth", "Route decisions"), ("totalSwitchCount", "Total switches"), ("decoyBranchCount", "Decoys"), ("binCount", "Bins")],
+    "pipe-flow": [("solutionDecisionDepth", "Decision depth"), ("totalJunctionCount", "Junctions"), ("criticalClosedValveCount", "Critical closed valves"), ("decoyBranchCount", "Decoys"), ("tankCount", "Tanks")],
+    "device-cables": [("cableCount", "Cables"), ("waypointColumnCount", "Waypoint columns"), ("answerOptionCount", "Options")],
+}
+
+
 def main() -> None:
     generated_dir = PROJECT_ROOT / "generated" / "level-3a"
-    generated_dir.mkdir(parents=True, exist_ok=True)
+    generated_dir.parent.mkdir(parents=True, exist_ok=True)
+    # Normal workspace ACLs must survive the final rename on Windows.
+    # tempfile.mkdtemp uses a private ACL that blocks Web build subprocesses.
+    stage = PROJECT_ROOT / f"level-3a-stage-{uuid4().hex}"
+    stage.mkdir()
 
     # Subtype generators and their seed/difficulty configs
     subtypes = [
@@ -42,16 +53,12 @@ def main() -> None:
         ("device-cables", DeviceCablesGenerator, 330),
     ]
 
-    diff_schedule = [
-        ("easy", 2),
-        ("medium", 6),
-        ("hard", 2),
-    ]
+    diff_schedule = DIFFICULTY_SCHEDULE
 
     all_bundles = []
     qa_cards = []
 
-    print("Generating Level 3A Routing Puzzles batch (40 challenges)...")
+    print("Generating Level 3A Routing Puzzles batch (60 challenges)...")
 
     for subtype_name, gen_cls, base_seed in subtypes:
         seed_offset = 0
@@ -72,13 +79,13 @@ def main() -> None:
                 # Export to disk under challenges/generated/level-3a/<id>/
                 export_path = export_challenge_bundle(
                     bundle,
-                    output_root=PROJECT_ROOT / "generated",
+                    output_root=stage,
                     overwrite=True,
-                    organize_by_level=True,
+                    organize_by_level=False,
                     update_manifest=False,
                 )
 
-                val_res = validate_single_challenge_dir(export_path, check_determinism=False)
+                val_res = validate_single_challenge_dir(export_path, check_determinism=True)
                 if not val_res.passed:
                     raise RuntimeError(f"Validation failed for {bundle.public_challenge.id}: {val_res.errors}")
 
@@ -93,14 +100,7 @@ def main() -> None:
                 routing_summary = ""
                 if bundle.private_answer.routing:
                     r = bundle.private_answer.routing
-                    if subtype_name == "laser-maze":
-                        routing_summary = f"Reflections: {len(r.get('mirrorHits', []))} | Target: {r.get('finalTarget')} | Status: {r.get('exitStatus')}"
-                    elif subtype_name == "conveyor-routing":
-                        routing_summary = f"Path: {' -> '.join(r.get('solutionPath', []))} | Switches: {len(r.get('switchStates', {}))}"
-                    elif subtype_name == "pipe-flow":
-                        routing_summary = f"Open valves: {len(r.get('openValves', []))} | Closed: {len(r.get('closedValves', []))} | Target: {r.get('targetTank')}"
-                    elif subtype_name == "device-cables":
-                        routing_summary = f"Query: {r.get('queryDevice')} <-> {r.get('queryOutlet')} | Total cables: {r.get('cableCount')}"
+                    routing_summary = " | ".join(f"{label}: {r[key]}" for key, label in METRIC_LABELS[subtype_name])
 
                 qa_cards.append({
                     "id": bundle.public_challenge.id,
@@ -119,7 +119,7 @@ def main() -> None:
     print(f"Successfully exported {len(all_bundles)} Level 3A challenges.")
 
     # Validate Level 3A generated directory
-    report = validate_generated_directory(PROJECT_ROOT / "generated" / "level-3a", check_determinism=False)
+    report = validate_generated_directory(stage, check_determinism=True)
     if not report.is_valid:
         print("Validation report errors:")
         for err in report.global_errors:
@@ -130,6 +130,15 @@ def main() -> None:
                     print(f"  - [{r.challenge_id}]:", err)
         raise RuntimeError("Generated directory validation failed!")
     print(f"Generated directory validation PASSED: {report.total_count} total challenges across all levels ({report.passed_count} passed).")
+    if report.total_count != 60:
+        raise RuntimeError(f"Expected exactly 60 staged Level 3A outputs, got {report.total_count}")
+    # Replace only the explicitly named Level 3A outputs, after validating the batch.
+    expected = (PROJECT_ROOT / "generated" / "level-3a").absolute()
+    if generated_dir.resolve() != expected or stage.resolve().parent != PROJECT_ROOT.resolve():
+        raise RuntimeError("Refusing to replace outputs outside the Level 3A target")
+    if generated_dir.exists():
+        shutil.rmtree(generated_dir)
+    stage.rename(generated_dir)
 
     # Generate Visual QA HTML Contact Sheet
     qa_html = f"""<!DOCTYPE html>
@@ -182,7 +191,9 @@ def main() -> None:
   .badge-cables {{ background: #581c87; color: #d8b4fe; }}
   .badge-easy {{ background: #064e3b; color: #6ee7b7; }}
   .badge-medium {{ background: #78350f; color: #fde68a; }}
+  .badge-story {{ background: #4c1d95; color: #ddd6fe; }}
   .badge-hard {{ background: #7f1d1d; color: #fca5a5; }}
+  .badge-extreme {{ background: #831843; color: #fbcfe8; }}
   .header {{
     display: flex;
     justify-content: space-between;
@@ -245,7 +256,7 @@ def main() -> None:
     <div class="answer-box">
       <div>Options: {html.escape(str(c['options']))}</div>
       <div style="margin-top: 4px;">Correct Answer: <span class="ans">{html.escape(str(c['answer']))}</span></div>
-      <div style="margin-top: 4px; color: #94a3b8;">Route: {html.escape(c['routing_summary'])}</div>
+      <div style="margin-top: 4px; color: #94a3b8;">Complexity: {html.escape(c['routing_summary'])}</div>
     </div>
   </div>
 """

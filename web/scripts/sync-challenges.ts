@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { isChallengeDifficulty, type ChallengeDifficulty } from "../lib/challenges/types";
 
 interface PublicUiConfig {
   rows?: number;
@@ -14,7 +15,7 @@ interface PublicChallenge {
   level: number;
   variant: string;
   subtype?: string;
-  difficulty?: string;
+  difficulty?: ChallengeDifficulty;
   type: string;
   instruction: string;
   seed: number;
@@ -46,7 +47,7 @@ export interface CatalogEntry {
   levelKey: string;
   variant: string;
   subtype?: string;
-  difficulty?: string;
+  difficulty?: ChallengeDifficulty;
   displayName: string;
   levelLabel: string;
   type: string;
@@ -91,6 +92,11 @@ const FORBIDDEN_PUBLIC_KEYS = new Set([
   "switchstates",
   "openvalves",
   "closedvalves",
+  "reflectioncount", "mirrorcount", "totalmirrorcount", "distractormirrorcount", "targetcount",
+  "routedecisiondepth", "totalswitchcount", "decoybranchcount", "bincount", "switchgraph",
+  "solutiondecisiondepth", "totaljunctioncount", "criticalclosedvalvecount", "tankcount",
+  "cablecount", "waypointcolumncount", "answeroptioncount",
+  "generationconfig", "griddimensions", "mirrors", "decoypaths", "edges",
 ]);
 
 const FORBIDDEN_FILENAME_TERMS = [
@@ -271,6 +277,12 @@ export function syncChallenges(): { totalSynced: number; catalogCount: number } 
 
       const challenge = JSON.parse(challengeRaw) as PublicChallenge;
       const answer = JSON.parse(answerRaw) as RawAnswer;
+      if (challenge.difficulty != null && !isChallengeDifficulty(challenge.difficulty)) {
+        throw new Error(`Invalid generated difficulty for ${challenge.id}`);
+      }
+      if (challenge.variant === "routing-puzzle" && !isChallengeDifficulty(challenge.difficulty)) {
+        throw new Error(`Routing puzzle ${challenge.id} must include Python-generated difficulty`);
+      }
 
       // AUDIT 1: Ensure public challenge.json does not leak answers or ground-truth
       auditObjectForLeaks(challenge);

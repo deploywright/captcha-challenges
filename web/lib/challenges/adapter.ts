@@ -1,4 +1,5 @@
 import type { ChallengeCatalogEntry, ClientChallenge } from "./types";
+import { isChallengeDifficulty } from "./types";
 
 /**
  * Validates and converts a catalog entry or raw public challenge into a sanitized ClientChallenge.
@@ -29,6 +30,12 @@ export function toClientChallenge(
     : undefined;
 
   const rawAssets = Array.isArray(raw.assets) ? raw.assets.map(String) : [];
+  if (raw.difficulty != null && !isChallengeDifficulty(raw.difficulty)) {
+    throw new Error(`Challenge ${raw.id} has invalid difficulty`);
+  }
+  if (raw.variant === "routing-puzzle" && !isChallengeDifficulty(raw.difficulty)) {
+    throw new Error(`Routing puzzle ${raw.id} is missing difficulty`);
+  }
 
   return {
     id: raw.id,
@@ -36,7 +43,7 @@ export function toClientChallenge(
     levelKey: String(raw.levelKey || ""),
     variant: raw.variant as ClientChallenge["variant"],
     subtype: typeof raw.subtype === "string" ? (raw.subtype as ClientChallenge["subtype"]) : undefined,
-    difficulty: typeof raw.difficulty === "string" ? (raw.difficulty as ClientChallenge["difficulty"]) : undefined,
+    difficulty: isChallengeDifficulty(raw.difficulty) ? raw.difficulty : undefined,
     displayName: String(raw.displayName || raw.variant),
     levelLabel: String(raw.levelLabel || `Level ${raw.level}`),
     type: raw.type === "single-choice" ? "single-choice" : "image-selection",

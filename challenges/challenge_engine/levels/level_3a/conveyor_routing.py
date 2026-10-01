@@ -8,25 +8,20 @@ which route is active. The user must visually follow the active track to find th
 from __future__ import annotations
 
 import math
+from challenge_engine.levels.level_3a.topology import build_route_network
 from typing import Any
 from PIL import Image, ImageDraw
 
 from challenge_engine.core.exporter import ChallengeBundle
 from challenge_engine.core.random import DeterministicRNG
-from challenge_engine.core.schemas import ROUTING_DIFFICULTY_PRESETS, Level3AConfig
+from challenge_engine.core.schemas import ROUTING_DIFFICULTY_PRESETS
 from challenge_engine.levels.level_3a.base import (
     COLOR_ACCENT_AMBER,
-    COLOR_ACCENT_BLUE,
     COLOR_ACCENT_CYAN,
     COLOR_ACCENT_GREEN,
     COLOR_ACCENT_PURPLE,
     COLOR_BG,
-    COLOR_BORDER,
     COLOR_BORDER_LIGHT,
-    COLOR_CARD_BG,
-    COLOR_HEADER_BG,
-    COLOR_TEXT_DIM,
-    COLOR_TEXT_MUTED,
     COLOR_TEXT_PRIMARY,
     RoutingPuzzleSubtypeGenerator,
     draw_header_banner,
@@ -48,119 +43,56 @@ class ConveyorRoutingGenerator(RoutingPuzzleSubtypeGenerator):
     subtype = "conveyor-routing"
 
     def _resolve_params(self, rng: DeterministicRNG) -> dict[str, int]:
-        cfg_sub = self.config.conveyorRouting
-        diff = self.config.difficulty
-        presets = ROUTING_DIFFICULTY_PRESETS["conveyor-routing"].get(
-            diff, ROUTING_DIFFICULTY_PRESETS["conveyor-routing"]["medium"]
-        )
+        cfg = self.config.conveyorRouting
+        p = ROUTING_DIFFICULTY_PRESETS[self.subtype][self.config.difficulty]
         return {
-            "switches": cfg_sub.switchCount or presets["switches"],
-            "bins": cfg_sub.binCount or presets["bins"],
-            "decoys": cfg_sub.decoyBranches or presets["decoys"],
+            "depth": cfg.routeDecisionDepth if cfg.routeDecisionDepth is not None else p["routeDecisionDepth"],
+            "total": cfg.totalSwitchCount if cfg.totalSwitchCount is not None else (cfg.switchCount if cfg.switchCount is not None else p["totalSwitchCount"]),
+            "bins": cfg.binCount if cfg.binCount is not None else p["bins"],
+            "decoys": cfg.decoyBranches if cfg.decoyBranches is not None else p["decoyBranchCount"],
         }
 
     def generate_one(self, seed: int) -> ChallengeBundle:
         rng = DeterministicRNG(seed, f"{self.level_key}:{self.subtype}")
-        params = self._resolve_params(rng.fork("params"))
-        n_bins = min(max(3, params["bins"]), 5)
-
-        width = self.config.canvasWidth
-        height = self.config.canvasHeight
-
-        # Build a multi-tier directed network of switches
-        num_tiers = 3 if n_bins <= 4 else 4
-
-        y_start = 120.0
-        y_end = height - 90.0
-        y_step = (y_end - y_start) / (num_tiers + 1)
-
-        tier_nodes: list[list[dict[str, Any]]] = []
-
-        # Tier 0: Single entry switch
-        entry_x = width / 2.0
-        entry_y = y_start + y_step
-        tier_nodes.append([{"x": entry_x, "y": entry_y, "tier": 0, "idx": 0}])
-
-        # Intermediate switch tiers
-        for t in range(1, num_tiers):
-            tier_y = y_start + (t + 1) * y_step
-            count = min(t + 1, n_bins)
-            span = width * 0.72
-            xs = [width / 2.0 - span / 2.0 + (span / (count - 1)) * i for i in range(count)]
-            nodes_in_tier = []
-            for i, nx in enumerate(xs):
-                nodes_in_tier.append({"x": nx, "y": tier_y, "tier": t, "idx": i})
-            tier_nodes.append(nodes_in_tier)
-
-        # Destination bins at the bottom
-        bin_y = y_end
-        span_bins = width * 0.76
-        bin_xs = [
-            width / 2.0 - span_bins / 2.0 + (span_bins / (n_bins - 1)) * i
-            for i in range(n_bins)
-        ]
-        bin_nodes = [
-            {"x": bx, "y": bin_y, "label": f"Bin {chr(65 + i)}", "idx": i}
-            for i, bx in enumerate(bin_xs)
-        ]
-
-        # Connect switches to children and assign switch states
-        switch_states: dict[tuple[int, int], str] = {}
-        for t, nodes in enumerate(tier_nodes):
-            for i, node in enumerate(nodes):
-                state = rng.fork(f"switch_{t}_{i}").choice(["left", "right"])
-                switch_states[(t, i)] = state
-                node["state"] = state
-
-                if t < num_tiers - 1:
-                    next_nodes = tier_nodes[t + 1]
-                    node["left_child"] = next_nodes[min(i, len(next_nodes) - 1)]
-                    node["right_child"] = next_nodes[min(i + 1, len(next_nodes) - 1)]
-                else:
-                    node["left_child"] = bin_nodes[min(i, len(bin_nodes) - 1)]
-                    node["right_child"] = bin_nodes[min(i + 1, len(bin_nodes) - 1)]
-
-        # Trace package path from entry node
-        curr = tier_nodes[0][0]
-        route_nodes = [curr]
-        while "label" not in curr:
-            active_child = (
-                curr["left_child"] if curr["state"] == "left" else curr["right_child"]
-            )
-            route_nodes.append(active_child)
-            curr = active_child
-
-        target_bin = curr["label"]
-        options = [b["label"] for b in bin_nodes]
-
-        # Render visual scene
+        p = self._resolve_params(rng.fork("params"))
+        main, bins, branches = build_route_network(
+            rng, p["depth"], p["total"], p["decoys"], p["bins"],
+            self.config.canvasWidth, self.config.canvasHeight, "Bin",
+        )
+        nodes = main + [node for branch in branches for node in branch]
+        for node in nodes:
+            state = rng.fork(node["id"]).choice(["left", "right"])
+            node["state"] = state
+            # All main switches activate the guaranteed route. Decoy switches
+            # continue along plausible multi-segment routes to other bins.
+            node[f"{state}_child"] = node["next"]
+            other = "right" if state == "left" else "left"
+            node[f"{other}_child"] = node["wrong"]
+        graph = {n["id"]: {"state": n["state"], "left": n["left_child"]["id"],
+                            "right": n["right_child"]["id"]} for n in nodes}
+        # Trace active edges independently of the construction path.
+        route = []
+        current = main[0]["id"]
+        while current in graph:
+            if current in route:
+                raise RuntimeError("Conveyor active route contains a cycle")
+            route.append(current)
+            current = graph[current][graph[current]["state"]]
+        target = next(b["label"] for b in bins if b["id"] == current)
+        route.append(current)
         img = self._render_conveyor_scene(
-            width=width,
-            height=height,
-            tier_nodes=tier_nodes,
-            bin_nodes=bin_nodes,
-            entry_pos=(entry_x, y_start),
-            route_nodes=route_nodes,
+            self.config.canvasWidth, self.config.canvasHeight, [nodes], bins,
+            (main[0]["x"], 95.0), main,
         )
-
-        instruction = "Which bin will receive the package?"
-        private_meta = {
-            "subtype": self.subtype,
-            "difficulty": self.config.difficulty,
-            "switchCount": sum(len(tn) for tn in tier_nodes),
-            "targetBin": target_bin,
-            "routeLength": len(route_nodes),
-            "options": options,
+        metadata = {
+            "subtype": self.subtype, "difficulty": self.config.difficulty,
+            "routeDecisionDepth": len(route) - 1, "totalSwitchCount": len(graph),
+            "decoyBranchCount": len(branches), "binCount": len(bins),
+            "switchGraph": graph, "solutionPath": route, "targetBin": target,
+            "decoyPaths": [[n["id"] for n in branch] + [branch[-1]["next"]["id"]] for branch in branches],
         }
-
-        return self.build_bundle(
-            seed=seed,
-            instruction=instruction,
-            options=options,
-            correct_answer=target_bin,
-            image=img,
-            private_routing_metadata=private_meta,
-        )
+        return self.build_bundle(seed, "Which bin will receive the package?",
+                                 sorted(b["label"] for b in bins), target, img, metadata)
 
     def _render_conveyor_scene(
         self,
@@ -203,9 +135,11 @@ class ConveyorRoutingGenerator(RoutingPuzzleSubtypeGenerator):
                 lc = node["left_child"]
                 rc = node["right_child"]
 
+                draw.line([(nx, ny), (lc["x"], lc["y"])], fill=COLOR_BG, width=22)
                 draw.line([(nx, ny), (lc["x"], lc["y"])], fill=track_color, width=16)
                 draw.line([(nx, ny), (lc["x"], lc["y"])], fill=track_fill, width=10)
 
+                draw.line([(nx, ny), (rc["x"], rc["y"])], fill=COLOR_BG, width=22)
                 draw.line([(nx, ny), (rc["x"], rc["y"])], fill=track_color, width=16)
                 draw.line([(nx, ny), (rc["x"], rc["y"])], fill=track_fill, width=10)
 

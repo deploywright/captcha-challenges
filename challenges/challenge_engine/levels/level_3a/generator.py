@@ -15,7 +15,7 @@ from challenge_engine.core.exporter import ChallengeBundle
 from challenge_engine.core.ids import asset_relpath_for_index, generate_challenge_id
 from challenge_engine.core.random import DeterministicRNG
 from challenge_engine.core.schemas import (
-    LEVEL_3A_DIFFICULTY_PRESETS,
+    LEGACY_TANGLED_CABLE_DIFFICULTY_PRESETS,
     LEVEL_3A_KEY,
     CableAnnotations,
     CableIntersection,
@@ -154,9 +154,9 @@ class Level3ATangledCablesGenerator:
     def _resolve_cable_count(self, rng: DeterministicRNG) -> int:
         if self.config.cableCount is not None:
             return self.config.cableCount
-        preset = LEVEL_3A_DIFFICULTY_PRESETS.get(
+        preset = LEGACY_TANGLED_CABLE_DIFFICULTY_PRESETS.get(
             self.config.difficulty,
-            LEVEL_3A_DIFFICULTY_PRESETS["hard"],
+            LEGACY_TANGLED_CABLE_DIFFICULTY_PRESETS["hard"],
         )
         c_min, c_max = preset["cableCountRange"]
         return rng.randint(c_min, c_max)

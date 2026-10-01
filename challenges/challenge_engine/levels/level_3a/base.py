@@ -140,6 +140,7 @@ class RoutingPuzzleSubtypeGenerator(abc.ABC):
             level=3,
             variant="routing-puzzle",
             subtype=self.subtype,
+            difficulty=self.config.difficulty,
             type="single-choice",
             instruction=instruction,
             seed=seed,
@@ -159,7 +160,7 @@ class RoutingPuzzleSubtypeGenerator(abc.ABC):
             subtype=self.subtype,
             correctSelection=[correct_index],
             answer=correct_answer,
-            routing=private_routing_metadata,
+            routing={**private_routing_metadata, "generationConfig": self.config.model_dump(mode="json")},
         )
 
         return ChallengeBundle(

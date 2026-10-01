@@ -8,14 +8,13 @@ mechanical states. The user visualizes flow connectivity to determine which tank
 
 from __future__ import annotations
 
-import collections
-import math
+from challenge_engine.levels.level_3a.topology import build_route_network, private_graph_edges, reachable_tanks
 from typing import Any
 from PIL import Image, ImageDraw
 
 from challenge_engine.core.exporter import ChallengeBundle
 from challenge_engine.core.random import DeterministicRNG
-from challenge_engine.core.schemas import ROUTING_DIFFICULTY_PRESETS, Level3AConfig
+from challenge_engine.core.schemas import ROUTING_DIFFICULTY_PRESETS
 from challenge_engine.levels.level_3a.base import (
     COLOR_ACCENT_AMBER,
     COLOR_ACCENT_BLUE,
@@ -23,12 +22,7 @@ from challenge_engine.levels.level_3a.base import (
     COLOR_ACCENT_GREEN,
     COLOR_ACCENT_PURPLE,
     COLOR_BG,
-    COLOR_BORDER,
     COLOR_BORDER_LIGHT,
-    COLOR_CARD_BG,
-    COLOR_HEADER_BG,
-    COLOR_TEXT_DIM,
-    COLOR_TEXT_MUTED,
     COLOR_TEXT_PRIMARY,
     RoutingPuzzleSubtypeGenerator,
     draw_header_banner,
@@ -55,198 +49,90 @@ class PipeFlowGenerator(RoutingPuzzleSubtypeGenerator):
     subtype = "pipe-flow"
 
     def _resolve_params(self, rng: DeterministicRNG) -> dict[str, int]:
-        cfg_sub = self.config.pipeFlow
-        diff = self.config.difficulty
-        presets = ROUTING_DIFFICULTY_PRESETS["pipe-flow"].get(
-            diff, ROUTING_DIFFICULTY_PRESETS["pipe-flow"]["medium"]
-        )
+        cfg = self.config.pipeFlow
+        p = ROUTING_DIFFICULTY_PRESETS[self.subtype][self.config.difficulty]
         return {
-            "junctions": cfg_sub.junctionCount or presets["junctions"],
-            "tanks": cfg_sub.tankCount or presets["tanks"],
-            "closedValves": cfg_sub.closedValves or presets["closedValves"],
+            "depth": cfg.solutionDecisionDepth if cfg.solutionDecisionDepth is not None else p["solutionDecisionDepth"],
+            "total": cfg.totalJunctionCount if cfg.totalJunctionCount is not None else (cfg.junctionCount if cfg.junctionCount is not None else p["totalJunctionCount"]),
+            "tanks": cfg.tankCount if cfg.tankCount is not None else p["tanks"],
+            "closed": cfg.closedValves if cfg.closedValves is not None else p["criticalClosedValveCount"],
+            "decoys": cfg.decoyBranchCount if cfg.decoyBranchCount is not None else p["decoyBranchCount"],
         }
 
     def generate_one(self, seed: int) -> ChallengeBundle:
         rng = DeterministicRNG(seed, f"{self.level_key}:{self.subtype}")
-        params = self._resolve_params(rng.fork("params"))
-        n_tanks = min(max(3, params["tanks"]), 5)
-
-        width = self.config.canvasWidth
-        height = self.config.canvasHeight
-
-        # Build tree network from Inlet -> Tanks
-        # Tiers of split junctions
-        num_tiers = 3 if n_tanks <= 4 else 4
-        y_top = 110.0
-        y_bottom = height - 90.0
-        y_step = (y_bottom - y_top) / (num_tiers + 1)
-
-        # Generate tier nodes
-        tier_nodes: list[list[dict[str, Any]]] = []
-        entry_x = width / 2.0
-        entry_y = y_top + y_step
-        tier_nodes.append([{"x": entry_x, "y": entry_y, "tier": 0, "idx": 0}])
-
-        for t in range(1, num_tiers):
-            tier_y = y_top + (t + 1) * y_step
-            count = min(t + 1, n_tanks)
-            span = width * 0.72
-            xs = [width / 2.0 - span / 2.0 + (span / (count - 1)) * i for i in range(count)]
-            nodes_in_tier = [{"x": nx, "y": tier_y, "tier": t, "idx": i} for i, nx in enumerate(xs)]
-            tier_nodes.append(nodes_in_tier)
-
-        # Destination tanks at the bottom
-        span_tanks = width * 0.76
-        tank_xs = [
-            width / 2.0 - span_tanks / 2.0 + (span_tanks / (n_tanks - 1)) * i
-            for i in range(n_tanks)
-        ]
-        tank_nodes = [
-            {"x": tx, "y": y_bottom, "label": f"Tank {chr(65 + i)}", "idx": i}
-            for i, tx in enumerate(tank_xs)
-        ]
-
-        # Connect pipe edges and assign valves
-        # Each edge from parent to child has a valve that can be OPEN or CLOSED
-        edges: list[dict[str, Any]] = []
-
-        for t, nodes in enumerate(tier_nodes):
-            for i, node in enumerate(nodes):
-                if t < num_tiers - 1:
-                    next_nodes = tier_nodes[t + 1]
-                    lc = next_nodes[min(i, len(next_nodes) - 1)]
-                    rc = next_nodes[min(i + 1, len(next_nodes) - 1)]
-                else:
-                    lc = tank_nodes[min(i, len(tank_nodes) - 1)]
-                    rc = tank_nodes[min(i + 1, len(tank_nodes) - 1)]
-
-                node["left_child"] = lc
-                node["right_child"] = rc
-
-                # Create edge objects with midpoints for valves
-                edge_l = {
-                    "id": f"e_{t}_{i}_L",
-                    "u": node,
-                    "v": lc,
-                    "side": "left",
-                    "valve": "OPEN",  # Default open, will adjust
-                }
-                edge_r = {
-                    "id": f"e_{t}_{i}_R",
-                    "u": node,
-                    "v": rc,
-                    "side": "right",
-                    "valve": "OPEN",
-                }
-                edges.append(edge_l)
-                edges.append(edge_r)
-                node["edge_l"] = edge_l
-                node["edge_r"] = edge_r
-
-        # Select exactly ONE target tank to be reachable
-        target_tank_idx = rng.fork("target").randint(0, n_tanks - 1)
-        target_tank = tank_nodes[target_tank_idx]["label"]
-
-        # Ensure reachability: exactly ONE tank reachable from root via OPEN valves
-        # We can set valve states: at each fork on the path to target_tank, set that edge OPEN and other edge CLOSED
-        # Trace path from root to target_tank:
-        def find_path_to_target(curr: dict[str, Any]) -> list[dict[str, Any]] | None:
-            if curr.get("label") == target_tank:
-                return []
-            if "left_child" not in curr:
-                return None
-            # Try left
-            p_left = find_path_to_target(curr["left_child"])
-            if p_left is not None:
-                return [curr["edge_l"]] + p_left
-            p_right = find_path_to_target(curr["right_child"])
-            if p_right is not None:
-                return [curr["edge_r"]] + p_right
-            return None
-
-        solution_edges = find_path_to_target(tier_nodes[0][0])
-        if not solution_edges:
-            # Fallback path directly to leftmost or rightmost
-            solution_edges = []
-
-        sol_edge_set = set(e["id"] for e in solution_edges)
-
-        # Set all solution edges to OPEN
-        for e in solution_edges:
-            e["valve"] = "OPEN"
-
-        # For non-solution branches, close enough valves so NO other tank is reachable
-        for node in [n for tier in tier_nodes for n in tier]:
-            el = node.get("edge_l")
-            er = node.get("edge_r")
-            if el and er:
-                if el["id"] in sol_edge_set and er["id"] not in sol_edge_set:
-                    er["valve"] = "CLOSED"
-                elif er["id"] in sol_edge_set and el["id"] not in sol_edge_set:
-                    el["valve"] = "CLOSED"
-                elif el["id"] not in sol_edge_set and er["id"] not in sol_edge_set:
-                    # Randomly open or close deterministically
-                    el["valve"] = rng.fork(f"v_{el['id']}").choice(["OPEN", "CLOSED"])
-                    er["valve"] = rng.fork(f"v_{er['id']}").choice(["OPEN", "CLOSED"])
-
-        # BFS reachability verification from root
-        reachable_tanks: set[str] = set()
-        queue = collections.deque([tier_nodes[0][0]])
-        visited_nodes: set[str] = {"node_0_0"}
-
-        while queue:
-            curr = queue.popleft()
-            if "label" in curr:
-                reachable_tanks.add(curr["label"])
+        p = self._resolve_params(rng.fork("params"))
+        if p["closed"] != p["decoys"]:
+            raise ValueError("Each independent wrong-tank branch requires one critical closed valve")
+        for attempt in range(100):
+            attempt_rng = rng.fork(f"attempt_{attempt}")
+            main, tanks, branches = build_route_network(
+                attempt_rng, p["depth"], p["total"], p["decoys"], p["tanks"],
+                self.config.canvasWidth, self.config.canvasHeight, "Tank",
+            )
+            nodes = main + [n for branch in branches for n in branch]
+            # Move the blocker along each wrong route. Never block its first
+            # edge: the branch must remain traceable beyond the main junction.
+            blocked = {attempt_rng.choice(branch)["id"] for branch in branches}
+            inlet = {"id": "inlet", "x": main[0]["x"], "y": 95.0}
+            edges = [{"id": "inlet_next", "u": inlet, "v": main[0], "valve": "OPEN"}]
+            for node in nodes:
+                for side in ("next", "wrong"):
+                    edges.append({"id": f"{node['id']}_{side}", "u": node, "v": node[side],
+                                  "valve": "CLOSED" if side == "next" and node["id"] in blocked else "OPEN"})
+            graph = private_graph_edges(edges)
+            tank_map = {t["id"]: t["label"] for t in tanks}
+            reachable = reachable_tanks(main[0]["id"], graph, tank_map)
+            if len(reachable) != 1:
+                continue  # Deterministic retry, without repairing valve states.
+            target = next(iter(reachable))
+            # Count essential blockers by opening each one independently.
+            critical = 0
+            for i, edge in enumerate(graph):
+                if edge["valve"] == "CLOSED":
+                    opened = [dict(e) for e in graph]
+                    opened[i]["valve"] = "OPEN"
+                    critical += len(reachable_tanks(main[0]["id"], opened, tank_map)) > 1
+            if critical != p["closed"]:
                 continue
-
-            c_key_l = f"node_{curr['left_child'].get('tier', 't')}_{curr['left_child'].get('idx', 'i')}_{curr['left_child'].get('label', '')}"
-            el = curr.get("edge_l")
-            if el and el["valve"] == "OPEN" and c_key_l not in visited_nodes:
-                visited_nodes.add(c_key_l)
-                queue.append(el["v"])
-
-            c_key_r = f"node_{curr['right_child'].get('tier', 't')}_{curr['right_child'].get('idx', 'i')}_{curr['right_child'].get('label', '')}"
-            er = curr.get("edge_r")
-            if er and er["valve"] == "OPEN" and c_key_r not in visited_nodes:
-                visited_nodes.add(c_key_r)
-                queue.append(er["v"])
-
-        # If more than 1 tank is reachable, close the leaks
-        if reachable_tanks != {target_tank}:
-            for e in edges:
-                if e["id"] not in sol_edge_set:
-                    e["valve"] = "CLOSED"
-
-        options = [t["label"] for t in tank_nodes]
-
-        # Render visual scene
-        img = self._render_pipe_scene(
-            width=width,
-            height=height,
-            tier_nodes=tier_nodes,
-            tank_nodes=tank_nodes,
-            edges=edges,
-            entry_pos=(entry_x, y_top),
-        )
-
-        instruction = "Which tank will receive water from the main inlet?"
-        private_meta = {
-            "subtype": self.subtype,
-            "difficulty": self.config.difficulty,
-            "junctionCount": sum(len(tn) for tn in tier_nodes),
-            "targetTank": target_tank,
-            "options": options,
-        }
-
-        return self.build_bundle(
-            seed=seed,
-            instruction=instruction,
-            options=options,
-            correct_answer=target_tank,
-            image=img,
-            private_routing_metadata=private_meta,
-        )
+            # Place unchanged-size valve housings away from other housings and
+            # fittings. Long wrong branches permit varying blocker depths.
+            placements = []
+            layout_valid = True
+            for edge in edges:
+                if edge["u"]["id"] == "inlet" or edge["v"].get("cap"):
+                    continue
+                u, v = edge["u"], edge["v"]
+                fractions = attempt_rng.fork(edge["id"]).shuffle([0.5, 0.35, 0.65, 0.25, 0.75])
+                for fraction in fractions:
+                    x = u["x"] + (v["x"] - u["x"]) * fraction
+                    y = u["y"] + (v["y"] - u["y"]) * fraction
+                    fittings_clear = all(abs(x - n["x"]) >= 40 or abs(y - n["y"]) >= 34 for n in nodes)
+                    if fittings_clear and all(abs(x - px) >= 58 or abs(y - py) >= 42 for px, py in placements):
+                        edge["valvePosition"] = (x, y)
+                        placements.append((x, y))
+                        break
+                else:
+                    layout_valid = False
+                    break
+            if not layout_valid:
+                continue
+            image = self._render_pipe_scene(
+                self.config.canvasWidth, self.config.canvasHeight, [nodes], tanks, edges,
+                (main[0]["x"], 95.0),
+            )
+            metadata = {
+                "subtype": self.subtype, "difficulty": self.config.difficulty,
+                "solutionDecisionDepth": len(main), "totalJunctionCount": len(nodes),
+                "criticalClosedValveCount": critical, "decoyBranchCount": len(branches),
+                "tankCount": len(tanks), "source": main[0]["id"], "tanks": tank_map,
+                "edges": graph, "targetTank": target, "generationAttempt": attempt,
+                "solutionPath": [n["id"] for n in main] + [tanks[0]["id"]],
+                "decoyPaths": [[n["id"] for n in branch] + [branch[-1]["next"]["id"]] for branch in branches],
+            }
+            return self.build_bundle(seed, "Which tank will fill with water?",
+                                     sorted(tank_map.values()), target, image, metadata)
+        raise RuntimeError(f"Failed to generate independently verified Pipe Flow for seed {seed}")
 
     def _render_pipe_scene(
         self,
@@ -284,8 +170,11 @@ class PipeFlowGenerator(RoutingPuzzleSubtypeGenerator):
         for e in edges:
             ux, uy = e["u"]["x"], e["u"]["y"]
             vx, vy = e["v"]["x"], e["v"]["y"]
+            draw.line([(ux, uy), (vx, vy)], fill=COLOR_BG, width=24)
             draw.line([(ux, uy), (vx, vy)], fill=COLOR_PIPE_OUTER, width=18)
             draw.line([(ux, uy), (vx, vy)], fill=COLOR_PIPE_INNER, width=10)
+            if e["v"].get("cap"):
+                draw.ellipse([vx - 7, vy - 7, vx + 7, vy + 7], fill=COLOR_PIPE_OUTER, outline=COLOR_BORDER_LIGHT, width=2)
 
         # 3. Draw Junction fittings
         for tier in tier_nodes:
@@ -296,10 +185,11 @@ class PipeFlowGenerator(RoutingPuzzleSubtypeGenerator):
 
         # 4. Draw Valves on each edge
         for e in edges:
+            if "valvePosition" not in e:
+                continue
             ux, uy = e["u"]["x"], e["u"]["y"]
             vx, vy = e["v"]["x"], e["v"]["y"]
-            mx = (ux + vx) / 2.0
-            my = (uy + vy) / 2.0
+            mx, my = e["valvePosition"]
             is_open = e["valve"] == "OPEN"
 
             # Valve housing body

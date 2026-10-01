@@ -14,6 +14,10 @@ export type RoutingPuzzleSubtype =
 
 export type ChallengeDifficulty = "easy" | "medium" | "story" | "hard" | "extreme";
 
+export function isChallengeDifficulty(value: unknown): value is ChallengeDifficulty {
+  return typeof value === "string" && ["easy", "medium", "story", "hard", "extreme"].includes(value);
+}
+
 export type ChallengeType = "image-selection" | "single-choice";
 
 export interface ChallengeUiConfig {
@@ -29,7 +33,7 @@ export interface ClientChallenge {
   levelKey: string;
   variant: ChallengeVariant;
   subtype?: RoutingPuzzleSubtype | string;
-  difficulty?: ChallengeDifficulty | string;
+  difficulty?: ChallengeDifficulty;
   displayName: string;
   levelLabel: string;
   type: ChallengeType;
@@ -47,7 +51,7 @@ export interface ChallengeCatalogEntry {
   levelKey: string;
   variant: ChallengeVariant;
   subtype?: RoutingPuzzleSubtype | string;
-  difficulty?: ChallengeDifficulty | string;
+  difficulty?: ChallengeDifficulty;
   displayName: string;
   levelLabel: string;
   type: ChallengeType;

@@ -13,19 +13,12 @@ from PIL import Image, ImageDraw
 
 from challenge_engine.core.exporter import ChallengeBundle
 from challenge_engine.core.random import DeterministicRNG
-from challenge_engine.core.schemas import ROUTING_DIFFICULTY_PRESETS, Level3AConfig
+from challenge_engine.core.schemas import ROUTING_DIFFICULTY_PRESETS
 from challenge_engine.levels.level_3a.base import (
-    COLOR_ACCENT_AMBER,
-    COLOR_ACCENT_BLUE,
-    COLOR_ACCENT_CYAN,
     COLOR_ACCENT_GREEN,
-    COLOR_ACCENT_PURPLE,
     COLOR_BG,
     COLOR_BORDER,
-    COLOR_BORDER_LIGHT,
     COLOR_HEADER_BG,
-    COLOR_TEXT_DIM,
-    COLOR_TEXT_MUTED,
     COLOR_TEXT_PRIMARY,
     RoutingPuzzleSubtypeGenerator,
     draw_header_banner,
@@ -128,7 +121,9 @@ class DeviceCablesGenerator(RoutingPuzzleSubtypeGenerator):
         wp_range = cfg_sub.waypointRange or presets["waypointRange"]
         line_w = cfg_sub.lineWidth or presets["lineWidth"]
 
+        opt_range = cfg_sub.answerOptionCountRange or presets["answerOptionCountRange"]
         return {
+            "answerOptionCount": rng.randint(*opt_range),
             "cableCount": n_cables,
             "waypointRange": wp_range,
             "lineWidth": line_w,
@@ -216,7 +211,7 @@ class DeviceCablesGenerator(RoutingPuzzleSubtypeGenerator):
             instruction = f"Which device is connected to {target_outlet}?"
             correct_answer = correct_device
             other_devs = [d for d in devices if d != correct_device]
-            decoy_devs = rng.fork("decoys").sample(other_devs, min(3, len(other_devs)))
+            decoy_devs = rng.fork("decoys").sample(other_devs, min(params["answerOptionCount"] - 1, len(other_devs)))
             options = rng.fork("opt_shuf").shuffle([correct_device] + decoy_devs)
             highlight_target = ("outlet", target_outlet)
         else:
@@ -225,7 +220,7 @@ class DeviceCablesGenerator(RoutingPuzzleSubtypeGenerator):
             instruction = f"Which outlet is the {target_device} connected to?"
             correct_answer = correct_outlet
             other_outs = [o for o in outlets if o != correct_outlet]
-            decoy_outs = rng.fork("decoys").sample(other_outs, min(3, len(other_outs)))
+            decoy_outs = rng.fork("decoys").sample(other_outs, min(params["answerOptionCount"] - 1, len(other_outs)))
             options = rng.fork("opt_shuf").shuffle([correct_outlet] + decoy_outs)
             highlight_target = ("device", target_device)
 
@@ -247,6 +242,8 @@ class DeviceCablesGenerator(RoutingPuzzleSubtypeGenerator):
             "subtype": self.subtype,
             "difficulty": self.config.difficulty,
             "cableCount": n_cables,
+            "waypointColumnCount": num_cols,
+            "answerOptionCount": len(options),
             "connections": connections,
             "queryType": query_type,
             "highlighted": highlight_target,
