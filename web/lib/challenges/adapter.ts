@@ -36,6 +36,7 @@ export function toClientChallenge(
     levelKey: String(raw.levelKey || ""),
     variant: raw.variant as ClientChallenge["variant"],
     subtype: typeof raw.subtype === "string" ? (raw.subtype as ClientChallenge["subtype"]) : undefined,
+    difficulty: typeof raw.difficulty === "string" ? (raw.difficulty as ClientChallenge["difficulty"]) : undefined,
     displayName: String(raw.displayName || raw.variant),
     levelLabel: String(raw.levelLabel || `Level ${raw.level}`),
     type: raw.type === "single-choice" ? "single-choice" : "image-selection",

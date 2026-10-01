@@ -38,9 +38,20 @@ export function getRandomChallenge(
   variant?: ChallengeVariant,
   excludeId?: string
 ): ChallengeCatalogEntry | undefined {
-  const pool = variant
+  let pool = variant
     ? CATALOG.filter((c) => c.variant === variant && c.id !== excludeId)
     : CATALOG.filter((c) => c.id !== excludeId);
+
+  // If selecting routing-puzzle with an excluded ID, prefer subtype diversity
+  if (variant === "routing-puzzle" && excludeId) {
+    const current = getChallengeById(excludeId);
+    if (current?.subtype) {
+      const differentSubtypes = pool.filter((c) => c.subtype !== current.subtype);
+      if (differentSubtypes.length > 0) {
+        pool = differentSubtypes;
+      }
+    }
+  }
 
   if (pool.length === 0) {
     // If excluding the only challenge, fallback to pool without exclude
@@ -74,10 +85,25 @@ export function getNextProgressionChallenge(
   const candidates = getChallengesByVariant(nextVariant);
   if (candidates.length === 0) return undefined;
 
-  // In Story Mode, prefer the default subtype (laser-maze) for routing-puzzle
+  // In Story Mode, prefer the default subtype (laser-maze) with story difficulty for routing-puzzle
   if (nextVariant === "routing-puzzle") {
-    const laserCandidate = candidates.find((c) => c.subtype === "laser-maze");
-    if (laserCandidate) return laserCandidate;
+    const storyLaser = candidates.find(
+      (c) => c.subtype === "laser-maze" && c.difficulty === "story"
+    );
+    if (storyLaser) return storyLaser;
+
+    const hardLaser = candidates.find(
+      (c) => c.subtype === "laser-maze" && c.difficulty === "hard"
+    );
+    if (hardLaser) return hardLaser;
+
+    const mediumLaser = candidates.find(
+      (c) => c.subtype === "laser-maze" && c.difficulty === "medium"
+    );
+    if (mediumLaser) return mediumLaser;
+
+    const anyLaser = candidates.find((c) => c.subtype === "laser-maze");
+    if (anyLaser) return anyLaser;
   }
 
   // Pick deterministic or first candidate from next variant

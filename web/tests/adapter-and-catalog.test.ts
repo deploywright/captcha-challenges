@@ -9,9 +9,9 @@ import {
 import { toClientChallenge } from "../lib/challenges/adapter";
 
 describe("Catalog Queries & Client Adapter", () => {
-  it("loads all 114 catalog entries correctly", () => {
+  it("loads all 134 catalog entries correctly", () => {
     const all = getAllChallenges();
-    expect(all.length).toBe(114);
+    expect(all.length).toBe(134);
   });
 
   it("finds challenge by ID and verifies fields", () => {
@@ -28,11 +28,11 @@ describe("Catalog Queries & Client Adapter", () => {
     expect(getChallengesByVariant("street-grid").length).toBe(20);
     expect(getChallengesByVariant("hard-street-grid").length).toBe(20);
     expect(getChallengesByVariant("checker-shadow").length).toBe(6);
-    expect(getChallengesByVariant("routing-puzzle").length).toBe(40);
+    expect(getChallengesByVariant("routing-puzzle").length).toBe(60);
     expect(getChallengesByVariant("degraded-vision").length).toBe(28);
   });
 
-  it("progresses sequentially across all five levels with laser-maze default", () => {
+  it("progresses sequentially across all five levels with laser-maze story default", () => {
     // Level 1 -> Level 2A
     const lvl1 = getChallengesByVariant("street-grid")[0];
     const next1 = getNextProgressionChallenge(lvl1.id);
@@ -43,11 +43,12 @@ describe("Catalog Queries & Client Adapter", () => {
     const next2a = getNextProgressionChallenge(lvl2a.id);
     expect(next2a?.variant).toBe("checker-shadow");
 
-    // Level 2B -> Level 3A (routing-puzzle with laser-maze subtype as Story Mode default)
+    // Level 2B -> Level 3A (routing-puzzle with laser-maze subtype and story difficulty as Story Mode default)
     const lvl2b = getChallengesByVariant("checker-shadow")[0];
     const next2b = getNextProgressionChallenge(lvl2b.id);
     expect(next2b?.variant).toBe("routing-puzzle");
     expect(next2b?.subtype).toBe("laser-maze");
+    expect(next2b?.difficulty).toBe("story");
 
     // Level 3A -> Level 3B
     const lvl3a = getChallengesByVariant("routing-puzzle")[0];
@@ -99,7 +100,7 @@ describe("Catalog Queries & Client Adapter", () => {
     expect(lvl1Info?.count).toBe(20);
 
     const lvl3aInfo = infos.find((i) => i.levelNumber === "3A");
-    expect(lvl3aInfo?.count).toBe(40);
+    expect(lvl3aInfo?.count).toBe(60);
     expect(lvl3aInfo?.variant).toBe("routing-puzzle");
 
     const lvl3bInfo = infos.find((i) => i.levelNumber === "3B");

@@ -14,6 +14,7 @@ interface PublicChallenge {
   level: number;
   variant: string;
   subtype?: string;
+  difficulty?: string;
   type: string;
   instruction: string;
   seed: number;
@@ -45,6 +46,7 @@ export interface CatalogEntry {
   levelKey: string;
   variant: string;
   subtype?: string;
+  difficulty?: string;
   displayName: string;
   levelLabel: string;
   type: string;
@@ -79,7 +81,6 @@ const FORBIDDEN_PUBLIC_KEYS = new Set([
   "classes",
   "bbox",
   "boundingboxes",
-  "difficulty",
   "targetclass",
   "routing",
   "finaltarget",
@@ -325,6 +326,7 @@ export function syncChallenges(): { totalSynced: number; catalogCount: number } 
         levelKey: answer.levelKey,
         variant: challenge.variant,
         subtype: challenge.subtype || answer.subtype,
+        difficulty: challenge.difficulty,
         displayName: getDisplayName(challenge.variant),
         levelLabel: getLevelLabel(challenge.variant),
         type: challenge.type,

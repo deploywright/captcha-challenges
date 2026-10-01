@@ -134,6 +134,11 @@ export function RoutingPuzzleChallenge({
           >
             {currentSubtypeConfig.label}
           </span>
+          {challenge.difficulty && (
+            <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded border uppercase bg-slate-800/80 text-amber-300 border-amber-800/50">
+              {challenge.difficulty}
+            </span>
+          )}
           <span className="text-xs text-slate-400 font-mono hidden md:inline">
             • {currentSubtypeConfig.subtitle}
           </span>

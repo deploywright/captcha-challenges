@@ -12,6 +12,8 @@ export type RoutingPuzzleSubtype =
   | "pipe-flow"
   | "device-cables";
 
+export type ChallengeDifficulty = "easy" | "medium" | "story" | "hard" | "extreme";
+
 export type ChallengeType = "image-selection" | "single-choice";
 
 export interface ChallengeUiConfig {
@@ -27,6 +29,7 @@ export interface ClientChallenge {
   levelKey: string;
   variant: ChallengeVariant;
   subtype?: RoutingPuzzleSubtype | string;
+  difficulty?: ChallengeDifficulty | string;
   displayName: string;
   levelLabel: string;
   type: ChallengeType;
@@ -44,6 +47,7 @@ export interface ChallengeCatalogEntry {
   levelKey: string;
   variant: ChallengeVariant;
   subtype?: RoutingPuzzleSubtype | string;
+  difficulty?: ChallengeDifficulty | string;
   displayName: string;
   levelLabel: string;
   type: ChallengeType;
