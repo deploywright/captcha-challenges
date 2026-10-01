@@ -1,0 +1,12 @@
+{
+  "gridRows": 3,
+  "gridColumns": 3,
+  "target": "motorcycle",
+  "positiveCountRange": [2, 4],
+  "minEasyAreaRatio": 0.012,
+  "tileWidth": 256,
+  "tileHeight": 256,
+  "allowDuplicates": false,
+  "bdd100kRoot": "data/bdd100k",
+  "sourceSplit": "val"
+}

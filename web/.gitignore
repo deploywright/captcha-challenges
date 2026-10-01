@@ -1,0 +1,35 @@
+﻿# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+.next/
+.open-next/
+.wrangler/
+out/
+build/
+dist/
+
+# Synced challenge assets & private answers (rebuilt via npm run challenges:sync)
+public/challenges/
+src/generated-private/
+src/generated-public/
+
+# Typescript & Next
+*.tsbuildinfo
+next-env.d.ts
+
+# Environment & logs
+.env*.local
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS & Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

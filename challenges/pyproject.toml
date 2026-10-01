@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "challenge-engine"
+version = "0.1.0"
+description = "Deterministic visual CAPTCHA challenge generator, validator, and exporter."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "numpy>=1.26.0",
+    "pillow>=10.0.0",
+    "pydantic>=2.5.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+]
+
+[project.scripts]
+challenge-engine = "challenge_engine.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["challenge_engine*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

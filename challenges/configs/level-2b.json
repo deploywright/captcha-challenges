@@ -1,0 +1,7 @@
+{
+  "assetPath": "assets/level-2b/checker-shadow.png",
+  "metadataPath": "assets/level-2b/metadata.json",
+  "instruction": "Are squares A and B the same shade?",
+  "options": ["Yes", "No"],
+  "luminanceTolerance": 1.0
+}

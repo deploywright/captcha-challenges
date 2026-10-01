@@ -1,0 +1,17 @@
+{
+  "name": "Adelson Checker Shadow Illusion",
+  "author": "Edward H. Adelson (1995)",
+  "source": "https://commons.wikimedia.org/wiki/File:Checker_shadow_illusion.svg (MIT Perceptual Science Group, http://persci.mit.edu/gallery/checkershadow)",
+  "license": "Copyright 1995, Edward H. Adelson. May be reproduced and distributed freely with credit to Edward H. Adelson.",
+  "asset_file": "checker-shadow.png",
+  "question": "Are squares A and B the same shade?",
+  "answer": "yes",
+  "options": [
+    "Yes",
+    "No"
+  ],
+  "regions": {
+    "square_a_interior": [240, 110, 250, 120],
+    "square_b_interior": [230, 195, 240, 205]
+  }
+}

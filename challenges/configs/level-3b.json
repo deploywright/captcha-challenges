@@ -1,0 +1,20 @@
+{
+  "gridRows": 3,
+  "gridColumns": 3,
+  "target": "motorcycle",
+  "positiveCount": 3,
+  "resolution": 16,
+  "supportedResolutions": [64, 48, 32, 24, 16, 12, 8],
+  "upscaleMethod": "nearest",
+  "tileWidth": 256,
+  "tileHeight": 256,
+  "colorQuantization": null,
+  "blurRadius": 0.0,
+  "contrastFactor": 1.0,
+  "jpegQuality": null,
+  "partialMaskRatio": 0.0,
+  "minEasyAreaRatio": 0.012,
+  "allowDuplicates": false,
+  "bdd100kRoot": "data/bdd100k",
+  "sourceSplit": "val"
+}

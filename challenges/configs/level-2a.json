@@ -1,0 +1,23 @@
+{
+  "gridSize": 4,
+  "target": "motorcycle",
+  "positiveCount": 5,
+  "preferredAttributes": [
+    "small-object",
+    "occluded",
+    "truncated",
+    "night",
+    "low-light",
+    "rain",
+    "dense-traffic",
+    "confusable-object",
+    "distant-object",
+    "unusual-angle"
+  ],
+  "minEasyAreaRatio": 0.012,
+  "tileWidth": 256,
+  "tileHeight": 256,
+  "allowDuplicates": false,
+  "bdd100kRoot": "data/bdd100k",
+  "sourceSplit": "val"
+}

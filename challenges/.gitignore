@@ -1,0 +1,39 @@
+﻿# ==============================================================================
+# Git Ignore Configuration for Challenges/
+# ==============================================================================
+
+# Raw datasets (BDD100K images & labels - 6.6GB+)
+data/
+bdd100k/
+*.zip
+*.tar
+*.tar.gz
+
+# Generated challenges output directory (deterministic; generated via CLI)
+generated/
+
+# Image & media assets
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.gif
+*.bmp
+*.svg
+
+# Explicitly preserve Level 2B template asset
+!assets/level-2b/checker-shadow.png
+
+# Python caches & virtual environments
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+*.egg-info/
+dist/
+build/

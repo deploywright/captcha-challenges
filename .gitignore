@@ -1,0 +1,142 @@
+﻿# ==============================================================================
+# Git Ignore Configuration for CAPTCHA Benchmark Monorepo
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. Datasets & Heavy Raw Data (Never commit to Git - 6.6GB+ BDD100K data)
+# ------------------------------------------------------------------------------
+challenges/data/
+data/
+bdd100k/
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.rar
+*.7z
+*.h5
+*.hdf5
+*.parquet
+*.feather
+*.arrow
+
+# ------------------------------------------------------------------------------
+# 2. Challenge Images, Media Assets & Generated Challenge Output
+# ------------------------------------------------------------------------------
+# Ignore all generated challenges output directory (deterministic; generated via CLI)
+challenges/generated/
+generated/
+
+# Ignore all image and visual asset files across the repository
+*.webp
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.ico
+*.svg
+*.tif
+*.tiff
+*.mp4
+*.webm
+
+# Build-time synced challenges in web
+web/public/challenges/
+public/challenges/
+web/src/generated-private/
+src/generated-private/
+web/src/generated-public/
+src/generated-public/
+
+# Explicitly preserve required static template asset for Level 2B:
+!challenges/assets/level-2b/checker-shadow.png
+
+# ------------------------------------------------------------------------------
+# 3. Python Artifacts & Environments
+# ------------------------------------------------------------------------------
+__pycache__/
+*/__pycache__/
+**__pycache__**
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+*/.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+ENV/
+env/
+*.egg-info/
+dist/
+build/
+develop-eggs/
+downloads/
+eggs/
+.eggs/
+
+# ------------------------------------------------------------------------------
+# 4. Web & Cloudflare (Node / Next.js / Wrangler)
+# ------------------------------------------------------------------------------
+node_modules/
+web/node_modules/
+.next/
+web/.next/
+.open-next/
+web/.open-next/
+.wrangler/
+web/.wrangler/
+out/
+web/out/
+*.tsbuildinfo
+web/*.tsbuildinfo
+next-env.d.ts
+web/next-env.d.ts
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Local environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+
+# ------------------------------------------------------------------------------
+# 5. AI Solver & ML Model Weights (for upcoming AI-Solver)
+# ------------------------------------------------------------------------------
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.bin
+*.onnx
+checkpoints/
+AI-Solver/checkpoints/
+runs/
+wandb/
+
+# ------------------------------------------------------------------------------
+# 6. Operating System & IDE Files
+# ------------------------------------------------------------------------------
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
