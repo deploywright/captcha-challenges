@@ -1,0 +1,15 @@
+variant: street-grid
+solver: vlm
+provider: openai
+model: gpt-4.1-mini-2025-04-14
+output_dir: results
+seed: 42
+timeout: 60
+max_retries: 2
+selection_probability: 0.33
+dry_run: false
+# Optional limit; omitted means the entire dynamically discovered variant.
+# limit: 1
+# No provider prices are assumed. Optional explicit USD per million tokens:
+# input_price_per_million: 0.0
+# output_price_per_million: 0.0
