@@ -1,0 +1,181 @@
+{
+  "checked_at": "2026-10-02T18:15:50.452Z",
+  "production_origin": "https://captcha-challenges-web.deploywright.workers.dev",
+  "account_id": "2f240b7f39bbbf616321d3ba86ef7d7e",
+  "database": "captcha-human-benchmark",
+  "database_id": "a88c2d6f-d809-4de4-beeb-ebf11347dc26",
+  "completed_creator_sessions": 0,
+  "creator_sessions_all_statuses": 0,
+  "cohorts": [
+    {
+      "cohort": "main",
+      "status": "completed",
+      "sessions": 1
+    },
+    {
+      "cohort": "pilot",
+      "status": "abandoned",
+      "sessions": 1
+    },
+    {
+      "cohort": "smoke",
+      "status": "abandoned",
+      "sessions": 1
+    },
+    {
+      "cohort": "smoke",
+      "status": "completed",
+      "sessions": 3
+    }
+  ],
+  "exposure": [
+    {
+      "cohort": "main",
+      "exposure_rows": 40,
+      "assigned_count": 40
+    },
+    {
+      "cohort": "pilot",
+      "exposure_rows": 40,
+      "assigned_count": 40
+    },
+    {
+      "cohort": "smoke",
+      "exposure_rows": 122,
+      "assigned_count": 160
+    }
+  ],
+  "protocol_state": [
+    {
+      "protocol_version": "human-v1",
+      "cohort": "main",
+      "revision": 1
+    },
+    {
+      "protocol_version": "human-v1",
+      "cohort": "pilot",
+      "revision": 1
+    },
+    {
+      "protocol_version": "human-v1",
+      "cohort": "smoke",
+      "revision": 4
+    }
+  ],
+  "schema": [
+    {
+      "name": "human_one_creator",
+      "sql": "CREATE UNIQUE INDEX human_one_creator ON human_sessions(participant_id, protocol_version) WHERE cohort = 'creator'"
+    },
+    {
+      "name": "human_sessions",
+      "sql": "CREATE TABLE \"human_sessions\" (\n  session_id TEXT PRIMARY KEY,\n  participant_id TEXT NOT NULL REFERENCES human_participants(participant_id),\n  session_token_hash TEXT NOT NULL UNIQUE,\n  protocol_version TEXT NOT NULL,\n  cohort TEXT NOT NULL CHECK(cohort IN ('main','pilot','smoke','creator')),\n  assignment_seed TEXT NOT NULL,\n  assignment_revision INTEGER NOT NULL,\n  status TEXT NOT NULL CHECK(status IN ('created','active','completed','abandoned')),\n  consented_at INTEGER NOT NULL,\n  created_at INTEGER NOT NULL,\n  started_at INTEGER NOT NULL,\n  completed_at INTEGER,\n  device_class TEXT NOT NULL CHECK(device_class IN ('desktop','tablet','mobile')),\n  viewport_bucket TEXT NOT NULL CHECK(viewport_bucket IN ('small','medium','large')),\n  assigned_count INTEGER NOT NULL CHECK(assigned_count = 40),\n  answered_count INTEGER NOT NULL DEFAULT 0 CHECK(answered_count >= 0),\n  skipped_count INTEGER NOT NULL DEFAULT 0 CHECK(skipped_count >= 0),\n  timeout_count INTEGER NOT NULL DEFAULT 0 CHECK(timeout_count >= 0),\n  CHECK(answered_count + skipped_count <= assigned_count),\n  CHECK(timeout_count <= skipped_count)\n)"
+    },
+    {
+      "name": "human_trial_completed",
+      "sql": "CREATE TRIGGER human_trial_completed AFTER UPDATE OF status ON human_trials\nWHEN OLD.status IN ('assigned','presented') AND NEW.status IN ('answered','skipped','timed_out')\nBEGIN\n  UPDATE human_challenge_exposure SET completed_count = completed_count + 1\n    WHERE challenge_id = NEW.challenge_id AND (protocol_version,cohort) =\n      (SELECT protocol_version,cohort FROM human_sessions WHERE session_id = NEW.session_id);\n  UPDATE human_sessions SET answered_count = answered_count + CASE WHEN NEW.status = 'answered' THEN 1 ELSE 0 END,\n    skipped_count = skipped_count + NEW.skipped, timeout_count = timeout_count + NEW.timed_out\n    WHERE session_id = NEW.session_id;\n  UPDATE human_sessions SET status = 'completed', completed_at = NEW.answered_at\n    WHERE session_id = NEW.session_id AND answered_count + skipped_count = assigned_count;\nEND"
+    }
+  ],
+  "migrations": [
+    {
+      "name": "0001_human_benchmark.sql",
+      "applied_at": "2026-10-02 13:18:00"
+    },
+    {
+      "name": "0002_creator_cohort.sql",
+      "applied_at": "2026-10-02 16:23:36"
+    }
+  ],
+  "creator_deployment": {
+    "created_at": "2026-10-02T16:25:20.996214Z",
+    "version_id": "ed26276e-ee49-486d-815c-917423858a43"
+  },
+  "active_deployment": {
+    "created_at": "2026-10-02T16:25:20.996214Z",
+    "versions": [
+      {
+        "version_id": "ed26276e-ee49-486d-815c-917423858a43",
+        "percentage": 100
+      }
+    ]
+  },
+  "unattributed_main_diagnostic": {
+    "cohort": "main",
+    "session_id": "73fac77a-7985-4755-a26d-16ea9046541f",
+    "attributed_to_creator": false,
+    "assigned": 40,
+    "correct": 30,
+    "skipped": 3,
+    "timed_out": 1,
+    "answered": 37,
+    "median_solve_time_ms": 7683,
+    "unique_positions": 40,
+    "unique_challenge_ids": 40,
+    "finalized": 40,
+    "created_at": "2026-10-02T15:50:39.080Z",
+    "completed_at": "2026-10-02T17:25:47.183Z",
+    "session_counters_match_trials": true
+  },
+  "browser_checks": [
+    {
+      "case": "Creator URL with mocked unauthenticated browser",
+      "session_replies_mocked": true,
+      "real_participant_api_requests": 0,
+      "creator_notice_visible": true,
+      "start_button_visible": true,
+      "captured_mock_start_cohort": "creator",
+      "mocked_start_requests": 1,
+      "resumed_cohort": null,
+      "run_url": "/human-benchmark/run",
+      "completion_heading": "Creator baseline complete",
+      "completion_values_are_synthetic": true
+    },
+    {
+      "case": "Creator URL with mocked active main session",
+      "session_replies_mocked": true,
+      "real_participant_api_requests": 0,
+      "creator_notice_visible": true,
+      "start_button_visible": false,
+      "captured_mock_start_cohort": null,
+      "mocked_start_requests": 0,
+      "resumed_cohort": "main",
+      "run_url": "/human-benchmark/run",
+      "completion_heading": "Benchmark complete",
+      "completion_values_are_synthetic": true
+    }
+  ],
+  "source_hashes": [
+    {
+      "path": "web/app/human-benchmark/page.tsx",
+      "sha256": "9086c3e0cacce71b9a279dfa40a83360300417f9333a017058b491a91ddcf245"
+    },
+    {
+      "path": "web/components/human-benchmark/HumanBenchmarkLanding.tsx",
+      "sha256": "e67d0a463a333145e66a73ea36fa9350c5ffeb18db033e5171d4562de6054e32"
+    },
+    {
+      "path": "web/components/human-benchmark/HumanBenchmarkPlayer.tsx",
+      "sha256": "899902656d683d0b74c164c1c07f8195d271d20284a6927cbb25684b0cd7919b"
+    },
+    {
+      "path": "web/lib/human-benchmark/api.server.ts",
+      "sha256": "3078481a59a65761c0d88d9e32234fc2fba1456c976e6db7e0f48524e7c596ad"
+    },
+    {
+      "path": "web/lib/human-benchmark/store.server.ts",
+      "sha256": "e7d9d74fb5c5a5036102800638e61b07529b9b4f5845af94c94a24dedc86adf7"
+    },
+    {
+      "path": "web/migrations/0002_creator_cohort.sql",
+      "sha256": "387b491a5536d8c4c528953ddf9773e728d4eb18b591ae51088ae1cfdf83b1d4"
+    }
+  ],
+  "historical_route": {
+    "git_reference": "0725f1d^:web/app/human-benchmark/page.tsx",
+    "unsupported_creator_query_falls_back_to_main": true
+  },
+  "production_rows_written": 0,
+  "real_participant_api_requests": 0,
+  "main_attribution_prohibited": true,
+  "historical_browser_path_verified": false
+}

@@ -1,14 +1,14 @@
-# Attribution pending — anonymous main session vs Gemini
+# Anonymous main session vs Gemini — diagnostic only
 
-Generated: 2026-10-02T18:02:50.840527+00:00
+Generated: 2026-10-02T18:16:26.185041+00:00
 
-This draft compares an anonymous candidate session. Creator attribution remains pending.
+This draft compares an anonymous main session. It is excluded from Creator Baseline attribution.
 
 ## Executive Summary
 
 **Single-participant unattributed candidate session; matched challenge comparison is primary.**
 
-**Storage anomaly:** D1 contains zero completed `creator` sessions. Session `73fac77a-7985-4755-a26d-16ea9046541f` is stored in **`main`**, started before creator-cohort deployment. Candidate attribution is pending explicit participant confirmation; these results currently belong only to an anonymous candidate session. No session or trial was moved, edited, or recreated.
+**Storage anomaly:** D1 contains zero completed `creator` sessions. Session `73fac77a-7985-4755-a26d-16ea9046541f` is stored in **`main`**, started before creator-cohort deployment. This main-cohort record is excluded from Candidate Baseline attribution by the user's instruction. These results describe only an anonymous diagnostic session; a correct completed creator-cohort record is still required. No session or trial was moved, edited, or recreated.
 
 The production session contains **30/40 correct (75.00%)**, median solve time **7.683 s**, 3 skips **including** 1 timeout. All 40 assigned trials were finalized; skips/timeouts count as failures.
 
@@ -247,12 +247,12 @@ MINIMAL is recorded in the frozen canonical aggregate; the raw run configs do no
 
 ## Methodological Limitations
 
-1. Storage anomaly: there are zero completed creator-cohort sessions. The selected completed session is stored as main; its creator attribution requires explicit user confirmation. No D1 row was relabeled or changed.
+1. Storage anomaly: there are zero completed creator-cohort sessions. This diagnostic session is stored as main and is explicitly excluded from Candidate Baseline attribution. A correct completed creator record must be identified; no D1 row was relabeled or changed.
 2. Exactly one participant; this is an unattributed candidate session, not representative human performance.
 3. The participant saw 40 of 134 challenges, selected with fixed stratified quotas rather than a simple random full-population sample.
 4. Candidate stage estimates have small N; Level 2B has six total challenges and is completely shared, while Level 3B samples only four distinct scenes/resolutions.
 5. No continuous degraded-resolution threshold can be inferred from four trials.
-6. Candidate identity remains unconfirmed. If confirmed, project familiarity may provide more context than a naive participant; prior exposure is not measured by this session.
+6. The main session is not attributed to the creator. Project familiarity is a limitation of a future unattributed candidate session, not an established fact about this anonymous participant.
 7. Human solve time and Gemini provider inference latency measure different processes; this is not an equivalent speed comparison.
 8. The strongest direct descriptive comparison uses the exact same 40 IDs; full-population overall percentages use different challenge populations and weighting schemes.
 9. The stage-standardized candidate score is a descriptive estimate from within-stage subsets, not observed performance on all 134 challenges.
@@ -262,4 +262,4 @@ MINIMAL is recorded in the frozen canonical aggregate; the raw run configs do no
 
 ## Reproduction
 
-Run the local generator against the ignored read-only production audit snapshot. A non-creator storage cohort requires an explicitly creator-confirmed session ID; the generator refuses attribution otherwise. All statistics and Markdown numbers derive from the same structured result.
+Run the local generator against the ignored read-only production audit snapshot. Only a completed creator-cohort record may produce an attributed Candidate Baseline; a main-cohort snapshot is restricted to an anonymous diagnostic draft. All statistics and Markdown numbers derive from the same structured result.

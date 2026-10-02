@@ -146,13 +146,13 @@ def case_studies(categories):
     }
 
 
-def build_report(audit_path, confirmed_session_id=None, allow_unattributed_draft=False):
+def build_report(audit_path, allow_unattributed_draft=False):
     audit = read_json(audit_path)
     session, rows = audit["session"], audit["trials"]
     overall = validate_creator(audit)
     if session["cohort"] != "creator":
-        require(confirmed_session_id == session["session_id"] or allow_unattributed_draft, "Creator identity must be confirmed explicitly for the main-cohort candidate; accuracy is not identity evidence")
-    pending = session["cohort"] != "creator" and confirmed_session_id != session["session_id"]
+        require(allow_unattributed_draft, "Cannot attribute a main-cohort session as the Creator Baseline; a completed creator-cohort record is required")
+    pending = session["cohort"] != "creator"
     canonical, gemini, sources = load_gemini(ROOT / "AI-Solver/reports/gemini-zero-shot-baseline.json")
     catalog_path = ROOT / "web/public/challenges/catalog.json"
     catalog = {r["id"]: r for r in read_json(catalog_path)}
@@ -213,20 +213,20 @@ def build_report(audit_path, confirmed_session_id=None, allow_unattributed_draft
         "Named illusion subtype is absent from D1 and the public catalog; optical cases use exact public instructions and IDs, with no guessed names.",
     ]
     if session["cohort"] != "creator":
-        limitations.insert(0, "Storage anomaly: there are zero completed creator-cohort sessions. The selected completed session is stored as main; its creator attribution requires explicit user confirmation. No D1 row was relabeled or changed.")
+        limitations.insert(0, "Storage anomaly: there are zero completed creator-cohort sessions. This diagnostic session is stored as main and is explicitly excluded from Creator Baseline attribution. A correct completed creator record must be identified; no D1 row was relabeled or changed.")
     if pending:
         limitations = [note.replace("Exactly one creator; this is a single-participant creator baseline", "Exactly one participant; this is an unattributed candidate session")
                       .replace("The creator knows the project and may have more context than a naive participant; prior exposure is not measured by this session.",
-                               "Creator identity remains unconfirmed. If confirmed, project familiarity may provide more context than a naive participant; prior exposure is not measured by this session.")
+                               "The main session is not attributed to the creator. Project familiarity is a limitation of a future creator baseline, not an established fact about this anonymous participant.")
                       .replace("Creator stage", "Candidate stage").replace("The creator saw", "The participant saw")
                       .replace("creator score", "candidate score")
                       for note in limitations]
     report = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
-        "report_status": "attribution_pending" if pending else "attributed",
+        "report_status": "creator_session_missing" if pending else "attributed",
         "creator": {"protocol_version": session["protocol_version"], "cohort": session["cohort"],
-                    "session_id": session["session_id"], "analysis_label": "unattributed main-cohort candidate; creator identity pending" if pending else "single-participant creator baseline",
-                    "identity_confirmation": "pending" if pending else "user_confirmed" if confirmed_session_id else "creator_cohort_record",
+                    "session_id": session["session_id"], "analysis_label": "unattributed main-cohort diagnostic; excluded from creator baseline" if pending else "single-participant creator baseline",
+                    "identity_confirmation": "not_attributed" if pending else "creator_cohort_record",
                     "session_wall_time_ms": session["completed_at"] - session["started_at"],
                     **overall, "observed_accuracy": overall["accuracy"], "by_stage": by_stage,
                     "by_subtype": grouping(routing, "subtype", SUBTYPES),
@@ -290,7 +290,7 @@ def markdown(report):
     lines = ["# Creator vs Gemini Benchmark", "", f"Generated: {report['generated_at']}", "",
              "## Executive Summary", "", "**Single-participant creator baseline; matched challenge comparison is primary.**", ""]
     if c["cohort"] != "creator":
-        identity_note = "Creator attribution is pending explicit participant confirmation; these results currently belong only to an anonymous candidate session." if c["identity_confirmation"] == "pending" else "Creator attribution follows explicit participant confirmation, not accuracy."
+        identity_note = "This main-cohort record is excluded from Creator Baseline attribution by the user's instruction. These results describe only an anonymous diagnostic session; a correct completed creator-cohort record is still required."
         lines += [f"**Storage anomaly:** D1 contains zero completed `creator` sessions. Session `{c['session_id']}` is stored in **`{c['cohort']}`**, started before creator-cohort deployment. {identity_note} No session or trial was moved, edited, or recreated.", ""]
     lines += [f"The production session contains **{c['correct']}/{c['total']} correct ({pct(c['observed_accuracy'])})**, median solve time **{seconds(c['median_solve_time_ms'])}**, {c['skipped']} skips **including** {c['timed_out']} timeout. All {c['total']} assigned trials were finalized; skips/timeouts count as failures.", "",
               f"On those exact {m['total']} IDs, Gemini achieved **{m['gemini_correct']}/{m['total']} ({pct(m['gemini_accuracy'])})**. Creator minus Gemini is **{m['accuracy_gap_pp']:+.2f} percentage points**. This describes one participant on this subset, not human-versus-AI superiority.", "",
@@ -360,13 +360,13 @@ def markdown(report):
         lines[lines.index("## Verification and Provenance"):lines.index("## Verification and Provenance")] = [
             f"Quality audit: trial {row['position']} (`{row['challenge_id']}`) was {row['status']}, interrupted={str(row['interrupted']).lower()}, with capped client time {seconds(row['client_solve_time_ms'])} and server elapsed {seconds(row['server_elapsed_ms'])}. The Boolean flag cannot identify the cause of the long interval. It remains a primary failure and is not dropped. Session wall time was {seconds(c['session_wall_time_ms'])}; this is not summed active solve time.", ""]
     lines += [f"{i}. {note}" for i, note in enumerate(report["methodology_notes"], 1)]
-    lines += ["", "## Reproduction", "", "Run the local generator against the ignored read-only production audit snapshot. A non-creator storage cohort requires an explicitly creator-confirmed session ID; the generator refuses attribution otherwise. All statistics and Markdown numbers derive from the same structured result.", ""]
+    lines += ["", "## Reproduction", "", "Run the local generator against the ignored read-only production audit snapshot. Only a completed creator-cohort record may produce an attributed Creator Baseline; a main-cohort snapshot is restricted to an anonymous diagnostic draft. All statistics and Markdown numbers derive from the same structured result.", ""]
     rendered = "\n".join(lines)
-    if c["identity_confirmation"] == "pending":
+    if c["cohort"] != "creator":
         rendered = rendered.replace("Creator", "Candidate").replace("creator baseline", "unattributed candidate session")
         rendered = rendered.replace("creator stage accuracy", "candidate stage accuracy").replace("observed creator accuracy", "observed candidate accuracy")
-        rendered = rendered.replace("# Candidate vs Gemini Benchmark", "# Attribution pending — anonymous main session vs Gemini", 1)
-        rendered = rendered.replace("## Executive Summary", "This draft compares an anonymous candidate session. Creator attribution remains pending.\n\n## Executive Summary", 1)
+        rendered = rendered.replace("# Candidate vs Gemini Benchmark", "# Anonymous main session vs Gemini — diagnostic only", 1)
+        rendered = rendered.replace("## Executive Summary", "This draft compares an anonymous main session. It is excluded from Creator Baseline attribution.\n\n## Executive Summary", 1)
     return rendered
 
 
@@ -381,7 +381,7 @@ def plot(report, folder):
     labels = [f"{stage.replace('Level ', 'L')}\nN={m['total']}" for stage, m in matched["by_stage"].items()] + [f"Overall\nN={matched['total']}"]
     figure, axes = plt.subplots(1, 2, figsize=(13, 5.3), gridspec_kw={"width_ratios": [1.65, 1]})
     positions = np.arange(len(metrics))
-    role = "Candidate" if report["creator"]["identity_confirmation"] == "pending" else "Creator"
+    role = "Candidate" if report["creator"]["cohort"] != "creator" else "Creator"
     for offset, field, color, label in [(-.19, "creator_accuracy", "#2563eb", f"{role} (one participant)"),(.19, "gemini_accuracy", "#f59e0b", "Gemini zero-shot")]:
         bars = axes[0].bar(positions+offset, [100*m[field] for m in metrics], width=.36, color=color, label=label)
         for bar, metric in zip(bars, metrics):
@@ -401,7 +401,7 @@ def plot(report, folder):
         for j in range(2):
             axes[1].text(j, i, str(values[i, j]), ha="center", va="center", fontsize=24, color="white" if values[i, j] > values.max()/2 else "#172554")
     axes[1].set_title(f"Paired outcomes, N={matched['total']}\nExact McNemar p={matched['mcnemar_exact_p_value']:.5f}")
-    figure.suptitle(f"{'Attribution pending: anonymous candidate' if role == 'Candidate' else 'Single-participant creator baseline'} vs Gemini: matched 40 challenges", fontsize=13)
+    figure.suptitle(f"{'Anonymous main session (excluded from Creator Baseline)' if role == 'Candidate' else 'Single-participant creator baseline'} vs Gemini: matched 40 challenges", fontsize=12)
     figure.text(.5, .02, "Descriptive selected-subset comparison. No population-level human/AI inference.", ha="center", fontsize=9)
     figure.tight_layout(rect=(0, .05, 1, .93))
     stem = "candidate-vs-gemini.pending" if role == "Candidate" else "creator-vs-gemini"
@@ -413,12 +413,11 @@ def plot(report, folder):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--audit", type=Path, default=ROOT / ".tmp/creator-comparison-production-audit.json")
-    parser.add_argument("--confirmed-session-id", help="Only supply after explicit user confirmation if storage cohort differs")
-    parser.add_argument("--unattributed-draft", action="store_true", help="Create an explicitly unattributed candidate draft while identity clarification is pending")
+    parser.add_argument("--unattributed-draft", action="store_true", help="Create an anonymous main-session diagnostic; never attribute it as the Creator Baseline")
     args = parser.parse_args()
-    report = build_report(args.audit.resolve(), args.confirmed_session_id, args.unattributed_draft)
+    report = build_report(args.audit.resolve(), args.unattributed_draft)
     folder = Path(__file__).resolve().parent
-    stem = "candidate-vs-gemini.pending" if report["creator"]["identity_confirmation"] == "pending" else "creator-vs-gemini"
+    stem = "candidate-vs-gemini.pending" if report["creator"]["cohort"] != "creator" else "creator-vs-gemini"
     output = folder / f"{stem}.json"
     output.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     # Render Markdown from the serialized deliverable rather than a second calculation.

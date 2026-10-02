@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-10-02T18:02:50.840527+00:00",
-  "report_status": "attribution_pending",
+  "generated_at": "2026-10-02T18:16:26.185041+00:00",
+  "report_status": "creator_session_missing",
   "creator": {
     "protocol_version": "human-v1",
     "cohort": "main",
     "session_id": "73fac77a-7985-4755-a26d-16ea9046541f",
-    "analysis_label": "unattributed main-cohort candidate; creator identity pending",
-    "identity_confirmation": "pending",
+    "analysis_label": "unattributed main-cohort diagnostic; excluded from creator baseline",
+    "identity_confirmation": "not_attributed",
     "session_wall_time_ms": 5708103,
     "total": 40,
     "correct": 30,
@@ -2239,12 +2239,12 @@
     "thinking_provenance": "MINIMAL is recorded in the frozen canonical aggregate; the raw run configs do not separately persist a thinking-level field."
   },
   "methodology_notes": [
-    "Storage anomaly: there are zero completed creator-cohort sessions. The selected completed session is stored as main; its creator attribution requires explicit user confirmation. No D1 row was relabeled or changed.",
+    "Storage anomaly: there are zero completed creator-cohort sessions. This diagnostic session is stored as main and is explicitly excluded from Creator Baseline attribution. A correct completed creator record must be identified; no D1 row was relabeled or changed.",
     "Exactly one participant; this is an unattributed candidate session, not representative human performance.",
     "The participant saw 40 of 134 challenges, selected with fixed stratified quotas rather than a simple random full-population sample.",
     "Candidate stage estimates have small N; Level 2B has six total challenges and is completely shared, while Level 3B samples only four distinct scenes/resolutions.",
     "No continuous degraded-resolution threshold can be inferred from four trials.",
-    "Creator identity remains unconfirmed. If confirmed, project familiarity may provide more context than a naive participant; prior exposure is not measured by this session.",
+    "The main session is not attributed to the creator. Project familiarity is a limitation of a future creator baseline, not an established fact about this anonymous participant.",
     "Human solve time and Gemini provider inference latency measure different processes; this is not an equivalent speed comparison.",
     "The strongest direct descriptive comparison uses the exact same 40 IDs; full-population overall percentages use different challenge populations and weighting schemes.",
     "The stage-standardized candidate score is a descriptive estimate from within-stage subsets, not observed performance on all 134 challenges.",

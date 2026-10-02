@@ -35,14 +35,14 @@ class AnalysisTests(unittest.TestCase):
             with self.assertRaises(ValueError): validate_creator(bad)
 
     def test_noncreator_identity_cannot_be_guessed(self):
-        with self.assertRaisesRegex(ValueError, "identity must be confirmed"):
+        with self.assertRaisesRegex(ValueError, "Cannot attribute a main-cohort session"):
             build_report(ROOT / ".tmp/creator-comparison-production-audit.json")
 
     def test_pending_report_preserves_identity_and_public_case_partition(self):
         report = build_report(ROOT / ".tmp/creator-comparison-production-audit.json", allow_unattributed_draft=True)
-        self.assertEqual(report["report_status"], "attribution_pending")
+        self.assertEqual(report["report_status"], "creator_session_missing")
         self.assertEqual(report["creator"]["cohort"], "main")
-        self.assertEqual(report["creator"]["identity_confirmation"], "pending")
+        self.assertEqual(report["creator"]["identity_confirmation"], "not_attributed")
         groups = report["matched"]["outcome_categories"]
         ids = [row["challenge_id"] for group in groups.values() for row in group]
         self.assertEqual(len(ids), 40)
