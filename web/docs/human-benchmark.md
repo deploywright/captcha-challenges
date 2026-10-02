@@ -49,7 +49,7 @@ Exposure snapshots use a protocol/cohort revision. A D1 transactional batch
 reserves that revision, inserts the session and 40 trials, and increments
 exposures through SQL triggers. Concurrent stale reservations roll back and
 recompute; partially created sessions cannot escape. Assigned/completed exposure
-counts are partitioned by protocol and cohort, so smoke/pilot do not influence
+counts are partitioned by protocol and cohort, so smoke/pilot/creator do not influence
 main assignments. Completed exposure counts mean finalized trials, including
 skips and timeouts.
 
@@ -155,7 +155,7 @@ trials, including skips/timeouts; no timing is invented for unseen stimuli.
 Binding: `HUMAN_BENCHMARK_DB`. Dedicated production database:
 `captcha-human-benchmark`, ID `a88c2d6f-d809-4de4-beeb-ebf11347dc26`.
 
-`migrations/0001_human_benchmark.sql` defines:
+`migrations/0001_human_benchmark.sql` defines the original schema:
 
 - `human_participants`: anonymous UUID and creation time.
 - `human_sessions`: hashed token, protocol/cohort, seed/revision, status,
@@ -208,8 +208,9 @@ manually execute the initial CREATE statements repeatedly against an existing DB
 
 `main` is the default genuine-participant cohort and allows only one session per
 browser/protocol. Pilot uses the same 40-trial interaction and is separate.
+`creator` records the single-participant creator baseline using the same protocol.
 `smoke` creation additionally requires the admin Bearer key. Default analysis and
-export select **main only**; request `?cohort=pilot`, `smoke`, or `all` explicitly
+export select **main only**; request `?cohort=pilot`, `smoke`, `creator`, or `all` explicitly
 when needed. Never generate synthetic main data on production. Unit/browser tests
 use isolated/local D1; production automated checks must use smoke.
 
@@ -285,6 +286,67 @@ Keep the real D1 ID/binding and existing `captcha-challenges-web`/ASSETS behavio
 Apply schema before publishing code that uses it. Configure the admin secret from
 a protected local input/file, without committing it. Record deployment and smoke
 evidence separately. Do not present smoke outcomes as measured human performance.
+
+## Creator baseline
+
+Open `/human-benchmark?cohort=creator` to personally record the project's
+**single-participant creator baseline**. The landing notice explains that this
+reference is stored separately from the main human sample. Consent, independent
+work without AI/search/external tools/screenshots/other people, asset-ready timing,
+no-feedback behavior, resume, server-side grading, quotas, and the two-minute
+timeout are exactly those of human-v1. Completion is labeled "Creator baseline
+complete" and shows only the existing personal aggregate statistics.
+
+Only one creator session per anonymous participant/protocol is allowed, including
+an abandoned session, just as for main. A separate partial unique index enforces
+this in D1; the same participant may still have main, pilot, and creator records.
+The existing active-session rule remains: finish or permanently stop an active
+session in another cohort before starting creator in that browser. Accepted
+records in the other cohort remain saved; no session is moved into creator.
+Cookies are browser continuity rather than identity enforcement. The public URL
+does not verify that the participant is the project creator; administratively
+identify the actual creator's anonymous record if additional browsers use it.
+No creator result should be described as representative human performance.
+
+`migrations/0002_creator_cohort.sql` extends the two cohort CHECK constraints in
+`human_sessions` and `human_protocol_state` without editing 0001. It copies rows
+into replacement tables, restores the original table names/indexes/triggers,
+and adds `human_one_creator`. Foreign-key checks are deferred only within the
+migration transaction, following [D1 foreign-key migration guidance](https://developers.cloudflare.com/d1/sql-api/foreign-keys/).
+Existing participants, trials, token hashes, exposure, state, and rate-limit data
+are retained. Apply with the same local/remote Wrangler migration commands above.
+No database or binding recreation is needed.
+
+Admin summary and both exports accept `?cohort=creator`; `?cohort=all` explicitly
+includes it. Default main queries exclude creator. Exposure/state for creator is
+also isolated. Export fields, privacy rules, scoring formulas, quantiles, and
+Wilson intervals are unchanged. The creator summary is descriptively labeled as
+a single-participant baseline, not a population estimate.
+
+For an admin-only descriptive comparison, retrieve
+`/api/human-benchmark/admin/summary?cohort=creator` using the existing Bearer
+authentication and read `by.stage[stage].primaryExactAccuracy`. Leave creator
+values blank until the user has completed the session; do not substitute automated
+smoke results or create a fake creator observation.
+
+| Stage | Creator primary exact accuracy | Frozen Gemini zero-shot baseline |
+| --- | --- | ---: |
+| Level 1 | Not yet collected; read creator stage metric | 70.0% |
+| Level 2A | Not yet collected; read creator stage metric | 55.0% |
+| Level 2B | Not yet collected; read creator stage metric | 100.0% |
+| Level 3A | Not yet collected; read creator stage metric | 43.3% |
+| Level 3B | Not yet collected; read creator stage metric | 10.7% |
+
+The creator has 6/6/6/18/4 assigned trials versus Gemini's 20/20/6/60/28.
+Compare stages descriptively and keep the differing denominators visible. Do
+not equate raw overall percentages without a prespecified weighting policy.
+This comparison belongs in docs/admin analysis only; the participant interface
+contains no Gemini results. The frozen Gemini experiment is not modified or rerun.
+
+Production automation must **never start or complete a creator session**.
+Verify creator writes locally with the real migrations and use only `smoke` for
+production mutation tests. Production creator UI/admin checks remain read-only;
+the user personally opens the creator URL and completes all 40 challenges.
 
 ## Limitations
 

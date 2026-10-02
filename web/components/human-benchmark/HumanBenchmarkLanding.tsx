@@ -41,6 +41,7 @@ export function HumanBenchmarkLanding({cohort}: {cohort: Exclude<Cohort,"smoke">
         <li>You may stop at any time, or leave and resume later in this browser. Accepted responses are final.</li>
       </ul>
       {cohort === "pilot" && <p className="hb-notice">This is a pilot session. Its data is kept separate from the main benchmark sample.</p>}
+      {cohort === "creator" && <div className="hb-notice"><p className="font-semibold">Creator Baseline</p><p>This session records a single-participant creator reference for the project. It is stored separately from the main human sample.</p></div>}
       {completed ? <div className="space-y-4"><p>You already completed this benchmark.</p><Link href="/human-benchmark/run" className="hb-button">View your summary</Link></div> : existing?.status === "active" ? <div className="space-y-4"><p>Your session is saved at question {existing.progress.completed + 1} of 40.</p><Link href="/human-benchmark/run" className="hb-button">Resume benchmark</Link></div> : <form onSubmit={e => {e.preventDefault(); void start();}} className="space-y-5">
         <label className="flex items-start gap-3 cursor-pointer text-slate-200"><input type="checkbox" checked={consent} onChange={e => setConsent(e.target.checked)} className="mt-1 w-5 h-5 shrink-0 accent-blue-500" />
           <span>I understand that my anonymous responses and timing data will be used for this benchmark.</span></label>

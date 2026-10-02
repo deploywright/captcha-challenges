@@ -50,7 +50,7 @@ export async function humanSummary(db: D1Database, cohort: Cohort | "all" = "mai
     }
   }
   return {protocolVersion:PROTOCOL_VERSION,cohort,completedParticipants:completed?.participants ?? 0,completedSessions:completed?.sessions ?? 0,overall,by:groups,
-    population:"Completed sessions in this anonymous convenience sample.",
+    population:cohort === "creator" ? "Single-participant creator baseline; not representative of humans in general." : "Completed sessions in this anonymous convenience sample.",
     intervalMethod:"95% Wilson interval over trials; descriptive, not adjusted for participant/scene clustering.",
     timingPopulation:"Finalized trials with a presented stimulus, including skips and timeouts; p95 nearest rank."};
 }

@@ -1,5 +1,127 @@
 # Human Benchmark delivery and verification
 
+## Creator cohort extension
+
+The extension adds only the isolated `creator` cohort. Its public entry point is
+https://captcha-challenges-web.deploywright.workers.dev/human-benchmark?cohort=creator.
+It records a **single-participant creator baseline**, using the unchanged human-v1
+protocol: 40 trials, quotas 6/6/6/18/4, 120,000 ms timeout, frozen assignment,
+private grading, anonymous cookies, no active correctness, and existing resume.
+No Gemini values are included in participant-facing code. The documentation
+contains an admin-only descriptive stage comparison, with creator values left
+uncollected until the user personally completes the session.
+
+`0002_creator_cohort.sql` safely rebuilds `human_sessions` and
+`human_protocol_state` to extend their CHECK constraints, copies existing rows,
+restores original names/indexes/triggers, and adds the independent
+`human_one_creator` partial unique index. The already-applied 0001 migration
+was not edited. One creator session per participant/protocol is enforced in the
+application and D1; main/pilot remain independent. Main defaults and all metric
+formulas/export fields remain unchanged; explicit creator and all filters work.
+
+Before local migration, canonical row snapshots covered 29 participants,
+29 sessions, 1,160 trials, exposure/state and rate-limit data. **All six table
+counts and SHA-256 content digests matched exactly after migration**. Original
+index/trigger SQL was also compared, and foreign-key checks were clean. A separate
+workerd/D1 test populated the original schema with main, pilot and smoke data,
+then verified the new migration preserves every row and original index/trigger,
+allows creator, maintains trial finality/exposure triggers, and rejects a second
+creator insert through the actual database unique constraint.
+
+Creator regression coverage includes validation of all four cohorts, invalid
+cohort rejection, continued authorized-only smoke creation, actual creator API
+creation and persisted 40-trial quotas/version, isolated creator state/exposure,
+same-participant creator/main/pilot records, duplicate creator rejection,
+completed creator aggregate, main exclusion, explicit creator/all summary,
+stage/subtype/difficulty/series metrics, quantiles/Wilson intervals, JSON/CSV
+exports, public URL fallback behavior, required consent, no-feedback progression,
+refresh/resume, and the creator completion label. Browser writes are restricted
+to localhost and local D1.
+
+| Creator acceptance check | Result | Evidence in repository root |
+| --- | --- | --- |
+| `npm test` | 46 passed in 8 files | `.tmp/creator-unit-tests.log` |
+| Migration regression | Populated 0001 main/pilot/smoke rows, original indexes/triggers, and foreign keys preserved; creator uniqueness enforced | Same unit log; `tests/human-creator-migration.test.ts` |
+| Existing local D1 upgrade | 0002 applied, 23 statements; six canonical table digests unchanged | `.tmp/creator-local-migration.log`, `creator-local-before.json`, `creator-local-after.json` in `.tmp/` |
+| `npm run test:e2e` | 17 passed; 4 deliberately skipped repeated completion checks | `.tmp/creator-browser-tests.log` |
+| `npm run lint` | No warnings or errors | `.tmp/creator-lint.log` |
+| `npm run build` | Successful Next production build and type checks, 141 static pages | `.tmp/creator-next-build.log` |
+| `npm run build:worker` | Final OpenNext/Worker build successful | `.tmp/creator-worker-build.log` |
+| Built client leak audit | Both checks passed against the final compiled browser JavaScript | `.tmp/creator-built-leak.log` |
+| Wrangler dry run | Successful; existing D1 and ASSETS bindings retained | `.tmp/creator-worker-dry-run.log` |
+| Production D1 migration | 0002 applied, 23 statements in 7.02 ms; no pending migrations | `.tmp/creator-remote-migration.log` |
+
+Before and after remote migration, all six canonical table counts and SHA-256
+content digests matched exactly: 4 participants, 5 sessions, 200 trials, and
+unchanged exposure, protocol state, and rate limits. This includes existing
+main/pilot data and all three existing smoke sessions. Original index/trigger
+definitions were preserved, `human_one_creator` was added, and foreign-key checks
+returned no violations. No creator session existed. Evidence:
+`.tmp/creator-remote-before.json` and `.tmp/creator-remote-after.json`.
+
+An existing development server shared `.next` with the initial browser attempts.
+Final browser/build verification therefore used an ignored isolated checkout,
+with the same application/config/migration/test sources, the same lockfile, and
+test port 3101. Source parity was checked for 70 files; only evolving docs and the
+temporary browser test port differed. OpenNext uses an independent installation
+from that lockfile so native dependency paths remain within the build checkout.
+No permanent framework, dependency, binding, or port changes were introduced.
+Evidence: `.tmp/creator-source-parity.json`.
+
+The creator extension deployed to the existing `captcha-challenges-web` Worker
+as version **ed26276e-ee49-486d-815c-917423858a43**, preserving D1 database
+`a88c2d6f-d809-4de4-beeb-ebf11347dc26`, binding `HUMAN_BENCHMARK_DB`, ASSETS,
+and the configured admin secret. Deployment reported a 21 ms Worker startup and
+968.29 KiB compressed bundle. Evidence: `.tmp/creator-production-deploy.log`.
+
+Read-only production verification passed at desktop, tablet, and mobile widths:
+the creator notice appears, Start is disabled until consent, checking consent
+enables it, no Gemini result is shown, and no horizontal overflow occurs.
+Authenticated creator summary, JSON export, and CSV export returned successfully;
+creator has zero completed sessions/export rows, empty accuracy is null, and
+CSV contains only its header. Default main and explicit all filters were also
+verified. The browser harness blocked all participant mutations and recorded
+**zero POSTs and zero participant/session cookies**; it never clicked Start.
+Evidence: `.tmp/creator-production-readonly.json` and
+`.tmp/creator-production-{desktop,tablet,mobile}.png`.
+
+The existing controlled smoke driver then completed **40 production trials in
+smoke only**, including a live browser submission, all five quotas, asset loading,
+no-feedback responses, skip/timeout, identical first/last replay, changed replay
+rejection, completed-session locking, final aggregate, and protected exports.
+Main completed-session counts remained unchanged. Evidence:
+`.tmp/creator-production-smoke.json` and `.tmp/creator-production-smoke.log`.
+
+Final remote SQL verification found **zero creator sessions, zero creator
+exposure rows, and zero creator protocol-state rows**. All 4 original participant
+records, 5 original sessions, and 200 original trials still matched their
+pre-migration canonical digests after smoke; existing main/pilot/smoke records
+were not altered. Foreign-key checks remained clean. Only the new authorized
+smoke session was added. Evidence: `.tmp/creator-production-final-db.json`.
+
+The creator slot remains for the user to open personally:
+https://captcha-challenges-web.deploywright.workers.dev/human-benchmark?cohort=creator.
+Complete all 40 challenges independently, without AI/search/external help, and
+report when finished. No production creator session was created by automation.
+
+Files changed for the extension:
+
+- `lib/human-benchmark/protocol.ts`, `store.server.ts`, `analytics.server.ts`.
+- `app/human-benchmark/page.tsx`.
+- `components/human-benchmark/HumanBenchmarkLanding.tsx`, `HumanBenchmarkPlayer.tsx`.
+- New `migrations/0002_creator_cohort.sql`.
+- `tests/human-api.test.ts`, new `tests/human-creator-migration.test.ts`,
+  new shared `tests/helpers/human-migrations.ts` (parses complete trigger bodies).
+- `e2e/human-benchmark.spec.ts` (also reads the public catalog after server startup
+  to avoid importing a file while the normal sync command is replacing it).
+- `docs/human-benchmark.md` and this verification report.
+
+Assignment/scoring/timing/renderer algorithms, normal challenge behavior,
+database ID/binding, original migration, `AI-Solver/`, and `challenges/` are
+unchanged. Original delivery evidence follows as historical context.
+
+## Original Human Benchmark delivery
+
 Verified on 2026-10-02. The collection protocol, operational instructions, and
 limitations are in [human-benchmark.md](human-benchmark.md). This report records
 the implemented feature and actual acceptance evidence, rather than measured

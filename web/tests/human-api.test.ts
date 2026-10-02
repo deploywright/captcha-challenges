@@ -1,5 +1,4 @@
 import { beforeAll, afterAll, beforeEach, describe, expect, it, vi } from "vitest";
-import fs from "node:fs";
 import { Miniflare, convertV4MiniflareOptions } from "miniflare";
 import { NextRequest } from "next/server";
 vi.mock("server-only",() => ({}));
@@ -13,6 +12,7 @@ import { humanSummary, exportPage, csvValue } from "../lib/human-benchmark/analy
 import type { Cohort } from "../lib/human-benchmark/protocol";
 import { TRIAL_TIMEOUT_MS } from "../lib/human-benchmark/protocol";
 import { checkOrigin, checkAdmin, readBody } from "../lib/human-benchmark/security.server";
+import { applyHumanMigrations } from "./helpers/human-migrations";
 
 let mf: Miniflare;
 let store: HumanStore;
@@ -35,15 +35,7 @@ async function complete(sessionId: string) {
 beforeAll(async () => {
   mf = new Miniflare(convertV4MiniflareOptions({modules:true,script:"export default {fetch(){return new Response('test')}}",d1Databases:["DB"],compatibilityDate:"2024-09-23"}));
   const db = await mf.getD1Database("DB");
-  // Preserve complete trigger statements; apply the real committed migration to workerd D1.
-  const statements: string[] = []; let current = ""; let trigger = false;
-  for(const line of fs.readFileSync("migrations/0001_human_benchmark.sql","utf8").split(/\r?\n/)) {
-    if (!line.trim() || line.trim().startsWith("--")) continue;
-    current += `${line.trim()} `;
-    if (/^CREATE TRIGGER/i.test(line)) trigger = true;
-    if (trigger ? /^END;$/.test(line.trim()) : line.trim().endsWith(";")) {statements.push(current);current="";trigger=false;}
-  }
-  await db.batch(statements.map(sql => db.prepare(sql)));
+  await applyHumanMigrations(db);
   store = new HumanStore(db,() => now);
 },30_000);
 afterAll(async () => {await mf?.dispose();});
@@ -158,6 +150,56 @@ describe("persistent participant API and private grading", () => {
     expect((await csv.text()).split("\r\n")).toHaveLength(82);
     expect(csvValue('=danger,"text"')).toBe('"\'=danger,""text"""');
   },20_000);
+  it("accepts creator with the frozen protocol, separate exposure, and per-participant uniqueness", async () => {
+    const participant = crypto.randomUUID();
+    const main = await create("main",participant);
+    const mainBefore = await store.db.prepare("SELECT * FROM human_challenge_exposure WHERE cohort = 'main' ORDER BY challenge_id").all();
+    const response = await participantApi(request("session",{consent:true,cohort:"creator",deviceClass:"desktop",viewportBucket:"large"},`hb_participant_id=${participant}`),"start",store);
+    expect(response.status).toBe(201);
+    const token = response.cookies.get("hb_session_token")!.value;
+    const creator = await store.authenticate(token);
+    expect(creator).toMatchObject({cohort:"creator",protocol_version:"human-v1",assigned_count:40,participant_id:participant});
+    const quotas = await store.db.prepare("SELECT variant,COUNT(*) count FROM human_trials WHERE session_id = ? GROUP BY variant").bind(creator.session_id).all<{variant:string;count:number}>();
+    expect(Object.fromEntries(quotas.results.map(row => [row.variant,row.count]))).toEqual({"street-grid":6,"hard-street-grid":6,"checker-shadow":6,"routing-puzzle":18,"degraded-vision":4});
+    expect((await store.db.prepare("SELECT * FROM human_challenge_exposure WHERE cohort = 'main' ORDER BY challenge_id").all()).results).toEqual(mainBefore.results);
+    expect(await store.db.prepare("SELECT SUM(assigned_count) count FROM human_challenge_exposure WHERE cohort = 'creator'").first()).toEqual({count:40});
+    expect((await store.db.prepare("SELECT cohort,revision FROM human_protocol_state ORDER BY cohort").all()).results).toEqual([{cohort:"creator",revision:1},{cohort:"main",revision:1}]);
+    expect(await response.json()).toMatchObject({cohort:"creator",progress:{completed:0,total:40}});
+    await expect(create("creator",participant)).rejects.toMatchObject({status:409});
+    now += 60_001; // Separate cohorts remain subject to the unchanged start rate limit.
+    expect((await create("pilot",participant)).session.cohort).toBe("pilot");
+    await complete(creator.session_id);
+    await expect(create("creator",participant)).rejects.toMatchObject({status:409});
+    expect((await store.getSession(main.session.session_id)).status).toBe("active");
+    const creatorView = await sessionView(store,await store.getSession(creator.session_id));
+    expect(creatorView).toMatchObject({status:"completed",cohort:"creator",summary:{total:40}});expect(creatorView.trial).toBeUndefined();
+  },20_000);
+  it("filters creator summary and exports while keeping main defaults and all inclusion", async () => {
+    for(const cohort of ["creator","main","pilot","smoke"] as const) {const {session} = await create(cohort);await complete(session.session_id);}
+    const headers = {authorization:"Bearer admin-test-key"};
+    const main = await humanSummary(store.db);expect(main.completedSessions).toBe(1);expect(main.overall.assignedTrials).toBe(40);
+    const creatorResponse = await adminApi(request("admin/summary?cohort=creator",undefined,"",headers),"summary",store.db,"admin-test-key");
+    const creator = await creatorResponse.json() as Awaited<ReturnType<typeof humanSummary>>;
+    expect(creator).toMatchObject({cohort:"creator",completedParticipants:1,completedSessions:1,overall:{assignedTrials:40,primaryExactAccuracy:1}});
+    expect(creator.population).toContain("Single-participant creator baseline");
+    expect(Object.keys(creator.by.stage)).toHaveLength(5);expect(Object.keys(creator.by.subtype)).toHaveLength(4);
+    expect(Object.keys(creator.by.routingDifficulty)).toHaveLength(5);expect(Object.keys(creator.by.series)).toHaveLength(4);
+    expect(creator.overall.wilson95).not.toBeNull();expect(creator.overall.medianSolveTimeMs).not.toBeNull();expect(creator.overall.p95SolveTimeMs).not.toBeNull();
+    expect((await humanSummary(store.db,"all")).overall.assignedTrials).toBe(160);
+    const json = await adminApi(request("admin/export.json?cohort=creator",undefined,"",headers),"json",store.db,"admin-test-key");
+    const exported = await json.json() as {rows:{cohort:string}[]};expect(exported.rows).toHaveLength(40);expect(exported.rows.every(row => row.cohort === "creator")).toBe(true);
+    const csv = await adminApi(request("admin/export.csv?cohort=creator",undefined,"",headers),"csv",store.db,"admin-test-key");
+    const text = await csv.text();expect(text.split("\r\n")).toHaveLength(42);expect(text).toContain('"creator"');expect(text).not.toContain('"main"');
+    expect((await exportPage(store.db,"main")).rows.every(row => row.cohort === "main")).toBe(true);
+    expect((await exportPage(store.db,"all")).rows).toHaveLength(160);
+  },30_000);
+  it("validates every cohort and still requires authorization to start smoke", async () => {
+    await expect(participantApi(request("session",{consent:true,cohort:"garbage",deviceClass:"desktop",viewportBucket:"large"}),"start",store,"key")).rejects.toMatchObject({status:400});
+    for(const cohort of ["main","pilot","creator","smoke"] as const) {
+      const response = await participantApi(request("session",{consent:true,cohort,deviceClass:"desktop",viewportBucket:"large"},"",cohort === "smoke" ? {authorization:"Bearer key"} : {}),"start",store,"key");
+      expect(response.status).toBe(201);expect(await response.json()).toMatchObject({cohort});
+    }
+  });
   it("rejects cross-origin mutation, restricts smoke creation, and stops sessions", async () => {
     expect(() => checkOrigin(request("session",{},"",{origin:"https://other.test"}))).toThrow();
     await expect(participantApi(request("session",{consent:true,cohort:"smoke",deviceClass:"desktop",viewportBucket:"large"}),"start",store,"key")).rejects.toMatchObject({status:401});

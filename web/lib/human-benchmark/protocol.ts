@@ -15,7 +15,7 @@ export const STAGES: Record<BenchmarkVariant, string> = {
   "checker-shadow": "Level 2B", "routing-puzzle": "Level 3A",
   "degraded-vision": "Level 3B",
 };
-export const COHORTS = ["main", "pilot", "smoke"] as const;
+export const COHORTS = ["main", "pilot", "smoke", "creator"] as const;
 export type Cohort = typeof COHORTS[number];
 export const ROUTING_SUBTYPES = ["laser-maze", "conveyor-routing", "pipe-flow", "device-cables"];
 export const DIFFICULTIES = ["easy", "medium", "story", "hard", "extreme"];

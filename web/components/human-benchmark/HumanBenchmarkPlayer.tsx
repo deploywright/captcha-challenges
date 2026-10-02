@@ -112,12 +112,12 @@ export function HumanBenchmarkPlayer() {
   useEffect(() => {void load().catch(err => setError(String(err.message)));},[load]);
   useEffect(() => {heading.current?.focus();},[view?.trial?.trialId,view?.status]);
   async function stop() {
-    if (!window.confirm("Stop this session? Your accepted responses remain saved. This main session cannot be restarted.")) return;
+    if (!window.confirm(`Stop this session? Your accepted responses remain saved.${view?.cohort === "main" || view?.cohort === "creator" ? ` This ${view.cohort} session cannot be restarted.` : ""}`)) return;
     try {await post("stop",{});await load();} catch(err) {setError(err instanceof Error ? err.message : "Unable to stop.");}
   }
   return <main className="hb-shell hb-run">
     <header className="space-y-4 mb-7"><div className="flex flex-wrap items-center justify-between gap-3"><p className="hb-eyebrow">Human Benchmark{view?.cohort && view.cohort !== "main" ? ` · ${view.cohort}` : ""}</p><Link href="/human-benchmark" className="hb-link">Leave for now</Link></div>
-      <h1 ref={heading} tabIndex={-1} className="text-2xl sm:text-3xl font-semibold outline-none" aria-live="polite">{view?.status === "completed" ? "Benchmark complete" : view?.status === "abandoned" ? "Session stopped" : view?.trial ? `Question ${view.trial.position} of 40` : "Preparing your benchmark…"}</h1>
+      <h1 ref={heading} tabIndex={-1} className="text-2xl sm:text-3xl font-semibold outline-none" aria-live="polite">{view?.status === "completed" ? view.cohort === "creator" ? "Creator baseline complete" : "Benchmark complete" : view?.status === "abandoned" ? "Session stopped" : view?.trial ? `Question ${view.trial.position} of 40` : "Preparing your benchmark…"}</h1>
       {view && <progress className="w-full h-2 accent-blue-500" aria-label="Benchmark progress" value={view.progress.completed} max={40} />}
     </header>
     {view?.status === "active" && view.trial && <HumanTrial key={view.trial.trialId} trial={view.trial} onAccepted={load} />}

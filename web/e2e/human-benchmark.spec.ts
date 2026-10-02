@@ -1,9 +1,47 @@
 import { test, expect } from "@playwright/test";
 import type { SessionView } from "../lib/human-benchmark/types";
-import { CATALOG } from "../lib/challenges/catalog";
+import type { ChallengeCatalogEntry } from "../lib/challenges/types";
 
 test.beforeEach(async ({baseURL}) => {
   if (!baseURL || !["127.0.0.1","localhost"].includes(new URL(baseURL).hostname)) throw new Error("These browser tests may only write to local D1.");
+});
+
+test("landing maps public cohorts safely and keeps smoke out of the UI", async ({page}) => {
+  for(const [query,notice] of [["","main"],["?cohort=pilot","pilot"],["?cohort=creator","creator"],["?cohort=garbage","main"],["?cohort=smoke","main"]]) {
+    await page.goto(`/human-benchmark${query}`);
+    await expect(page.getByRole("button",{name:"Start Human Benchmark",exact:true})).toBeDisabled();
+    await expect(page.getByText("Creator Baseline",{exact:true})).toHaveCount(notice === "creator" ? 1 : 0);
+    await expect(page.getByText("This is a pilot session. Its data is kept separate from the main benchmark sample.")).toHaveCount(notice === "pilot" ? 1 : 0);
+  }
+});
+
+test("creator notice, required consent, frozen session and no-feedback player", async ({page}) => {
+  await page.goto("/human-benchmark?cohort=creator");
+  await expect(page.getByText("Creator Baseline",{exact:true})).toBeVisible();
+  await expect(page.getByText("This session records a single-participant creator reference for the project. It is stored separately from the main human sample.")).toBeVisible();
+  const start = page.getByRole("button",{name:"Start Human Benchmark",exact:true});await expect(start).toBeDisabled();
+  await page.getByRole("checkbox").check();await start.click();
+  await expect(page.getByRole("heading",{name:"Question 1 of 40"})).toBeVisible();
+  await expect(page.getByText("Human Benchmark · creator",{exact:true})).toBeVisible();
+  const view = await (await page.request.get("/api/human-benchmark/session")).json() as SessionView;
+  expect(view).toMatchObject({cohort:"creator",status:"active",progress:{completed:0,total:40}});
+  expect(JSON.stringify(view)).not.toMatch(/"(correct|score|summary)"/);
+  const accepted = page.waitForResponse(response => response.url().endsWith("/human-benchmark/trial") && response.status() === 200);
+  await page.getByRole("button",{name:"Skip question"}).click();
+  expect(await (await accepted).json()).toEqual({accepted:true,progress:{completed:1,total:40},hasNext:true});
+  await expect(page.getByRole("heading",{name:"Question 2 of 40"})).toBeVisible();
+  await page.reload();await expect(page.getByRole("heading",{name:"Question 2 of 40"})).toBeVisible();
+  await expect(page.getByText("Human Benchmark · creator",{exact:true})).toBeVisible();
+});
+
+test("creator completion keeps the personal aggregate and explicit baseline label", async ({page},testInfo) => {
+  test.skip(testInfo.project.name !== "desktop","The aggregate screen is identical across projects.");
+  await page.route("**/api/human-benchmark/session",route => route.fulfill({status:200,contentType:"application/json",body:JSON.stringify({status:"completed",cohort:"creator",progress:{completed:40,total:40},summary:{accuracy:.75,medianSolveTimeMs:2000,skipped:2,timedOut:1,total:40}})}));
+  await page.goto("/human-benchmark/run");
+  await expect(page.getByRole("heading",{name:"Creator baseline complete",exact:true})).toBeVisible();
+  await expect(page.getByText("Overall accuracy",{exact:true})).toBeVisible();
+  await expect(page.getByText("75.0%",{exact:true})).toBeVisible();
+  await expect(page.getByText(/Gemini|correct answer|Try Again/)).toHaveCount(0);
 });
 test("consent, readiness, same-payload retry, refresh, skip and timeout", async ({page}) => {
   await page.clock.install();
@@ -91,7 +129,9 @@ test("completes forty real local trials, releases aggregate only, and prevents a
 });
 
 test("normal challenge mode still verifies and offers its existing progression controls", async ({page}) => {
-  const challenge = CATALOG.find(c => c.variant === "street-grid")!;
+  const catalogResponse = await page.request.get("/challenges/catalog.json");
+  expect(catalogResponse.status()).toBe(200);
+  const challenge = ((await catalogResponse.json()) as ChallengeCatalogEntry[]).find(c => c.variant === "street-grid")!;
   await page.goto(`/challenge/${challenge.id}`);
   await expect(page.getByRole("button",{name:"Verify (None Match)"})).toBeVisible();
   await page.getByRole("button",{name:"Verify (None Match)"}).click();

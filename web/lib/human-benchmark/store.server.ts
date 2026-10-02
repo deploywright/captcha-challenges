@@ -51,8 +51,8 @@ export class HumanStore {
   }
   async create(participantId: string, cohort: Cohort, deviceClass: string, viewportBucket: string, catalog: readonly ChallengeCatalogEntry[]) {
     await this.limit(`start:${participantId}`,3);
-    const existing = cohort === "main" && await this.db.prepare("SELECT status FROM human_sessions WHERE participant_id = ? AND protocol_version = ? AND cohort = 'main'").bind(participantId,PROTOCOL_VERSION).first<{status:string}>();
-    if (existing) throw new BenchmarkError(409,existing.status === "completed" ? "You already completed this benchmark." : "This browser already has a main session. Use its original session cookie to resume.");
+    const existing = (cohort === "main" || cohort === "creator") && await this.db.prepare("SELECT status FROM human_sessions WHERE participant_id = ? AND protocol_version = ? AND cohort = ?").bind(participantId,PROTOCOL_VERSION,cohort).first<{status:string}>();
+    if (existing) throw new BenchmarkError(409,existing.status === "completed" ? "You already completed this benchmark." : `This browser already has a ${cohort} session. Use its original session cookie to resume.`);
     const sessionId = crypto.randomUUID();
     const token = opaqueToken();
     const tokenHash = await hashToken(token);
@@ -82,7 +82,7 @@ export class HumanStore {
       } catch(error) {
         const message = error instanceof Error ? error.message : "";
         if (message.includes("HB_ASSIGNMENT_CONFLICT")) continue;
-        if (message.includes("human_sessions.participant_id")) throw new BenchmarkError(409,"This browser already has a main session.");
+        if (message.includes("human_sessions.participant_id")) throw new BenchmarkError(409,`This browser already has a ${cohort} session.`);
         throw error;
       }
     }
