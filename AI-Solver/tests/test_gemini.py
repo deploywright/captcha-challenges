@@ -55,6 +55,8 @@ def test_gemini_one_request_all_tiles(challenge, assets):
     config = request["config"]
     assert config.response_mime_type == "application/json"
     assert config.response_json_schema["properties"]["confidence"] == {"type": "null"}
+    assert config.thinking_config.thinking_level == types.ThinkingLevel.MINIMAL
+    assert getattr(config, "candidate_count", None) is None
     assert config.automatic_function_calling.disable is True
     assert config.tools is None and config.cached_content is None
 
@@ -189,3 +191,19 @@ def test_missing_gemini_key_is_safe(monkeypatch):
     monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
     with pytest.raises(ModelError, match="GEMINI_API_KEY"):
         GeminiVisionProvider("gemini-test")
+
+
+def test_gemini_config_thinking_minimal_and_no_candidates(challenge, assets):
+    calls = []
+
+    def generate(**kwargs):
+        calls.append(kwargs)
+        return response()
+
+    Level1VLMSolver(provider(generate)).solve(challenge, assets)
+    assert len(calls) == 1
+    config = calls[0]["config"]
+    assert config.thinking_config.thinking_level == types.ThinkingLevel.MINIMAL
+    assert getattr(config, "candidate_count", None) is None
+    assert config.automatic_function_calling.disable is True
+    assert config.tools is None

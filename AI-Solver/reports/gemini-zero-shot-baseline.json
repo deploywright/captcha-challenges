@@ -1,46 +1,125 @@
 {
   "benchmark": "CAPTCHA-Challenges Commercial VLM Baseline",
-  "provider": "gemini",
+  "provider": "Google GenAI",
   "model": "gemini-3.5-flash-lite",
+  "thinking_level": "MINIMAL",
   "mode": "zero-shot",
   "total_challenges": 134,
   "evaluated_challenges": 134,
-  "correct_challenges": 58,
-  "incorrect_challenges": 76,
+  "correct_challenges": 60,
+  "incorrect_challenges": 74,
   "error_count": 0,
-  "micro_accuracy": 0.43283582089552236,
-  "macro_level_accuracy": 0.5445221445221445,
-  "macro_variant_accuracy": 0.5485714285714286,
+  "micro_accuracy": 0.44776119402985076,
+  "macro_stage_accuracy": 0.5580952380952381,
+  "macro_level_accuracy": 0.5611305361305361,
+  "macro_variant_accuracy": 0.5580952380952381,
   "run_artifacts": {
     "Level 1 (street-grid)": "results/20261002T085501003519Z_level1_vlm_30e5750e",
-    "Level 2A (hard-street-grid)": "results/20261002T101240698279Z_hard_street_grid_vlm_dffa1758",
-    "Level 2B (checker-shadow)": "results/20261002T101455913741Z_checker_shadow_vlm_cd021901",
-    "Level 3A (routing-puzzle)": "results/20261002T101524234508Z_routing_puzzle_vlm_13d329b9",
-    "Level 3B (degraded-vision)": "results/20261002T102307601966Z_degraded_vision_vlm_9bfa68f1"
+    "Level 2A (hard-street-grid)": "results/20261002T112508284295Z_hard_street_grid_vlm_45223726",
+    "Level 2B (checker-shadow)": "results/20261002T112945860317Z_checker_shadow_vlm_63c123c8",
+    "Level 3A (routing-puzzle)": "results/20261002T113010612141Z_routing_puzzle_vlm_a2ae8ad8",
+    "Level 3B (degraded-vision)": "results/20261002T113705651955Z_degraded_vision_vlm_8f635ab3"
   },
   "metrics": {
     "challenge_count": 134,
     "evaluated_count": 134,
-    "correct_count": 58,
-    "incorrect_count": 76,
+    "correct_count": 60,
+    "incorrect_count": 74,
     "error_count": 0,
     "solver_error_count": 0,
     "dry_run_count": 0,
-    "exact_challenge_accuracy": 0.43283582089552236,
+    "exact_challenge_accuracy": 0.44776119402985076,
     "evaluation_coverage": 1.0,
     "inference_sample_count": 134,
-    "mean_inference_time_ms": 3999.024264925443,
-    "median_inference_time_ms": 1972.2925999994914,
-    "p95_inference_time_ms": 4820.432800000162,
-    "mean_inference_attempt_time_ms": 3999.024264925443,
-    "mean_total_time_ms": 5934.639094776142,
-    "median_total_time_ms": 3976.1259499991866,
+    "mean_inference_time_ms": 6422.799525373058,
+    "median_inference_time_ms": 2847.5268499996673,
+    "p95_inference_time_ms": 14017.415999998775,
+    "mean_inference_attempt_time_ms": 6422.799525373058,
+    "mean_total_time_ms": 8541.493135074668,
+    "median_total_time_ms": 5432.153049999215,
     "input_tokens": 758809,
-    "output_tokens": 3368,
+    "output_tokens": 3140,
     "usage_complete": false,
-    "estimated_api_request_count": 140,
+    "estimated_api_request_count": 148,
     "estimated_cost_usd": null,
     "p95_method": "nearest-rank",
+    "by_stage": {
+      "Level 1": {
+        "challenge_count": 20,
+        "evaluated_count": 20,
+        "correct_count": 14,
+        "incorrect_count": 6,
+        "exact_challenge_accuracy": 0.7,
+        "mean_inference_time_ms": 6110.23335000009,
+        "median_inference_time_ms": 2513.6483000001135
+      },
+      "Level 2A": {
+        "challenge_count": 20,
+        "evaluated_count": 20,
+        "correct_count": 11,
+        "incorrect_count": 9,
+        "exact_challenge_accuracy": 0.55,
+        "mean_inference_time_ms": 9013.723649999974,
+        "median_inference_time_ms": 6939.267700000528
+      },
+      "Level 2B": {
+        "challenge_count": 6,
+        "evaluated_count": 6,
+        "correct_count": 6,
+        "incorrect_count": 0,
+        "exact_challenge_accuracy": 1.0,
+        "mean_inference_time_ms": 2214.0190166668012,
+        "median_inference_time_ms": 1295.0094000007084
+      },
+      "Level 3A": {
+        "challenge_count": 60,
+        "evaluated_count": 60,
+        "correct_count": 26,
+        "incorrect_count": 34,
+        "exact_challenge_accuracy": 0.43333333333333335,
+        "mean_inference_time_ms": 3999.563403333226,
+        "median_inference_time_ms": 1644.5070500003567
+      },
+      "Level 3B": {
+        "challenge_count": 28,
+        "evaluated_count": 28,
+        "correct_count": 3,
+        "incorrect_count": 25,
+        "exact_challenge_accuracy": 0.10714285714285714,
+        "mean_inference_time_ms": 10889.931360714074,
+        "median_inference_time_ms": 3050.919999999678
+      }
+    },
+    "macro_stage_accuracy": 0.5580952380952381,
+    "by_numeric_level": {
+      "1": {
+        "challenge_count": 20,
+        "evaluated_count": 20,
+        "correct_count": 14,
+        "incorrect_count": 6,
+        "exact_challenge_accuracy": 0.7,
+        "mean_inference_time_ms": 6110.23335000009,
+        "median_inference_time_ms": 2513.6483000001135
+      },
+      "2": {
+        "challenge_count": 26,
+        "evaluated_count": 26,
+        "correct_count": 17,
+        "incorrect_count": 9,
+        "exact_challenge_accuracy": 0.6538461538461539,
+        "mean_inference_time_ms": 7444.561042307703,
+        "median_inference_time_ms": 6667.920100000629
+      },
+      "3": {
+        "challenge_count": 88,
+        "evaluated_count": 88,
+        "correct_count": 29,
+        "incorrect_count": 59,
+        "exact_challenge_accuracy": 0.32954545454545453,
+        "mean_inference_time_ms": 6191.953207954405,
+        "median_inference_time_ms": 2400.089449999541
+      }
+    },
     "by_level": {
       "1": {
         "challenge_count": 20,
@@ -54,20 +133,20 @@
       "2": {
         "challenge_count": 26,
         "evaluated_count": 26,
-        "correct_count": 16,
-        "incorrect_count": 10,
-        "exact_challenge_accuracy": 0.6153846153846154,
-        "mean_inference_time_ms": 2083.951157692284,
-        "median_inference_time_ms": 2244.6371000005456
+        "correct_count": 17,
+        "incorrect_count": 9,
+        "exact_challenge_accuracy": 0.6538461538461539,
+        "mean_inference_time_ms": 7444.561042307703,
+        "median_inference_time_ms": 6667.920100000629
       },
       "3": {
         "challenge_count": 88,
         "evaluated_count": 88,
-        "correct_count": 28,
-        "incorrect_count": 60,
-        "exact_challenge_accuracy": 0.3181818181818182,
-        "mean_inference_time_ms": 4085.0210727273657,
-        "median_inference_time_ms": 1602.1128000002136
+        "correct_count": 29,
+        "incorrect_count": 59,
+        "exact_challenge_accuracy": 0.32954545454545453,
+        "mean_inference_time_ms": 6191.953207954405,
+        "median_inference_time_ms": 2400.089449999541
       }
     },
     "by_variant": {
@@ -77,35 +156,35 @@
         "correct_count": 6,
         "incorrect_count": 0,
         "exact_challenge_accuracy": 1.0,
-        "mean_inference_time_ms": 1451.3112333330962,
-        "median_inference_time_ms": 1368.1683999993766
+        "mean_inference_time_ms": 2214.0190166668012,
+        "median_inference_time_ms": 1295.0094000007084
       },
       "degraded-vision": {
         "challenge_count": 28,
         "evaluated_count": 28,
-        "correct_count": 4,
-        "incorrect_count": 24,
-        "exact_challenge_accuracy": 0.14285714285714285,
-        "mean_inference_time_ms": 9488.386167857243,
-        "median_inference_time_ms": 2575.9845000002315
+        "correct_count": 3,
+        "incorrect_count": 25,
+        "exact_challenge_accuracy": 0.10714285714285714,
+        "mean_inference_time_ms": 10889.931360714074,
+        "median_inference_time_ms": 3050.919999999678
       },
       "hard-street-grid": {
         "challenge_count": 20,
         "evaluated_count": 20,
-        "correct_count": 10,
-        "incorrect_count": 10,
-        "exact_challenge_accuracy": 0.5,
-        "mean_inference_time_ms": 2273.7431350000406,
-        "median_inference_time_ms": 2273.2734499995786
+        "correct_count": 11,
+        "incorrect_count": 9,
+        "exact_challenge_accuracy": 0.55,
+        "mean_inference_time_ms": 9013.723649999974,
+        "median_inference_time_ms": 6939.267700000528
       },
       "routing-puzzle": {
         "challenge_count": 60,
         "evaluated_count": 60,
-        "correct_count": 24,
-        "incorrect_count": 36,
-        "exact_challenge_accuracy": 0.4,
-        "mean_inference_time_ms": 1563.4506950000894,
-        "median_inference_time_ms": 1334.2321499994796
+        "correct_count": 26,
+        "incorrect_count": 34,
+        "exact_challenge_accuracy": 0.43333333333333335,
+        "mean_inference_time_ms": 3999.563403333226,
+        "median_inference_time_ms": 1644.5070500003567
       },
       "street-grid": {
         "challenge_count": 20,
@@ -124,8 +203,8 @@
         "correct_count": 1,
         "incorrect_count": 0,
         "exact_challenge_accuracy": 1.0,
-        "mean_inference_time_ms": 1436.2816999982897,
-        "median_inference_time_ms": 1436.2816999982897
+        "mean_inference_time_ms": 7007.055599999148,
+        "median_inference_time_ms": 7007.055599999148
       },
       "checker-shadow": {
         "challenge_count": 1,
@@ -133,26 +212,26 @@
         "correct_count": 1,
         "incorrect_count": 0,
         "exact_challenge_accuracy": 1.0,
-        "mean_inference_time_ms": 1844.9178999999276,
-        "median_inference_time_ms": 1844.9178999999276
+        "mean_inference_time_ms": 1511.2453999990976,
+        "median_inference_time_ms": 1511.2453999990976
       },
       "conveyor-routing": {
         "challenge_count": 15,
         "evaluated_count": 15,
-        "correct_count": 6,
-        "incorrect_count": 9,
-        "exact_challenge_accuracy": 0.4,
-        "mean_inference_time_ms": 1379.3823866669602,
-        "median_inference_time_ms": 1230.888899999627
+        "correct_count": 9,
+        "incorrect_count": 6,
+        "exact_challenge_accuracy": 0.6,
+        "mean_inference_time_ms": 6691.586526666288,
+        "median_inference_time_ms": 7371.343599999818
       },
       "device-cables": {
         "challenge_count": 15,
         "evaluated_count": 15,
-        "correct_count": 2,
-        "incorrect_count": 13,
-        "exact_challenge_accuracy": 0.13333333333333333,
-        "mean_inference_time_ms": 1520.773000000069,
-        "median_inference_time_ms": 1543.8513000008243
+        "correct_count": 4,
+        "incorrect_count": 11,
+        "exact_challenge_accuracy": 0.26666666666666666,
+        "mean_inference_time_ms": 3741.2005133331454,
+        "median_inference_time_ms": 1608.0535000000964
       },
       "ebbinghaus": {
         "challenge_count": 1,
@@ -160,17 +239,17 @@
         "correct_count": 1,
         "incorrect_count": 0,
         "exact_challenge_accuracy": 1.0,
-        "mean_inference_time_ms": 1253.5028000002058,
-        "median_inference_time_ms": 1253.5028000002058
+        "mean_inference_time_ms": 1028.2294000007823,
+        "median_inference_time_ms": 1028.2294000007823
       },
       "laser-maze": {
         "challenge_count": 15,
         "evaluated_count": 15,
-        "correct_count": 6,
-        "incorrect_count": 9,
-        "exact_challenge_accuracy": 0.4,
-        "mean_inference_time_ms": 1576.7519933332853,
-        "median_inference_time_ms": 1318.4687000011763
+        "correct_count": 4,
+        "incorrect_count": 11,
+        "exact_challenge_accuracy": 0.26666666666666666,
+        "mean_inference_time_ms": 2858.221013333241,
+        "median_inference_time_ms": 1138.01710000007
       },
       "muller-lyer": {
         "challenge_count": 1,
@@ -178,17 +257,17 @@
         "correct_count": 1,
         "incorrect_count": 0,
         "exact_challenge_accuracy": 1.0,
-        "mean_inference_time_ms": 1739.4771999988734,
-        "median_inference_time_ms": 1739.4771999988734
+        "mean_inference_time_ms": 1147.5649000003614,
+        "median_inference_time_ms": 1147.5649000003614
       },
       "pipe-flow": {
         "challenge_count": 15,
         "evaluated_count": 15,
-        "correct_count": 10,
-        "incorrect_count": 5,
-        "exact_challenge_accuracy": 0.6666666666666666,
-        "mean_inference_time_ms": 1776.8954000000424,
-        "median_inference_time_ms": 1446.1981000004016
+        "correct_count": 9,
+        "incorrect_count": 6,
+        "exact_challenge_accuracy": 0.6,
+        "mean_inference_time_ms": 2707.2455600002286,
+        "median_inference_time_ms": 1324.9945000006846
       },
       "ponzo": {
         "challenge_count": 1,
@@ -196,8 +275,8 @@
         "correct_count": 1,
         "incorrect_count": 0,
         "exact_challenge_accuracy": 1.0,
-        "mean_inference_time_ms": 1300.0551000004634,
-        "median_inference_time_ms": 1300.0551000004634
+        "mean_inference_time_ms": 1362.01070000061,
+        "median_inference_time_ms": 1362.01070000061
       },
       "simultaneous-contrast": {
         "challenge_count": 1,
@@ -205,8 +284,8 @@
         "correct_count": 1,
         "incorrect_count": 0,
         "exact_challenge_accuracy": 1.0,
-        "mean_inference_time_ms": 1133.6327000008168,
-        "median_inference_time_ms": 1133.6327000008168
+        "mean_inference_time_ms": 1228.0081000008067,
+        "median_inference_time_ms": 1228.0081000008067
       }
     },
     "by_difficulty": {
@@ -216,35 +295,35 @@
         "correct_count": 6,
         "incorrect_count": 2,
         "exact_challenge_accuracy": 0.75,
-        "mean_inference_time_ms": 1465.335587500249,
-        "median_inference_time_ms": 1422.677250000561
+        "mean_inference_time_ms": 5903.628687500259,
+        "median_inference_time_ms": 5458.795500000633
       },
       "extreme": {
         "challenge_count": 8,
         "evaluated_count": 8,
-        "correct_count": 1,
-        "incorrect_count": 7,
-        "exact_challenge_accuracy": 0.125,
-        "mean_inference_time_ms": 1984.5709624999017,
-        "median_inference_time_ms": 1332.755399999769
+        "correct_count": 4,
+        "incorrect_count": 4,
+        "exact_challenge_accuracy": 0.5,
+        "mean_inference_time_ms": 3905.2898499994626,
+        "median_inference_time_ms": 2179.8432499990668
       },
       "hard": {
         "challenge_count": 12,
         "evaluated_count": 12,
-        "correct_count": 5,
-        "incorrect_count": 7,
-        "exact_challenge_accuracy": 0.4166666666666667,
-        "mean_inference_time_ms": 1481.391616666618,
-        "median_inference_time_ms": 1279.248450000523
+        "correct_count": 6,
+        "incorrect_count": 6,
+        "exact_challenge_accuracy": 0.5,
+        "mean_inference_time_ms": 2876.6013249999864,
+        "median_inference_time_ms": 1191.9503499984785
       },
       "medium": {
         "challenge_count": 12,
         "evaluated_count": 12,
-        "correct_count": 5,
-        "incorrect_count": 7,
-        "exact_challenge_accuracy": 0.4166666666666667,
-        "mean_inference_time_ms": 1534.6561666668397,
-        "median_inference_time_ms": 1389.577650001229
+        "correct_count": 3,
+        "incorrect_count": 9,
+        "exact_challenge_accuracy": 0.25,
+        "mean_inference_time_ms": 4050.0098583330932,
+        "median_inference_time_ms": 1633.71294999979
       },
       "story": {
         "challenge_count": 20,
@@ -252,8 +331,8 @@
         "correct_count": 7,
         "incorrect_count": 13,
         "exact_challenge_accuracy": 0.35,
-        "mean_inference_time_ms": 1500.760795000133,
-        "median_inference_time_ms": 1332.2106999994503
+        "mean_inference_time_ms": 3919.1560849999405,
+        "median_inference_time_ms": 1660.327049999978
       }
     },
     "by_resolution": {
@@ -263,8 +342,8 @@
         "correct_count": 0,
         "incorrect_count": 4,
         "exact_challenge_accuracy": 0.0,
-        "mean_inference_time_ms": 3478.90977499992,
-        "median_inference_time_ms": 2439.6808999990753
+        "mean_inference_time_ms": 54451.56987500013,
+        "median_inference_time_ms": 53219.72949999963
       },
       "12": {
         "challenge_count": 4,
@@ -272,8 +351,8 @@
         "correct_count": 0,
         "incorrect_count": 4,
         "exact_challenge_accuracy": 0.0,
-        "mean_inference_time_ms": 2596.379224999964,
-        "median_inference_time_ms": 2495.6875500001843
+        "mean_inference_time_ms": 3060.1448499996877,
+        "median_inference_time_ms": 2376.865600000201
       },
       "16": {
         "challenge_count": 4,
@@ -281,8 +360,8 @@
         "correct_count": 0,
         "incorrect_count": 4,
         "exact_challenge_accuracy": 0.0,
-        "mean_inference_time_ms": 2227.556825001102,
-        "median_inference_time_ms": 2345.3282000009494
+        "mean_inference_time_ms": 4033.885900000314,
+        "median_inference_time_ms": 2963.349350000499
       },
       "24": {
         "challenge_count": 4,
@@ -290,8 +369,8 @@
         "correct_count": 0,
         "incorrect_count": 4,
         "exact_challenge_accuracy": 0.0,
-        "mean_inference_time_ms": 3829.349624999395,
-        "median_inference_time_ms": 3833.087249999153
+        "mean_inference_time_ms": 3304.7746249994816,
+        "median_inference_time_ms": 3050.919999999678
       },
       "32": {
         "challenge_count": 4,
@@ -299,17 +378,17 @@
         "correct_count": 1,
         "incorrect_count": 3,
         "exact_challenge_accuracy": 0.25,
-        "mean_inference_time_ms": 48877.50775000041,
-        "median_inference_time_ms": 3466.5511500006687
+        "mean_inference_time_ms": 5363.012299999355,
+        "median_inference_time_ms": 4547.235649999493
       },
       "48": {
         "challenge_count": 4,
         "evaluated_count": 4,
-        "correct_count": 2,
-        "incorrect_count": 2,
-        "exact_challenge_accuracy": 0.5,
-        "mean_inference_time_ms": 3180.699524999909,
-        "median_inference_time_ms": 3127.355399999942
+        "correct_count": 1,
+        "incorrect_count": 3,
+        "exact_challenge_accuracy": 0.25,
+        "mean_inference_time_ms": 3115.4606749996674,
+        "median_inference_time_ms": 2664.999199999329
       },
       "64": {
         "challenge_count": 4,
@@ -317,8 +396,8 @@
         "correct_count": 1,
         "incorrect_count": 3,
         "exact_challenge_accuracy": 0.25,
-        "mean_inference_time_ms": 2228.300450000006,
-        "median_inference_time_ms": 2104.6704999998838
+        "mean_inference_time_ms": 2900.6712999998854,
+        "median_inference_time_ms": 2798.652499999662
       }
     },
     "by_series": {
@@ -328,8 +407,8 @@
         "correct_count": 0,
         "incorrect_count": 7,
         "exact_challenge_accuracy": 0.0,
-        "mean_inference_time_ms": 3475.798814285684,
-        "median_inference_time_ms": 2653.2719999995606
+        "mean_inference_time_ms": 17228.977114285695,
+        "median_inference_time_ms": 3395.1223000003665
       },
       "series-02": {
         "challenge_count": 7,
@@ -337,17 +416,17 @@
         "correct_count": 3,
         "incorrect_count": 4,
         "exact_challenge_accuracy": 0.42857142857142855,
-        "mean_inference_time_ms": 29107.338685714632,
-        "median_inference_time_ms": 2458.907600001112
+        "mean_inference_time_ms": 20053.813314285435,
+        "median_inference_time_ms": 5238.310299999284
       },
       "series-03": {
         "challenge_count": 7,
         "evaluated_count": 7,
-        "correct_count": 1,
-        "incorrect_count": 6,
-        "exact_challenge_accuracy": 0.14285714285714285,
-        "mean_inference_time_ms": 2647.163057143189,
-        "median_inference_time_ms": 2451.636799998596
+        "correct_count": 0,
+        "incorrect_count": 7,
+        "exact_challenge_accuracy": 0.0,
+        "mean_inference_time_ms": 3459.367785714026,
+        "median_inference_time_ms": 2409.7930999996606
       },
       "series-04": {
         "challenge_count": 7,
@@ -355,8 +434,8 @@
         "correct_count": 0,
         "incorrect_count": 7,
         "exact_challenge_accuracy": 0.0,
-        "mean_inference_time_ms": 2723.24411428547,
-        "median_inference_time_ms": 2427.7249999995547
+        "mean_inference_time_ms": 2817.567228571144,
+        "median_inference_time_ms": 2910.808199998428
       }
     },
     "subtype_by_difficulty": {
@@ -364,47 +443,47 @@
         "easy": {
           "challenge_count": 2,
           "evaluated_count": 2,
-          "correct_count": 1,
-          "incorrect_count": 1,
-          "exact_challenge_accuracy": 0.5,
-          "mean_inference_time_ms": 1180.3699500005678,
-          "median_inference_time_ms": 1180.3699500005678
+          "correct_count": 2,
+          "incorrect_count": 0,
+          "exact_challenge_accuracy": 1.0,
+          "mean_inference_time_ms": 11826.477099999465,
+          "median_inference_time_ms": 11826.477099999465
         },
         "extreme": {
           "challenge_count": 2,
           "evaluated_count": 2,
-          "correct_count": 0,
-          "incorrect_count": 2,
-          "exact_challenge_accuracy": 0.0,
-          "mean_inference_time_ms": 1233.7769499999922,
-          "median_inference_time_ms": 1233.7769499999922
+          "correct_count": 2,
+          "incorrect_count": 0,
+          "exact_challenge_accuracy": 1.0,
+          "mean_inference_time_ms": 5158.056299999771,
+          "median_inference_time_ms": 5158.056299999771
         },
         "hard": {
-          "challenge_count": 3,
-          "evaluated_count": 3,
-          "correct_count": 0,
-          "incorrect_count": 3,
-          "exact_challenge_accuracy": 0.0,
-          "mean_inference_time_ms": 1189.6587333339994,
-          "median_inference_time_ms": 1161.5906000006362
-        },
-        "medium": {
           "challenge_count": 3,
           "evaluated_count": 3,
           "correct_count": 2,
           "incorrect_count": 1,
           "exact_challenge_accuracy": 0.6666666666666666,
-          "mean_inference_time_ms": 1260.4576333336202,
-          "median_inference_time_ms": 1228.3791999998357
+          "mean_inference_time_ms": 5555.938633332819,
+          "median_inference_time_ms": 2151.4626999996835
+        },
+        "medium": {
+          "challenge_count": 3,
+          "evaluated_count": 3,
+          "correct_count": 1,
+          "incorrect_count": 2,
+          "exact_challenge_accuracy": 0.3333333333333333,
+          "mean_inference_time_ms": 5822.479266666657,
+          "median_inference_time_ms": 1659.3723999994836
         },
         "story": {
           "challenge_count": 5,
           "evaluated_count": 5,
-          "correct_count": 3,
-          "incorrect_count": 2,
-          "exact_challenge_accuracy": 0.6,
-          "mean_inference_time_ms": 1702.418580000085,
-          "median_inference_time_ms": 1330.9458999992785
+          "correct_count": 2,
+          "incorrect_count": 3,
+          "exact_challenge_accuracy": 0.4,
+          "mean_inference_time_ms": 6453.895479999483,
+          "median_inference_time_ms": 7371.343599999818
         }
       },
       "device-cables": {
@@ -414,17 +493,17 @@
           "correct_count": 1,
           "incorrect_count": 1,
           "exact_challenge_accuracy": 0.5,
-          "mean_inference_time_ms": 1658.7670499993692,
-          "median_inference_time_ms": 1658.7670499993692
+          "mean_inference_time_ms": 5653.147000000899,
+          "median_inference_time_ms": 5653.147000000899
         },
         "extreme": {
           "challenge_count": 2,
           "evaluated_count": 2,
-          "correct_count": 0,
-          "incorrect_count": 2,
-          "exact_challenge_accuracy": 0.0,
-          "mean_inference_time_ms": 1535.5312500005311,
-          "median_inference_time_ms": 1535.5312500005311
+          "correct_count": 1,
+          "incorrect_count": 1,
+          "exact_challenge_accuracy": 0.5,
+          "mean_inference_time_ms": 5743.995149999137,
+          "median_inference_time_ms": 5743.995149999137
         },
         "hard": {
           "challenge_count": 3,
@@ -432,8 +511,8 @@
           "correct_count": 0,
           "incorrect_count": 3,
           "exact_challenge_accuracy": 0.0,
-          "mean_inference_time_ms": 1248.2969000005444,
-          "median_inference_time_ms": 1218.5210000006919
+          "mean_inference_time_ms": 1113.6908999997104,
+          "median_inference_time_ms": 1126.9181000006938
         },
         "medium": {
           "challenge_count": 3,
@@ -441,17 +520,17 @@
           "correct_count": 0,
           "incorrect_count": 3,
           "exact_challenge_accuracy": 0.0,
-          "mean_inference_time_ms": 1820.3639666668703,
-          "median_inference_time_ms": 1663.0299000007653
+          "mean_inference_time_ms": 3857.894266666335,
+          "median_inference_time_ms": 1608.0535000000964
         },
         "story": {
           "challenge_count": 5,
           "evaluated_count": 5,
-          "correct_count": 1,
-          "incorrect_count": 4,
-          "exact_challenge_accuracy": 0.2,
-          "mean_inference_time_ms": 1443.403159999798,
-          "median_inference_time_ms": 1534.342499999184
+          "correct_count": 2,
+          "incorrect_count": 3,
+          "exact_challenge_accuracy": 0.4,
+          "mean_inference_time_ms": 3681.793579999794,
+          "median_inference_time_ms": 1126.7418000006728
         }
       },
       "laser-maze": {
@@ -461,8 +540,8 @@
           "correct_count": 2,
           "incorrect_count": 0,
           "exact_challenge_accuracy": 1.0,
-          "mean_inference_time_ms": 1226.6976000000795,
-          "median_inference_time_ms": 1226.6976000000795
+          "mean_inference_time_ms": 5104.079499999898,
+          "median_inference_time_ms": 5104.079499999898
         },
         "extreme": {
           "challenge_count": 2,
@@ -470,26 +549,26 @@
           "correct_count": 1,
           "incorrect_count": 1,
           "exact_challenge_accuracy": 0.5,
-          "mean_inference_time_ms": 2007.6060499995947,
-          "median_inference_time_ms": 2007.6060499995947
+          "mean_inference_time_ms": 3666.529199999786,
+          "median_inference_time_ms": 3666.529199999786
         },
         "hard": {
-          "challenge_count": 3,
-          "evaluated_count": 3,
-          "correct_count": 2,
-          "incorrect_count": 1,
-          "exact_challenge_accuracy": 0.6666666666666666,
-          "mean_inference_time_ms": 1936.914966666033,
-          "median_inference_time_ms": 1405.5711999990308
-        },
-        "medium": {
           "challenge_count": 3,
           "evaluated_count": 3,
           "correct_count": 1,
           "incorrect_count": 2,
           "exact_challenge_accuracy": 0.3333333333333333,
-          "mean_inference_time_ms": 1746.1653666662944,
-          "median_inference_time_ms": 1822.465799999918
+          "mean_inference_time_ms": 1655.9797666674665,
+          "median_inference_time_ms": 1138.01710000007
+        },
+        "medium": {
+          "challenge_count": 3,
+          "evaluated_count": 3,
+          "correct_count": 0,
+          "incorrect_count": 3,
+          "exact_challenge_accuracy": 0.0,
+          "mean_inference_time_ms": 2722.9360999990604,
+          "median_inference_time_ms": 1016.5166999995563
         },
         "story": {
           "challenge_count": 5,
@@ -497,19 +576,19 @@
           "correct_count": 0,
           "incorrect_count": 5,
           "exact_challenge_accuracy": 0.0,
-          "mean_inference_time_ms": 1226.68632000059,
-          "median_inference_time_ms": 1207.3560000008001
+          "mean_inference_time_ms": 2439.070039999933,
+          "median_inference_time_ms": 1640.8387999999832
         }
       },
       "pipe-flow": {
         "easy": {
           "challenge_count": 2,
           "evaluated_count": 2,
-          "correct_count": 2,
-          "incorrect_count": 0,
-          "exact_challenge_accuracy": 1.0,
-          "mean_inference_time_ms": 1795.5077500009793,
-          "median_inference_time_ms": 1795.5077500009793
+          "correct_count": 1,
+          "incorrect_count": 1,
+          "exact_challenge_accuracy": 0.5,
+          "mean_inference_time_ms": 1030.8111500007726,
+          "median_inference_time_ms": 1030.8111500007726
         },
         "extreme": {
           "challenge_count": 2,
@@ -517,8 +596,8 @@
           "correct_count": 0,
           "incorrect_count": 2,
           "exact_challenge_accuracy": 0.0,
-          "mean_inference_time_ms": 3161.369599999489,
-          "median_inference_time_ms": 3161.369599999489
+          "mean_inference_time_ms": 1052.5787499991566,
+          "median_inference_time_ms": 1052.5787499991566
         },
         "hard": {
           "challenge_count": 3,
@@ -526,8 +605,8 @@
           "correct_count": 3,
           "incorrect_count": 0,
           "exact_challenge_accuracy": 1.0,
-          "mean_inference_time_ms": 1550.695866665895,
-          "median_inference_time_ms": 1567.1001999999135
+          "mean_inference_time_ms": 3180.795999999949,
+          "median_inference_time_ms": 1223.7849999983155
         },
         "medium": {
           "challenge_count": 3,
@@ -535,8 +614,8 @@
           "correct_count": 2,
           "incorrect_count": 1,
           "exact_challenge_accuracy": 0.6666666666666666,
-          "mean_inference_time_ms": 1311.6377000005741,
-          "median_inference_time_ms": 1319.7266999995918
+          "mean_inference_time_ms": 3796.729800000321,
+          "median_inference_time_ms": 4633.810100000119
         },
         "story": {
           "challenge_count": 5,
@@ -544,13 +623,12 @@
           "correct_count": 3,
           "incorrect_count": 2,
           "exact_challenge_accuracy": 0.6,
-          "mean_inference_time_ms": 1630.5351200000587,
-          "median_inference_time_ms": 1446.1981000004016
+          "mean_inference_time_ms": 3101.865240000552,
+          "median_inference_time_ms": 1648.1753000007302
         }
       }
     },
-    "micro_accuracy": 0.43283582089552236,
-    "macro_level_accuracy": 0.5445221445221445,
-    "macro_variant_accuracy": 0.5485714285714286
+    "macro_level_accuracy": 0.5611305361305361,
+    "macro_variant_accuracy": 0.5580952380952381
   }
 }

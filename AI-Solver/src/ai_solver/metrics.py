@@ -14,6 +14,15 @@ def _median(values: list[float]) -> float | None:
     return statistics.median(values) if values else None
 
 
+STAGE_MAPPING: dict[str, str] = {
+    "street-grid": "Level 1",
+    "hard-street-grid": "Level 2A",
+    "checker-shadow": "Level 2B",
+    "routing-puzzle": "Level 3A",
+    "degraded-vision": "Level 3B",
+}
+
+
 def _group_summary(subset: list[ChallengeResult]) -> dict:
     correct = sum(row.correct is True for row in subset)
     incorrect = sum(row.correct is False for row in subset)
@@ -109,6 +118,19 @@ def aggregate_metrics(
                 for df in st_diffs
             }
 
+    by_stage: dict[str, dict] = {}
+    for variant, stage_name in STAGE_MAPPING.items():
+        stage_rows = [row for row in results if row.variant == variant]
+        if stage_rows:
+            by_stage[stage_name] = _group_summary(stage_rows)
+
+    stage_accuracies = [
+        s["exact_challenge_accuracy"]
+        for s in by_stage.values()
+        if s["exact_challenge_accuracy"] is not None
+    ]
+    macro_stage_accuracy = _mean(stage_accuracies)
+
     level_accuracies = [
         s["exact_challenge_accuracy"]
         for s in by_level.values()
@@ -147,6 +169,9 @@ def aggregate_metrics(
         "estimated_api_request_count": sum(row.api_request_count for row in results),
         "estimated_cost_usd": cost,
         "p95_method": "nearest-rank",
+        "by_stage": by_stage,
+        "macro_stage_accuracy": macro_stage_accuracy,
+        "by_numeric_level": by_level,
         "by_level": by_level,
         "by_variant": by_variant,
         "by_subtype": by_subtype,
@@ -154,7 +179,6 @@ def aggregate_metrics(
         "by_resolution": by_resolution,
         "by_series": by_series,
         "subtype_by_difficulty": subtype_by_difficulty,
-        "micro_accuracy": correct / evaluated if evaluated else None,
         "macro_level_accuracy": _mean(level_accuracies),
         "macro_variant_accuracy": _mean(variant_accuracies),
     }

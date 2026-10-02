@@ -34,7 +34,6 @@ def normalize_base_url(value: str) -> str:
 class RunConfig(BaseModel):
     model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
     base_url: str
-    variant: Literal["street-grid"] = "street-grid"
     variant: Literal[
         "street-grid",
         "hard-street-grid",

@@ -85,3 +85,69 @@ def test_dynamic_asset_count(challenge, assets):
     validate_street_grid(challenge, assets[:4])
     with pytest.raises(ChallengeContractError):
         validate_street_grid(challenge, assets)
+
+
+@pytest.mark.parametrize("valid_index", [0, 1, 3])
+def test_validate_option_index_valid(valid_index):
+    from ai_solver.contracts import validate_option_index
+
+    assert validate_option_index(valid_index, 4) == valid_index
+
+
+@pytest.mark.parametrize("invalid_index", [-1, 4, 10, True, False, 1.0, "1", None, [0]])
+def test_validate_option_index_strict(invalid_index):
+    from ai_solver.contracts import validate_option_index
+
+    with pytest.raises(ModelResponseError):
+        validate_option_index(invalid_index, 4)
+
+
+def test_validate_challenge_and_assets_single_choice(challenge):
+    from ai_solver.contracts import validate_challenge_and_assets
+
+    challenge.variant = "routing-puzzle"
+    challenge.type = "single-choice"
+    challenge.ui.options = ["Server 01", "Server 02", "Server 03"]
+    validate_challenge_and_assets(challenge, [b"fake_image_data"] * len(challenge.assets))
+
+    # Invalid: fewer than 2 options
+    challenge.ui.options = ["Only one"]
+    with pytest.raises(ChallengeContractError, match="at least two options"):
+        validate_challenge_and_assets(challenge, [b"fake_image_data"] * len(challenge.assets))
+
+    # Invalid: options not list
+    challenge.ui.options = None
+    with pytest.raises(ChallengeContractError, match="at least two options"):
+        validate_challenge_and_assets(challenge, [b"fake_image_data"] * len(challenge.assets))
+
+    # Invalid: empty string in options
+    challenge.ui.options = ["Server 01", "   "]
+    with pytest.raises(ChallengeContractError, match="non-empty strings"):
+        validate_challenge_and_assets(challenge, [b"fake_image_data"] * len(challenge.assets))
+
+
+@pytest.mark.parametrize(
+    "variant",
+    [
+        "street-grid",
+        "hard-street-grid",
+        "checker-shadow",
+        "routing-puzzle",
+        "degraded-vision",
+        "all",
+    ],
+)
+def test_run_config_variants_supported(variant):
+    from ai_solver.config import RunConfig
+
+    config = RunConfig(base_url="https://example.com", variant=variant)
+    assert config.variant == variant
+
+
+def test_run_config_variant_invalid():
+    from pydantic import ValidationError
+
+    from ai_solver.config import RunConfig
+
+    with pytest.raises(ValidationError):
+        RunConfig(base_url="https://example.com", variant="invalid-variant")

@@ -4,11 +4,11 @@ from ai_solver.contracts import ChallengeResult
 from ai_solver.metrics import aggregate_metrics
 
 
-def row(correct, inference, total, **kwargs):
+def row(correct, inference, total, variant="street-grid", level=1, **kwargs):
     return ChallengeResult(
         challenge_id="test",
-        variant="street-grid",
-        level=1,
+        variant=variant,
+        level=level,
         solver="test",
         model="fake",
         correct=correct,
@@ -86,3 +86,44 @@ def test_partial_recovery_usage_disables_cost():
     ]
     result = aggregate_metrics(rows, input_price_per_million=2, output_price_per_million=10)
     assert not result["usage_complete"] and result["estimated_cost_usd"] is None
+
+
+def test_aggregate_metrics_stages_and_macro_accuracy():
+    rows = [
+        # street-grid (Level 1): 2 correct, 1 incorrect -> 2/3
+        row(True, 10, 100, variant="street-grid", level=1),
+        row(True, 10, 100, variant="street-grid", level=1),
+        row(False, 10, 100, variant="street-grid", level=1),
+        # hard-street-grid (Level 2A): 1 correct, 1 incorrect -> 1/2
+        row(True, 10, 100, variant="hard-street-grid", level=2),
+        row(False, 10, 100, variant="hard-street-grid", level=2),
+        # checker-shadow (Level 2B): 1 correct, 0 incorrect -> 1/1
+        row(True, 10, 100, variant="checker-shadow", level=2),
+        # routing-puzzle (Level 3A): 2 correct, 0 incorrect -> 2/2
+        row(True, 10, 100, variant="routing-puzzle", level=3),
+        row(True, 10, 100, variant="routing-puzzle", level=3),
+        # degraded-vision (Level 3B): 0 correct, 2 incorrect -> 0/2
+        row(False, 10, 100, variant="degraded-vision", level=3),
+        row(False, 10, 100, variant="degraded-vision", level=3),
+    ]
+    summary = aggregate_metrics(rows)
+    assert "by_stage" in summary
+    assert "macro_stage_accuracy" in summary
+    assert "by_numeric_level" in summary
+    assert set(summary["by_stage"].keys()) == {
+        "Level 1",
+        "Level 2A",
+        "Level 2B",
+        "Level 3A",
+        "Level 3B",
+    }
+    expected_macro = (2 / 3 + 0.5 + 1.0 + 1.0 + 0.0) / 5
+    assert summary["macro_stage_accuracy"] == pytest.approx(expected_macro)
+    # micro accuracy = 6 / 10 = 0.6
+    assert summary["exact_challenge_accuracy"] == pytest.approx(0.6)
+    assert summary["by_stage"]["Level 1"]["challenge_count"] == 3
+    assert summary["by_stage"]["Level 1"]["correct_count"] == 2
+    assert summary["by_stage"]["Level 2A"]["challenge_count"] == 2
+    assert summary["by_stage"]["Level 2B"]["challenge_count"] == 1
+    assert summary["by_stage"]["Level 3A"]["challenge_count"] == 2
+    assert summary["by_stage"]["Level 3B"]["challenge_count"] == 2

@@ -84,7 +84,7 @@ class GeminiVisionProvider:
             response_mime_type="application/json",
             response_json_schema=schema,
             max_output_tokens=8192,
-            thinking_config=types.ThinkingConfig(thinking_level=types.ThinkingLevel.LOW),
+            thinking_config=types.ThinkingConfig(thinking_level=types.ThinkingLevel.MINIMAL),
             automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
         )
         calls = 0
