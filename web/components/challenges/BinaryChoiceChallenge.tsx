@@ -9,6 +9,7 @@ interface BinaryChoiceChallengeProps {
   onSubmit: (selectedOption: string) => void;
   onAssetsReady: () => void;
   disabled?: boolean;
+  benchmarkMode?: boolean;
 }
 
 export function BinaryChoiceChallenge({
@@ -17,6 +18,7 @@ export function BinaryChoiceChallenge({
   onSubmit,
   onAssetsReady,
   disabled = false,
+  benchmarkMode = false,
 }: BinaryChoiceChallengeProps) {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const assetReadyFired = useRef<boolean>(false);
@@ -49,9 +51,9 @@ export function BinaryChoiceChallenge({
     <form onSubmit={handleSubmit} className="flex flex-col items-center w-full max-w-xl mx-auto">
       {/* Instruction Banner */}
       <div className="w-full bg-[#161a25] border-t border-x border-[#2b3145] rounded-t-lg p-4 text-center">
-        <span className="text-xs uppercase tracking-wider font-mono text-purple-400 font-semibold block mb-1">
+        {!benchmarkMode && <span className="text-xs uppercase tracking-wider font-mono text-purple-400 font-semibold block mb-1">
           {challenge.levelLabel}: Visual Perception Illusion
-        </span>
+        </span>}
         <h2 className="text-base sm:text-lg font-medium text-white">
           {challenge.instruction}
         </h2>
@@ -109,10 +111,10 @@ export function BinaryChoiceChallenge({
           {isSubmitting ? (
             <>
               <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              Verifying...
+              {benchmarkMode ? "Saving..." : "Verifying..."}
             </>
           ) : (
-            "Verify Answer"
+            benchmarkMode ? "Submit response" : "Verify Answer"
           )}
         </button>
       </div>

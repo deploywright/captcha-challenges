@@ -21,6 +21,11 @@ src/generated-public/
 next-env.d.ts
 
 # Environment & logs
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
+playwright-report/
+test-results/
 .env*.local
 *.log
 npm-debug.log*

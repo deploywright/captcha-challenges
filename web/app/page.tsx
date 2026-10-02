@@ -44,6 +44,9 @@ export default function HomePage() {
 
             {/* CTAs */}
             <div className="pt-4 flex flex-wrap items-center justify-center gap-3.5">
+              <Link href="/human-benchmark" className="px-5 py-3 rounded-xl text-sm font-semibold text-blue-200 bg-blue-950/60 border border-blue-600/60 hover:bg-blue-900/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400">
+                Participate in Human Benchmark
+              </Link>
               <Link
                 href={`/challenge/${firstChallengeId}`}
                 className="px-6 py-3 rounded-xl font-mono text-sm font-bold bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white shadow-lg shadow-blue-500/25 border border-cyan-400/40 transition-all hover:scale-[1.02] flex items-center gap-2"

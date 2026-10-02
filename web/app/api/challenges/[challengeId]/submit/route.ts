@@ -14,7 +14,7 @@ export async function POST(
       );
     }
 
-    const body = await request.json();
+    const body = await request.json() as Record<string, unknown>;
     if (!body || body.answer === undefined) {
       return NextResponse.json(
         { error: "Submission must include an 'answer' field." },

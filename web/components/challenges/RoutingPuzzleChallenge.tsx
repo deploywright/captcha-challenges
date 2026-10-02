@@ -9,6 +9,7 @@ interface RoutingPuzzleChallengeProps {
   onSubmit: (selectedOption: string) => void;
   onAssetsReady: () => void;
   disabled?: boolean;
+  benchmarkMode?: boolean;
 }
 
 export function RoutingPuzzleChallenge({
@@ -17,6 +18,7 @@ export function RoutingPuzzleChallenge({
   onSubmit,
   onAssetsReady,
   disabled = false,
+  benchmarkMode = false,
 }: RoutingPuzzleChallengeProps) {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [zoomLevel, setZoomLevel] = useState<number>(1);
@@ -125,7 +127,7 @@ export function RoutingPuzzleChallenge({
     >
       {/* Header Instruction Banner */}
       <div className="w-full bg-[#111827] border-b border-slate-800 px-4 py-3.5 sm:px-6 sm:py-4 flex flex-col items-center text-center">
-        <div className="flex items-center gap-2 mb-1.5 flex-wrap justify-center">
+        {!benchmarkMode && <div className="flex items-center gap-2 mb-1.5 flex-wrap justify-center">
           <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-blue-950/80 text-blue-300 border border-blue-800/80">
             {challenge.levelLabel}
           </span>
@@ -142,7 +144,7 @@ export function RoutingPuzzleChallenge({
           <span className="text-xs text-slate-400 font-mono hidden md:inline">
             • {currentSubtypeConfig.subtitle}
           </span>
-        </div>
+        </div>}
 
         <h2 className="text-base sm:text-lg md:text-xl font-semibold text-white tracking-tight">
           {challenge.instruction}
@@ -152,7 +154,7 @@ export function RoutingPuzzleChallenge({
       {/* Image Canvas Container with Zoom/Pan controls */}
       <div className="w-full bg-[#070b13] p-2 relative flex flex-col items-center">
         {/* Toolbar */}
-        <div className="w-full flex items-center justify-between pb-2 px-3 text-xs font-mono text-slate-400 border-b border-slate-800/70 mb-2">
+        <div className={`w-full flex items-center justify-between pb-2 px-3 text-xs font-mono text-slate-400 border-b border-slate-800/70 mb-2 ${benchmarkMode ? "flex-wrap gap-3 [&_button]:min-w-10 [&_button]:min-h-10" : ""}`}>
           <span className="text-[11px] text-slate-500">
             Use mouse / touch to trace path
           </span>
@@ -162,6 +164,7 @@ export function RoutingPuzzleChallenge({
               onClick={() => handleZoom(-0.25)}
               className="w-7 h-6 flex items-center justify-center rounded bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 transition"
               title="Zoom out"
+              aria-label={benchmarkMode ? "Zoom out" : undefined}
             >
               -
             </button>
@@ -173,6 +176,7 @@ export function RoutingPuzzleChallenge({
               onClick={() => handleZoom(0.25)}
               className="w-7 h-6 flex items-center justify-center rounded bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 transition"
               title="Zoom in"
+              aria-label={benchmarkMode ? "Zoom in" : undefined}
             >
               +
             </button>
@@ -257,6 +261,7 @@ export function RoutingPuzzleChallenge({
                   disabled={disabled || isSubmitting}
                   onClick={() => setSelectedOption(option)}
                   aria-pressed={isSelected}
+                  aria-label={benchmarkMode ? option : undefined}
                   className={`py-2.5 px-3 rounded-lg text-xs sm:text-sm font-mono font-medium transition-all duration-150 border text-center flex flex-col items-center justify-center gap-0.5 select-none ${
                     isSelected
                       ? "bg-blue-600 border-blue-400 text-white font-bold shadow-lg shadow-blue-600/30 scale-102 ring-2 ring-blue-400/50"
@@ -277,7 +282,7 @@ export function RoutingPuzzleChallenge({
         <div className="flex items-center justify-between pt-3 border-t border-slate-800/80">
           <span className="text-xs font-mono text-slate-500">
             {selectedOption
-              ? "Option chosen. Click verify or press Enter."
+              ? benchmarkMode ? "Option chosen. Submit when ready." : "Option chosen. Click verify or press Enter."
               : "Please select an answer above"}
           </span>
 
@@ -293,10 +298,10 @@ export function RoutingPuzzleChallenge({
             {isSubmitting ? (
               <>
                 <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Verifying...
+                {benchmarkMode ? "Saving..." : "Verifying..."}
               </>
             ) : (
-              "Verify Answer"
+              benchmarkMode ? "Submit response" : "Verify Answer"
             )}
           </button>
         </div>

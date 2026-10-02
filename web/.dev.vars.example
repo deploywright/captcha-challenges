@@ -1,0 +1,2 @@
+# Local only; choose a cryptographically random key. Never commit the real file.
+HUMAN_BENCHMARK_ADMIN_KEY=replace-with-a-local-random-secret

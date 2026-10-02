@@ -9,6 +9,7 @@ interface ImageGridChallengeProps {
   onSubmit: (selectedIndices: number[]) => void;
   onAssetsReady: () => void;
   disabled?: boolean;
+  benchmarkMode?: boolean;
 }
 
 export function ImageGridChallenge({
@@ -17,11 +18,29 @@ export function ImageGridChallenge({
   onSubmit,
   onAssetsReady,
   disabled = false,
+  benchmarkMode = false,
 }: ImageGridChallengeProps) {
   const [selectedIndices, setSelectedIndices] = useState<Set<number>>(new Set());
   const [inspectingIndex, setInspectingIndex] = useState<number | null>(null);
   const assetReadyFired = useRef<boolean>(false);
   const imgRefs = useRef<(HTMLImageElement | null)[]>([]);
+  const inspectDialogRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!benchmarkMode || inspectingIndex === null) return;
+    const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const dialog = inspectDialogRef.current;
+    dialog?.querySelector<HTMLButtonElement>("button")?.focus();
+    const trap = (event: KeyboardEvent) => {
+      if (event.key !== "Tab" || !dialog) return;
+      const buttons = [...dialog.querySelectorAll<HTMLButtonElement>("button:not(:disabled)")];
+      const first = buttons[0]; const last = buttons.at(-1);
+      if (event.shiftKey && document.activeElement === first) {event.preventDefault();last?.focus();}
+      if (!event.shiftKey && document.activeElement === last) {event.preventDefault();first?.focus();}
+    };
+    document.addEventListener("keydown",trap);
+    return () => {document.removeEventListener("keydown",trap);previous?.focus();};
+  },[benchmarkMode,inspectingIndex]);
 
   const totalAssets = challenge.assets.length;
   const columns = challenge.ui.columns || (totalAssets === 16 ? 4 : 3);
@@ -108,14 +127,14 @@ export function ImageGridChallenge({
     >
       {/* Header Banner */}
       <div className="w-full bg-[#161a25] border-t border-x border-[#2b3145] rounded-t-xl p-4 sm:p-5 text-center shadow-lg">
-        <span className="text-xs uppercase tracking-wider font-mono text-blue-400 font-semibold block mb-1">
+        {!benchmarkMode && <span className="text-xs uppercase tracking-wider font-mono text-blue-400 font-semibold block mb-1">
           {challenge.levelLabel}: Grid Image Selection
-        </span>
+        </span>}
         <h2 className="text-base sm:text-xl font-semibold text-white">
           {challenge.instruction}
         </h2>
         <p className="text-xs text-gray-400 mt-1">
-          Click all matching squares. Click the 🔍 magnifying glass to inspect any tile in high resolution.
+          {benchmarkMode ? "Select all matching squares. Use the magnifying glass to enlarge the displayed tile." : "Click all matching squares. Click the 🔍 magnifying glass to inspect any tile in high resolution."}
         </p>
       </div>
 
@@ -248,8 +267,10 @@ export function ImageGridChallenge({
             {isSubmitting ? (
               <>
                 <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Verifying...
+                {benchmarkMode ? "Saving..." : "Verifying..."}
               </>
+            ) : benchmarkMode ? (
+              selectedIndices.size === 0 ? "Submit (None Match)" : "Submit response"
             ) : selectedIndices.size === 0 ? (
               "Verify (None Match)"
             ) : (
@@ -263,6 +284,7 @@ export function ImageGridChallenge({
       {inspectingIndex !== null && (
         <div
           role="dialog"
+          ref={inspectDialogRef}
           aria-modal="true"
           aria-label={`Inspecting tile ${inspectingIndex + 1}`}
           className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150"

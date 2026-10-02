@@ -9,5 +9,25 @@
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS"
+  },
+  "d1_databases": [
+    {
+      "binding": "HUMAN_BENCHMARK_DB",
+      "database_name": "captcha-human-benchmark",
+      "database_id": "a88c2d6f-d809-4de4-beeb-ebf11347dc26",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "observability": {
+    "enabled": true,
+    "redact_query_string": true,
+    "logs": {
+      "enabled": true,
+      "invocation_logs": false
+    },
+    "traces": {
+      "enabled": true,
+      "persist": false
+    }
   }
 }
