@@ -1,5 +1,6 @@
 {
-  "generated_at": "2026-10-02T17:54:24.109811+00:00",
+  "generated_at": "2026-10-02T18:02:50.840527+00:00",
+  "report_status": "attribution_pending",
   "creator": {
     "protocol_version": "human-v1",
     "cohort": "main",
@@ -1975,7 +1976,115 @@
           "series_id": "series-03"
         }
       ]
-    }
+    },
+    "case_studies": {
+      "creator_only_correct": [
+        {
+          "challenge_id": "lvl1_y82na0",
+          "stage": "Level 1",
+          "variant": "street-grid",
+          "subtype": null,
+          "difficulty": null,
+          "resolution": null,
+          "series_id": null
+        },
+        {
+          "challenge_id": "lvl2a_02gwmw",
+          "stage": "Level 2A",
+          "variant": "hard-street-grid",
+          "subtype": null,
+          "difficulty": null,
+          "resolution": null,
+          "series_id": null
+        },
+        {
+          "challenge_id": "lvl3a_cables_1sbi07",
+          "stage": "Level 3A",
+          "variant": "routing-puzzle",
+          "subtype": "device-cables",
+          "difficulty": "medium",
+          "resolution": null,
+          "series_id": null
+        },
+        {
+          "challenge_id": "lvl3b_xel0ut",
+          "stage": "Level 3B",
+          "variant": "degraded-vision",
+          "subtype": null,
+          "difficulty": null,
+          "resolution": 24,
+          "series_id": "series-02"
+        }
+      ],
+      "gemini_only_correct": [
+        {
+          "challenge_id": "lvl1_6j29rx",
+          "stage": "Level 1",
+          "variant": "street-grid",
+          "subtype": null,
+          "difficulty": null,
+          "resolution": null,
+          "series_id": null
+        },
+        {
+          "challenge_id": "lvl2a_ke53bn",
+          "stage": "Level 2A",
+          "variant": "hard-street-grid",
+          "subtype": null,
+          "difficulty": null,
+          "resolution": null,
+          "series_id": null
+        },
+        {
+          "challenge_id": "lvl2b_4oq84p",
+          "stage": "Level 2B",
+          "variant": "checker-shadow",
+          "subtype": null,
+          "difficulty": null,
+          "resolution": null,
+          "series_id": null
+        },
+        {
+          "challenge_id": "lvl3a_conveyor_lyqxa9",
+          "stage": "Level 3A",
+          "variant": "routing-puzzle",
+          "subtype": "conveyor-routing",
+          "difficulty": "easy",
+          "resolution": null,
+          "series_id": null
+        }
+      ],
+      "both_wrong": [
+        {
+          "challenge_id": "lvl1_92m6az",
+          "stage": "Level 1",
+          "variant": "street-grid",
+          "subtype": null,
+          "difficulty": null,
+          "resolution": null,
+          "series_id": null
+        },
+        {
+          "challenge_id": "lvl3a_pipe_oj4oct",
+          "stage": "Level 3A",
+          "variant": "routing-puzzle",
+          "subtype": "pipe-flow",
+          "difficulty": "extreme",
+          "resolution": null,
+          "series_id": null
+        },
+        {
+          "challenge_id": "lvl3b_e1m46k",
+          "stage": "Level 3B",
+          "variant": "degraded-vision",
+          "subtype": null,
+          "difficulty": null,
+          "resolution": 16,
+          "series_id": "series-03"
+        }
+      ]
+    },
+    "case_study_selection": "One case per represented stage in each discordant/both-wrong category; lexicographically smallest challenge ID within stage. All cases are also listed in outcome_categories. These are navigation examples, not evidence of general superiority."
   },
   "creator_stage_standardized_accuracy": 0.6865671641791045,
   "stage_weights": {
@@ -2131,14 +2240,14 @@
   },
   "methodology_notes": [
     "Storage anomaly: there are zero completed creator-cohort sessions. The selected completed session is stored as main; its creator attribution requires explicit user confirmation. No D1 row was relabeled or changed.",
-    "Exactly one creator; this is a single-participant creator baseline, not representative human performance.",
-    "The creator saw 40 of 134 challenges, selected with fixed stratified quotas rather than a simple random full-population sample.",
-    "Creator stage estimates have small N; Level 2B has six total challenges and is completely shared, while Level 3B samples only four distinct scenes/resolutions.",
+    "Exactly one participant; this is an unattributed candidate session, not representative human performance.",
+    "The participant saw 40 of 134 challenges, selected with fixed stratified quotas rather than a simple random full-population sample.",
+    "Candidate stage estimates have small N; Level 2B has six total challenges and is completely shared, while Level 3B samples only four distinct scenes/resolutions.",
     "No continuous degraded-resolution threshold can be inferred from four trials.",
-    "The creator knows the project and may have more context than a naive participant; prior exposure is not measured by this session.",
+    "Creator identity remains unconfirmed. If confirmed, project familiarity may provide more context than a naive participant; prior exposure is not measured by this session.",
     "Human solve time and Gemini provider inference latency measure different processes; this is not an equivalent speed comparison.",
     "The strongest direct descriptive comparison uses the exact same 40 IDs; full-population overall percentages use different challenge populations and weighting schemes.",
-    "The stage-standardized creator score is a descriptive estimate from within-stage subsets, not observed performance on all 134 challenges.",
+    "The stage-standardized candidate score is a descriptive estimate from within-stage subsets, not observed performance on all 134 challenges.",
     "McNemar's exact conditional binomial p-value is exploratory and assumes exchangeable independent discordant pairs under its null; shared participant/task dependencies and stratified selection limit inferential interpretation.",
     "No population-level humans-versus-AI superiority claim follows from one participant or these 40 matched challenges.",
     "Named illusion subtype is absent from D1 and the public catalog; optical cases use exact public instructions and IDs, with no guessed names."

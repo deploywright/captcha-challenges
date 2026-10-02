@@ -135,6 +135,17 @@ def grouping(rows, field, buckets):
     return {str(bucket): creator_metric([r for r in rows if r.get(field) == bucket]) for bucket in buckets}
 
 
+def case_studies(categories):
+    """Select one public case per represented stage, with deterministic ID ordering."""
+    return {
+        category: [min((row for row in categories[category] if row["stage"] == stage),
+                       key=lambda row: row["challenge_id"])
+                   for stage in STAGES.values()
+                   if any(row["stage"] == stage for row in categories[category])]
+        for category in CATEGORIES[1:]
+    }
+
+
 def build_report(audit_path, confirmed_session_id=None, allow_unattributed_draft=False):
     audit = read_json(audit_path)
     session, rows = audit["session"], audit["trials"]
@@ -203,8 +214,16 @@ def build_report(audit_path, confirmed_session_id=None, allow_unattributed_draft
     ]
     if session["cohort"] != "creator":
         limitations.insert(0, "Storage anomaly: there are zero completed creator-cohort sessions. The selected completed session is stored as main; its creator attribution requires explicit user confirmation. No D1 row was relabeled or changed.")
+    if pending:
+        limitations = [note.replace("Exactly one creator; this is a single-participant creator baseline", "Exactly one participant; this is an unattributed candidate session")
+                      .replace("The creator knows the project and may have more context than a naive participant; prior exposure is not measured by this session.",
+                               "Creator identity remains unconfirmed. If confirmed, project familiarity may provide more context than a naive participant; prior exposure is not measured by this session.")
+                      .replace("Creator stage", "Candidate stage").replace("The creator saw", "The participant saw")
+                      .replace("creator score", "candidate score")
+                      for note in limitations]
     report = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
+        "report_status": "attribution_pending" if pending else "attributed",
         "creator": {"protocol_version": session["protocol_version"], "cohort": session["cohort"],
                     "session_id": session["session_id"], "analysis_label": "unattributed main-cohort candidate; creator identity pending" if pending else "single-participant creator baseline",
                     "identity_confirmation": "pending" if pending else "user_confirmed" if confirmed_session_id else "creator_cohort_record",
@@ -226,7 +245,9 @@ def build_report(audit_path, confirmed_session_id=None, allow_unattributed_draft
                     "accuracy_gap_pp": 100*(overall["correct"]-g_correct)/40, **counts,
                     "mcnemar_exact_p_value": mcnemar_exact(counts["creator_only_correct"], counts["gemini_only_correct"]),
                     "mcnemar_discordant_pairs": counts["creator_only_correct"] + counts["gemini_only_correct"],
-                    "by_stage": matched_stage, "challenge_outcomes": outcomes, "outcome_categories": categories},
+                    "by_stage": matched_stage, "challenge_outcomes": outcomes, "outcome_categories": categories,
+                    "case_studies": case_studies(categories),
+                    "case_study_selection": "One case per represented stage in each discordant/both-wrong category; lexicographically smallest challenge ID within stage. All cases are also listed in outcome_categories. These are navigation examples, not evidence of general superiority."},
         "creator_stage_standardized_accuracy": float(standardized),
         "stage_weights": {stage: {"creator_total": by_stage[stage]["total"], "creator_weight": by_stage[stage]["total"]/40,
                                    "gemini_full_total": metric["challenge_count"], "gemini_full_weight": metric["challenge_count"]/full["total"]}
@@ -283,6 +304,14 @@ def markdown(report):
               f"A+B+C+D = {sum(m[key] for key in CATEGORIES)}. Discordant pairs: B={m['creator_only_correct']}, C={m['gemini_only_correct']}; N discordant={m['mcnemar_discordant_pairs']}. Exact two-sided McNemar p-value = **{m['mcnemar_exact_p_value']:.10f}** (conditional binomial, doubled lower tail capped at one; no mid-p or chi-square approximation).", "",
               "This p-value is exploratory for N=40 matched challenges from one participant. Shared participant/task dependencies and stratified selection limit inference; it does not establish a population-level human/AI difference. [Exact McNemar method](https://www.statsmodels.org/stable/generated/statsmodels.stats.contingency_tables.mcnemar.html).", ""]
     titles = ["Both Correct", "Where Creator Succeeded and Gemini Failed", "Where Gemini Succeeded and Creator Failed", "Both Failed"]
+    lines += ["## Case Studies for Review", "", m["case_study_selection"], "",
+              "| Outcome | Challenge ID | Stage | Public subtype | Difficulty | Resolution | Series |",
+              "| --- | --- | --- | --- | --- | ---: | --- |"]
+    for category, title in zip(CATEGORIES[1:], titles[1:]):
+        for row in m["case_studies"][category]:
+            fields = [row[key] for key in ["challenge_id", "stage", "subtype", "difficulty", "resolution", "series_id"]]
+            lines.append("| " + title + " | " + " | ".join(str(value) if value is not None else "—" for value in fields) + " |")
+    lines += [""]
     for category, title in zip(CATEGORIES, titles):
         lines += [f"## {title}", "", f"N = {m[category]}. Every assigned case is listed; no cherry-picking or answer keys.", "",
                   "| Challenge ID | Stage | Variant | Public subtype | Difficulty | Resolution | Series |",
@@ -335,7 +364,9 @@ def markdown(report):
     rendered = "\n".join(lines)
     if c["identity_confirmation"] == "pending":
         rendered = rendered.replace("Creator", "Candidate").replace("creator baseline", "unattributed candidate session")
-        rendered = "# Attribution pending — anonymous main session vs Gemini\n\nThis is a reviewable draft, not an attributed Creator Baseline report.\n\n" + rendered
+        rendered = rendered.replace("creator stage accuracy", "candidate stage accuracy").replace("observed creator accuracy", "observed candidate accuracy")
+        rendered = rendered.replace("# Candidate vs Gemini Benchmark", "# Attribution pending — anonymous main session vs Gemini", 1)
+        rendered = rendered.replace("## Executive Summary", "This draft compares an anonymous candidate session. Creator attribution remains pending.\n\n## Executive Summary", 1)
     return rendered
 
 

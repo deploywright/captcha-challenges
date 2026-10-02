@@ -1,6 +1,5 @@
 """Analysis checks; reads the ignored D1 snapshot, never mutates production."""
 import copy
-from pathlib import Path
 import unittest
 
 from scipy.stats import binomtest
@@ -38,6 +37,22 @@ class AnalysisTests(unittest.TestCase):
     def test_noncreator_identity_cannot_be_guessed(self):
         with self.assertRaisesRegex(ValueError, "identity must be confirmed"):
             build_report(ROOT / ".tmp/creator-comparison-production-audit.json")
+
+    def test_pending_report_preserves_identity_and_public_case_partition(self):
+        report = build_report(ROOT / ".tmp/creator-comparison-production-audit.json", allow_unattributed_draft=True)
+        self.assertEqual(report["report_status"], "attribution_pending")
+        self.assertEqual(report["creator"]["cohort"], "main")
+        self.assertEqual(report["creator"]["identity_confirmation"], "pending")
+        groups = report["matched"]["outcome_categories"]
+        ids = [row["challenge_id"] for group in groups.values() for row in group]
+        self.assertEqual(len(ids), 40)
+        self.assertEqual(len(set(ids)), 40)
+        public_fields = {"challenge_id", "stage", "variant", "subtype", "difficulty", "resolution", "series_id"}
+        for category, cases in report["matched"]["case_studies"].items():
+            self.assertEqual({row["stage"] for row in cases}, {row["stage"] for row in groups[category]})
+            for row in cases:
+                self.assertIn(row, groups[category])
+                self.assertEqual(set(row), public_fields)
 
     def test_canonical_raw_runs_reproduce_full_json(self):
         canonical, rows, _ = load_gemini(ROOT / "AI-Solver/reports/gemini-zero-shot-baseline.json")

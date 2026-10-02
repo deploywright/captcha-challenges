@@ -1,0 +1,16 @@
+{
+  "checked_at": "2026-10-02T18:01:48.653Z",
+  "database": "captcha-human-benchmark",
+  "database_id": "a88c2d6f-d809-4de4-beeb-ebf11347dc26",
+  "session_id": "73fac77a-7985-4755-a26d-16ea9046541f",
+  "stored_cohort": "main",
+  "trial_rows": 40,
+  "trial_snapshot_unchanged": true,
+  "trial_audit_fields_sha256": "7ddbef56053791b0b3389ed98fb31e6639fcd2dc525f4707be6f8fcbe84a5ee6",
+  "completed_creator_sessions": 0,
+  "completed_non_smoke_sessions": 1,
+  "rows_written": 0,
+  "changed_db": false,
+  "identity_confirmation": "pending",
+  "note": "Submitted responses were excluded from this revalidation query. All other requested trial audit fields match the earlier private snapshot exactly."
+}

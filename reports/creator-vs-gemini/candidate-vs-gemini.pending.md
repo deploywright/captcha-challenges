@@ -1,10 +1,8 @@
 # Attribution pending — anonymous main session vs Gemini
 
-This is a reviewable draft, not an attributed Creator Baseline report.
+Generated: 2026-10-02T18:02:50.840527+00:00
 
-# Candidate vs Gemini Benchmark
-
-Generated: 2026-10-02T17:54:24.109811+00:00
+This draft compares an anonymous candidate session. Creator attribution remains pending.
 
 ## Executive Summary
 
@@ -37,6 +35,24 @@ On those exact 40 IDs, Gemini achieved **21/40 (52.50%)**. Candidate minus Gemin
 A+B+C+D = 40. Discordant pairs: B=14, C=5; N discordant=19. Exact two-sided McNemar p-value = **0.0635681152** (conditional binomial, doubled lower tail capped at one; no mid-p or chi-square approximation).
 
 This p-value is exploratory for N=40 matched challenges from one participant. Shared participant/task dependencies and stratified selection limit inference; it does not establish a population-level human/AI difference. [Exact McNemar method](https://www.statsmodels.org/stable/generated/statsmodels.stats.contingency_tables.mcnemar.html).
+
+## Case Studies for Review
+
+One case per represented stage in each discordant/both-wrong category; lexicographically smallest challenge ID within stage. All cases are also listed in outcome_categories. These are navigation examples, not evidence of general superiority.
+
+| Outcome | Challenge ID | Stage | Public subtype | Difficulty | Resolution | Series |
+| --- | --- | --- | --- | --- | ---: | --- |
+| Where Candidate Succeeded and Gemini Failed | lvl1_y82na0 | Level 1 | — | — | — | — |
+| Where Candidate Succeeded and Gemini Failed | lvl2a_02gwmw | Level 2A | — | — | — | — |
+| Where Candidate Succeeded and Gemini Failed | lvl3a_cables_1sbi07 | Level 3A | device-cables | medium | — | — |
+| Where Candidate Succeeded and Gemini Failed | lvl3b_xel0ut | Level 3B | — | — | 24 | series-02 |
+| Where Gemini Succeeded and Candidate Failed | lvl1_6j29rx | Level 1 | — | — | — | — |
+| Where Gemini Succeeded and Candidate Failed | lvl2a_ke53bn | Level 2A | — | — | — | — |
+| Where Gemini Succeeded and Candidate Failed | lvl2b_4oq84p | Level 2B | — | — | — | — |
+| Where Gemini Succeeded and Candidate Failed | lvl3a_conveyor_lyqxa9 | Level 3A | conveyor-routing | easy | — | — |
+| Both Failed | lvl1_92m6az | Level 1 | — | — | — | — |
+| Both Failed | lvl3a_pipe_oj4oct | Level 3A | pipe-flow | extreme | — | — |
+| Both Failed | lvl3b_e1m46k | Level 3B | — | — | 16 | series-03 |
 
 ## Both Correct
 
@@ -207,7 +223,7 @@ Canonical model **gemini-3.5-flash-lite**, **zero-shot**, thinking **MINIMAL**. 
 | Level 3A | 18/40 (45.00%) | 60/134 (44.78%) |
 | Level 3B | 4/40 (10.00%) | 28/134 (20.90%) |
 
-**Candidate stage-standardized descriptive estimate:** 68.66%, computed as Σ (Gemini full stage N/134) × creator stage accuracy. It is not observed accuracy on 134 trials; observed creator accuracy remains 75.00%.
+**Candidate stage-standardized descriptive estimate:** 68.66%, computed as Σ (Gemini full stage N/134) × candidate stage accuracy. It is not observed accuracy on 134 trials; observed candidate accuracy remains 75.00%.
 
 ## Timing
 
@@ -232,14 +248,14 @@ MINIMAL is recorded in the frozen canonical aggregate; the raw run configs do no
 ## Methodological Limitations
 
 1. Storage anomaly: there are zero completed creator-cohort sessions. The selected completed session is stored as main; its creator attribution requires explicit user confirmation. No D1 row was relabeled or changed.
-2. Exactly one creator; this is a single-participant unattributed candidate session, not representative human performance.
-3. The creator saw 40 of 134 challenges, selected with fixed stratified quotas rather than a simple random full-population sample.
+2. Exactly one participant; this is an unattributed candidate session, not representative human performance.
+3. The participant saw 40 of 134 challenges, selected with fixed stratified quotas rather than a simple random full-population sample.
 4. Candidate stage estimates have small N; Level 2B has six total challenges and is completely shared, while Level 3B samples only four distinct scenes/resolutions.
 5. No continuous degraded-resolution threshold can be inferred from four trials.
-6. The creator knows the project and may have more context than a naive participant; prior exposure is not measured by this session.
+6. Candidate identity remains unconfirmed. If confirmed, project familiarity may provide more context than a naive participant; prior exposure is not measured by this session.
 7. Human solve time and Gemini provider inference latency measure different processes; this is not an equivalent speed comparison.
 8. The strongest direct descriptive comparison uses the exact same 40 IDs; full-population overall percentages use different challenge populations and weighting schemes.
-9. The stage-standardized creator score is a descriptive estimate from within-stage subsets, not observed performance on all 134 challenges.
+9. The stage-standardized candidate score is a descriptive estimate from within-stage subsets, not observed performance on all 134 challenges.
 10. McNemar's exact conditional binomial p-value is exploratory and assumes exchangeable independent discordant pairs under its null; shared participant/task dependencies and stratified selection limit inferential interpretation.
 11. No population-level humans-versus-AI superiority claim follows from one participant or these 40 matched challenges.
 12. Named illusion subtype is absent from D1 and the public catalog; optical cases use exact public instructions and IDs, with no guessed names.
