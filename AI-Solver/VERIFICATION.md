@@ -228,30 +228,3 @@ Terminal evidence is retained in ignored `.tmp/` logs:
 and `ai-solver-gemini-lite-stage1`, `ai-solver-gemini-lite-stage5`, and
 `ai-solver-gemini-lite-full` JSON/progress log pairs. Earlier provider failures
 and random dry-run/submission logs remain separate.
-
-## Full Zero-Shot Gemini Baseline Across Full Benchmark (All 5 Levels)
-
-Completed on 2026-10-02. All 134 challenges across the full held-out benchmark suite have been evaluated zero-shot with `gemini-3.5-flash-lite`, preserving the canonical Level 1 baseline and achieving 100% coverage with 0 execution errors across all 5 levels.
-
-### Aggregate Benchmark Results
-
-| Level | Variant | Type | Challenges | Correct | Accuracy | Errors | Mean Inference |
-| :--- | :--- | :--- | :---: | :---: | :---: | :---: | :---: |
-| **Level 1** | `street-grid` | Image Selection | 20 | 14 | **70.0%** | 0 | 6.11 s |
-| **Level 2A** | `hard-street-grid` | Image Selection | 20 | 10 | **50.0%** | 0 | 2.27 s |
-| **Level 2B** | `checker-shadow` | Single Choice | 6 | 6 | **100.0%** | 0 | 1.45 s |
-| **Level 3A** | `routing-puzzle` | Single Choice | 60 | 24 | **40.0%** | 0 | 1.56 s |
-| **Level 3B** | `degraded-vision` | Image Selection | 28 | 4 | **14.29%** | 0 | 9.49 s |
-| **Total / Overall** | — | — | **134** | **58** | **43.28%** | **0** | **2.97 s** |
-
-- **Overall Micro Accuracy**: 58 / 134 = **43.28%**
-- **Macro Level Accuracy**: **54.45%**
-- **Macro Variant Accuracy**: **54.86%**
-- **Key Behavioral Findings**:
-  - **Level 2B (Perceptual Illusions)**: 6 / 6 (100%). The model exhibits geometric invariance and does not succumb to human contrast/perspective illusions.
-  - **Level 3A (Routing Puzzles)**: Pipe Flow (66.7%), Laser Maze (40.0%), Conveyor Routing (40.0%), Device Cables (13.3%). On Easy difficulty, accuracy is 87.5%; on Extreme difficulty, accuracy falls to 0.0%.
-  - **Level 3B (Degraded Vision)**: Sharp cliff below 32×32 px. At 64px–32px, model achieves 25–50% accuracy; below 32px (24px, 16px, 12px, 8px), accuracy is 0.0% (0 / 16).
-- **Artifacts**:
-  - Full Report: `reports/gemini-zero-shot-baseline.md`
-  - Machine-readable JSON: `reports/gemini-zero-shot-baseline.json`
-
