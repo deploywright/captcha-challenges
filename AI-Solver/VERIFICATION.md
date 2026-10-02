@@ -1,125 +1,230 @@
-# AI-Solver Zero-Shot Gemini Baseline Verification Report
+# AI-Solver v0.1 verification report
 
-Verified on 2026-10-02. The independent package, test suite, and complete held-out benchmark
-evaluation sequence are verified and complete: **Gemini 3.5 Flash-Lite evaluated all 134 dynamically
-discovered challenges across all five benchmark stages (Levels 1, 2A, 2B, 3A, and 3B): 60 correct,
-74 incorrect, zero execution errors (100% evaluation coverage, 0 errors)**.
+Verified on 2026-10-02. The independent package and live acceptance sequence
+are complete: **Gemini 3.5 Flash-Lite evaluated all 20 dynamically discovered
+street-grid challenges: 14 correct, 6 incorrect, zero execution errors**.
+Exact challenge accuracy is **70%**, with 100% evaluation coverage.
 
-Overall Micro Accuracy across the 134 held-out benchmark challenges is **44.78%** (60 / 134), and
-the Five-Stage Macro Accuracy is **55.81%**.
+Work began from main commit `6b4cf5ed086f82d4c7dafa025956ce1145a703d1`, matching
+origin/main then. Later Gemini runs record current checkout commit
+`dc575e5e1513f07d1a4d1dafc294eadb43164052`. This implementation leaves
+`challenges/`, `web/`, and the root README unchanged.
 
-All challenge evaluations were conducted strictly via public HTTP endpoints (`/challenges/catalog.json`,
-`/challenges/<id>/challenge.json`, `/challenges/<id>/assets/*`). No training, fine-tuning, few-shot
-demonstrations, programmatic vision tools, or private answer access occurred. All code, configs, tests,
-and reports are isolated inside `AI-Solver/`.
+## Files created and extended
 
----
+All deliverable files are inside `AI-Solver/`:
 
-## 1. Verified Results Across All Stages
+- Packaging/configuration: `pyproject.toml`, `.gitignore`, `.env.example`,
+  `config.example.yaml`, `README.md`, `VERIFICATION.md`, `results/.gitkeep`.
+- Package: `src/ai_solver/__init__.py`, `cli.py`, `config.py`, `contracts.py`,
+  `client.py`, `runner.py`, `metrics.py`, `errors.py`, and `security.py`.
+- Solvers: `src/ai_solver/solvers/__init__.py`, `base.py`,
+  `random_baseline.py`, `level_1_vlm.py`, and `gemini.py`.
+- Tests: `tests/conftest.py`, `test_contracts.py`, `test_client.py`,
+  `test_runner.py`, `test_metrics.py`, `test_no_private_access.py`,
+  `test_solvers.py`, `test_cli.py`, `test_integration.py`, and `test_gemini.py`.
 
-| Stage | Variant | Challenge Type | Evaluated | Correct | Accuracy | Errors | Mean Latency | Raw Run Directory |
-| :--- | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :--- |
-| **Level 1** | `street-grid` | Image Selection | 20 | 14 | **70.0%** | 0 | 6.11 s | `results/20261002T085501003519Z_level1_vlm_30e5750e` |
-| **Level 2A** | `hard-street-grid` | Image Selection | 20 | 11 | **55.0%** | 0 | 9.01 s | `results/20261002T112508284295Z_hard_street_grid_vlm_45223726` |
-| **Level 2B** | `checker-shadow` | Single Choice | 6 | 6 | **100.0%** | 0 | 2.21 s | `results/20261002T112945860317Z_checker_shadow_vlm_63c123c8` |
-| **Level 3A** | `routing-puzzle` | Single Choice | 60 | 26 | **43.3%** | 0 | 4.00 s | `results/20261002T113010612141Z_routing_puzzle_vlm_a2ae8ad8` |
-| **Level 3B** | `degraded-vision` | Image Selection | 28 | 3 | **10.7%** | 0 | 10.89 s | `results/20261002T113705651955Z_degraded_vision_vlm_8f635ab3` |
-| **Total** | — | — | **134** | **60** | **44.8%** | **0** | **6.42 s** | — |
+The ignored local `.env` contains the configured production origin and locally
+supplied credentials. Credentials and benchmark outputs are excluded from Git.
+Each run persists `run.json`, `predictions.jsonl`, and `summary.json` separately.
 
-*Note: Level 1 results reflect the frozen canonical historical baseline run (14 / 20 = 70.0%). Levels 2A, 2B, 3A, and 3B reflect the normalized rerun under explicit `ThinkingLevel.MINIMAL`.*
+## Provider, model, and commands
 
----
+The working default is `gemini-3.5-flash-lite`, using Google GenAI
+`models.generate_content`, inline images, and strict JSON Schema structured
+output. A request contains only the public instruction and all numbered tiles.
+Tools, search, file uploads, and function calling are disabled. Confidence is
+`null`; no calibrated confidence is supplied. `Solver` and `VisionProvider`
+remain provider-independent protocols. The optional OpenAI Responses adapter
+is retained.
 
-## 2. Granular Stage Breakdown
-
-### Level 2B — Optical & Perceptual Illusions (N=6)
-- **Results**: 6 / 6 correct (100.0%), mean latency 2.21 s.
-- **Subtypes**: `cafe-wall` (1/1), `checker-shadow` (1/1), `ebbinghaus` (1/1), `muller-lyer` (1/1), `ponzo` (1/1), `simultaneous-contrast` (1/1).
-- **Methodological Context**: Each illusion subtype currently contains one evaluated challenge (N=1 per subtype). This result should not be interpreted as a general estimate of performance on visual illusions or as evidence regarding the model's internal perceptual mechanisms. These canonical illusions are widely published and likely present in web pretraining data.
-
-### Level 3A — Visual Routing Puzzles (N=60)
-- **Results**: 26 / 60 correct (43.3%), mean latency 4.00 s.
-- **By Subtype**:
-  - Pipe Flow: 9 / 15 correct (60.0%)
-  - Conveyor Routing: 9 / 15 correct (60.0%)
-  - Laser Maze: 4 / 15 correct (26.7%)
-  - Device Cables: 4 / 15 correct (26.7%)
-- **By Difficulty**:
-  - Easy: 6 / 8 correct (75.0%)
-  - Medium: 3 / 12 correct (25.0%)
-  - Story: 7 / 20 correct (35.0%)
-  - Hard: 6 / 12 correct (50.0%)
-  - Extreme: 4 / 8 correct (50.0%)
-
-### Level 3B — Degraded Vision Ladder (N=28)
-- **Results**: 3 / 28 correct (10.7%), mean latency 10.89 s.
-- **By Resolution**:
-  - 64 × 64 px: 1 / 4 (25.0%)
-  - 48 × 48 px: 1 / 4 (25.0%)
-  - 32 × 32 px: 1 / 4 (25.0%)
-  - 24 × 24 px: 0 / 4 (0.0%)
-  - 16 × 16 px: 0 / 4 (0.0%)
-  - 12 × 12 px: 0 / 4 (0.0%)
-  - 8 × 8 px: 0 / 4 (0.0%)
-- **By Series**:
-  - `series-01`: 0 / 7 (0.0%)
-  - `series-02`: 3 / 7 (42.9%)
-  - `series-03`: 0 / 7 (0.0%)
-  - `series-04`: 0 / 7 (0.0%)
-
----
-
-## 3. Package Structure and Verification Files
-
-All benchmark and baseline components reside within `AI-Solver/`:
-
-- **Configuration & Runner**:
-  - `src/ai_solver/config.py`: Single validated `variant` definition supporting all five variants and `all`.
-  - `src/ai_solver/contracts.py`: Public schema validators, zero-based index validators, single-choice option validators, leak detectors.
-  - `src/ai_solver/client.py`: Public HTTP client with asset caching and status tracking.
-  - `src/ai_solver/runner.py`: Benchmark runner with per-variant pacing, quota backoff, and resumability.
-  - `src/ai_solver/metrics.py`: Computes micro accuracy, `by_stage`, five-stage `macro_stage_accuracy`, and granular slices.
-  - `src/ai_solver/reporting.py`: Programmatic report generator producing structured Markdown from JSON metrics.
-  - `run_benchmark_pipeline.py`: Reproducible pipeline script for executing and aggregating the benchmark.
-- **Solvers**:
-  - `src/ai_solver/solvers/gemini.py`: Google GenAI adapter using `gemini-3.5-flash-lite` with normalized `ThinkingLevel.MINIMAL`, strict JSON schema, tools/AFC disabled.
-  - `src/ai_solver/solvers/level_1_vlm.py`: Provider-agnostic multimodal prompt and solver orchestrator supporting image-selection and single-choice challenges.
-  - `src/ai_solver/solvers/random_baseline.py`: Deterministic pseudo-random baseline for control comparison.
-- **Canonical Reports & Artifacts**:
-  - `reports/gemini-zero-shot-baseline.json`: Full structured JSON metrics for the baseline.
-  - `reports/gemini-zero-shot-baseline.md`: Programmatically generated Markdown report with cross-tabulation matrices.
-
----
-
-## 4. Test Suite and Static Analysis
-
-The test suite thoroughly verifies all solver contracts, adapters, metric calculations, and report generation:
+Install from the repository root, then configure the ignored local environment:
 
 ```bash
-uv run pytest
-# 157 passed, 1 skipped (opt-in public network integration test)
-
-uv run ruff check .
-# All checks passed!
-
-uv run ruff format --check .
-# 27 files already formatted
+cd AI-Solver
+python -m pip install -e '.[gemini,test]'
+# Set CAPTCHA_BASE_URL and GEMINI_API_KEY locally, following .env.example.
 ```
 
-The live public network integration test was executed and verified:
+The actual successful stages used these commands in order. Artifacts were
+checked before advancing:
 
 ```bash
-uv run pytest tests/test_integration.py -s
-# Public integration: 20 street-grid challenges; 180 assets
-# 1 passed in 46.35s
+python -m ai_solver.cli benchmark --provider gemini --model gemini-3.5-flash-lite --limit 1
+python -m ai_solver.cli benchmark --provider gemini --model gemini-3.5-flash-lite --limit 5
+python -m ai_solver.cli benchmark --provider gemini --model gemini-3.5-flash-lite
 ```
 
----
+Other supported paths:
 
-## 5. Scientific Protocol Guarantees
+```bash
+python -m ai_solver.cli benchmark --solver random --seed 42 --dry-run
+python -m ai_solver.cli benchmark --solver random --seed 42
+python -m ai_solver.cli solve CHALLENGE_ID
+python -m ai_solver.cli solve CHALLENGE_ID --submit
+```
 
-1. **Zero-Shot Protocol**: No solver-specific training, fine-tuning, few-shot examples, or prompt engineering from graded feedback was used. Prompts were frozen before evaluation (`image-selection-v1`, `single-choice-v1`).
-2. **Public-Only Interface**: All challenges and assets were retrieved strictly via public HTTP endpoints. No internal challenge generators, ground-truth label files (`answer.json`), or secret keys were accessed.
-3. **No Retries of Graded Failures**: Predictions were submitted exactly once per challenge. Transport and rate-limit errors were handled strictly at the provider API boundary with exponential backoff.
-4. **Canonical Level 1 Preservation**: The Level 1 baseline was preserved without post-hoc cherry-picking or rerun (14 / 20 = 70.0%).
-5. **Programmatic Reporting**: All figures in `gemini-zero-shot-baseline.md` derive deterministically from `gemini-zero-shot-baseline.json` via `ai_solver.reporting`.
+The full random submission command is documented usage; verification executed
+only a controlled one-challenge random submission.
+
+## Tests and packaging
+
+Final checks from `AI-Solver/`:
+
+```text
+python -m pytest -q
+133 passed, 1 skipped in 4.90s
+
+python -m ruff check .
+All checks passed!
+
+python -m ruff format --check .
+24 files already formatted
+```
+
+The skipped test is intentionally opt-in integration. Unit tests block external
+HTTP, use mocked providers, and verify both real SDK wire contracts. They cover
+public contracts, dynamic filtering, HTTP allowlisting/cache/retries, strict
+zero-based indices, one format recovery, wrong-answer non-retry, one evaluated
+answer, JSONL, metrics, deterministic random selection, and private-access guards.
+
+The production integration test ran explicitly with `CAPTCHA_BASE_URL` and
+`RUN_AI_SOLVER_INTEGRATION=1`:
+
+```text
+python -m pytest tests/test_integration.py -q -s
+Public integration: 20 street-grid challenges; 180 assets
+1 passed in 68.06s
+```
+
+It performed public reads only, with no model calls or submissions. The catalog
+had 134 total entries and 20 street-grid challenges. Neither the population count
+nor target object is hardcoded.
+
+Editable installation with Gemini/test extras succeeded. `pip wheel --no-deps`
+also succeeded; wheel contents are exclusively the independent `ai_solver`
+package and distribution metadata, including the Gemini adapter/current default.
+Wheel SHA-256:
+`1f1d1b01a55432c266387f827593d4b4b9c8409915edd5016ac21c0a32804f38`.
+
+## Production random dry run
+
+The deterministic random dry run completed all 20 challenges and downloaded
+180 assets: 20 predictions, zero errors, zero model requests, zero submissions.
+Accuracy correctly remained `null`. Artifacts:
+
+```text
+results/20261002T075433793858Z_level1_random_047ab8f0/
+```
+
+A controlled `--solver random --seed 42 --limit 1` submission loaded nine assets,
+returned HTTP 200 with `correct=false`, and was not retried. This is a protocol
+smoke test, not a full-population random accuracy estimate. Artifacts:
+
+```text
+results/20261002T075805556431Z_level1_random_f0c51357/
+```
+
+## Real Gemini acceptance sequence
+
+All successful stages used `gemini-3.5-flash-lite`, fixed prompt version
+`level1-v1`, and the same solver behavior. Incorrect answers were recorded
+without another answer attempt or any prompt/threshold change.
+
+| Stage | Evaluated | Correct | Incorrect | Errors | Provider attempts |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| One challenge | 1 | 1 | 0 | 0 | 1 |
+| Five challenges | 5 | 3 | 2 | 0 | 5 |
+| Full discovered set | 20 | 14 | 6 | 0 | 21 |
+
+The one-challenge run loaded nine assets, returned `[4, 7, 8]`, made one model
+request, and received HTTP 200 with `correct=true`. Inference was 2,850.089 ms;
+total time was 5,607.990 ms. Artifacts:
+
+```text
+results/20261002T084852800173Z_level1_vlm_2262282a/
+```
+
+The five-challenge run loaded 45 assets, made five model requests, submitted
+five valid selections with HTTP 200, and measured 60% exact accuracy. Artifacts:
+
+```text
+results/20261002T084951366521Z_level1_vlm_5b42a0de/
+```
+
+The full run loaded 180 assets and submitted 20 selections with HTTP 200.
+The final artifact audit checked unique challenge IDs, nine assets each, unique
+sorted integer indices in range 0 through 8, valid parsing, Boolean correctness,
+zero errors, matching aggregates, fixed model/prompt metadata, and one persisted
+evaluated selection per challenge. Artifacts:
+
+```text
+results/20261002T085501003519Z_level1_vlm_30e5750e/
+  run.json
+  predictions.jsonl
+  summary.json
+```
+
+| Full-run metric | Value |
+| --- | ---: |
+| Exact challenge accuracy | 14 / 20 = 70% |
+| Evaluation coverage | 100% |
+| Mean inference time | 6,110.233 ms |
+| Median inference time | 2,513.648 ms |
+| p95 inference time, nearest rank | 9,542.949 ms |
+| Mean total time | 10,320.304 ms |
+| Median total time | 5,600.687 ms |
+| Reported input tokens | 199,685 |
+| Reported output tokens | 590 |
+| Provider attempts | 21 |
+| Estimated cost | null |
+
+One challenge needed an additional provider attempt and spent 65,332.401 ms in
+inference. That duration is included in the mean; no replacement answer was
+evaluated. Usage for the extra attempt was unavailable, so `usage_complete` is
+false and token totals cover reported usage only. Pricing was not supplied;
+no cost or image billing amount is invented. Inference includes provider network
+time and permitted retries, excluding benchmark downloads/submission. The stages
+overlap and remain separate experiments; results are not pooled into full-run
+accuracy.
+
+## Provider limitations and earlier attempts
+
+Before the user's switch to Gemini, OpenAI returned HTTP 429 with
+`credit_balance_exhausted`, including after the key change. No prediction or
+submission resulted. Its retained adapter records safe error codes and does
+not retry documented credit, quota, or spend-limit errors.
+
+Gemini 2.5 Flash initially returned HTTP 404 `NOT_FOUND`. Gemini 3.8 Flash
+completed one challenge but repeatedly returned HTTP 503 `UNAVAILABLE` in the
+five-challenge stage. Both its initial and retry-enabled five-challenge runs had
+four provider errors, so no full run was started on that model. Separate artifacts:
+
+```text
+results/20261002T083827630339Z_level1_vlm_116ee4cd/  # Gemini 2.5 unavailable
+results/20261002T084053567419Z_level1_vlm_e0908b55/  # Gemini 3.8 single
+results/20261002T084228251300Z_level1_vlm_b1641297/  # Gemini 3.8 five
+results/20261002T084452681072Z_level1_vlm_bb709d29/  # Gemini 3.8 five, retries
+```
+
+Flash-Lite was selected to resolve provider availability, without using accuracy
+feedback to optimize the solver. The entire 1 -> 5 -> full sequence restarted
+with unchanged prompt. Model availability, quotas, service failures, and network
+latency remain external limitations. This 20-challenge result describes this
+population/run; it does not establish broader CAPTCHA performance or a statistical
+comparison with a full random baseline.
+
+## Isolation and deferred scope
+
+Only public catalog, challenge, image paths, and the public submission API were
+used. No training, fine-tuning, private answers, annotations, generator imports,
+or local generated benchmark files were used. JSON leak checks remain fatal.
+No correct selections are stored or inferred from server feedback. Level 2/3,
+engineered solvers, offline evaluation with labels, and per-tile precision,
+recall, and F1 remain intentionally deferred.
+
+Terminal evidence is retained in ignored `.tmp/` logs:
+`ai-solver-unit-tests.log`, `ai-solver-integration.log`, `ai-solver-wheel.log`,
+and `ai-solver-gemini-lite-stage1`, `ai-solver-gemini-lite-stage5`, and
+`ai-solver-gemini-lite-full` JSON/progress log pairs. Earlier provider failures
+and random dry-run/submission logs remain separate.
