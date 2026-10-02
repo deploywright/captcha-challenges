@@ -15,6 +15,7 @@ const api = context.request;
 const secretHeaders = {Authorization:`Bearer ${key}`};
 const mutationHeaders = {Origin:origin,"Content-Type":"application/json"};
 const evidence = {origin,cohort:"smoke",trials:[],viewports:[],checks:[],startedAt:new Date().toISOString()};
+let smokeStarted = false;
 async function getSession() {
   const response = await api.get(`${origin}/api/human-benchmark/session`);assert.equal(response.status(),200);return response.json();
 }
@@ -27,20 +28,22 @@ try {
   const noAdmin = await api.get(`${origin}/api/human-benchmark/admin/summary`);assert.equal(noAdmin.status(),401);
   const deniedSmoke = await api.post(`${origin}/api/human-benchmark/session`,{headers:mutationHeaders,data:{consent:true,cohort:"smoke",deviceClass:"desktop",viewportBucket:"large"}});assert.equal(deniedSmoke.status(),401);
   const start = await api.post(`${origin}/api/human-benchmark/session`,{headers:{...mutationHeaders,...secretHeaders},data:{consent:true,cohort:"smoke",deviceClass:"desktop",viewportBucket:"large"}});
-  assert.equal(start.status(),201);noFeedback(await start.json());
+  assert.equal(start.status(),201);smokeStarted = true;noFeedback(await start.json());
   const cookies = await context.cookies();assert(cookies.find(c => c.name === "hb_session_token")?.httpOnly);
   if (origin.startsWith("https:")) assert(cookies.find(c => c.name === "hb_session_token")?.secure);
   const page = await context.newPage();
   for(const [name,width,height] of [["desktop",1440,1000],["tablet",768,1024],["mobile",390,844]]) {
-    await page.setViewportSize({width,height});await page.goto(`${origin}/human-benchmark/run`);
+    await page.setViewportSize({width,height});
+    const presented = page.waitForResponse(response => response.url().endsWith("/human-benchmark/present") && response.request().method() === "POST");
+    await page.goto(`${origin}/human-benchmark/run`);
     await page.getByRole("heading",{name:"Question 1 of 40"}).waitFor();
     await page.waitForFunction(() => [...document.querySelectorAll(".hb-stimulus img")].every(img => img.complete && img.naturalWidth > 0));
+    const ready = await presented;assert.equal(ready.status(),200);assert.equal((await ready.json()).ready,true);
+    await page.getByRole("button",{name:"Confirm connection",exact:true}).waitFor({state:"hidden"});
     assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),`${name} overflow`);
     await page.screenshot({path:path.join(path.dirname(output),`human-production-${name}.png`),fullPage:true});
-    evidence.viewports.push({name,width,height,imagesLoaded:true,noOverflow:true});
+    evidence.viewports.push({name,width,height,imagesLoaded:true,presentationConfirmed:true,noOverflow:true});
   }
-  // Close the visual player while the API driver finishes, avoiding double timing.
-  await page.goto("about:blank");
   const quotas = {};
   let lastPayload;
   for(let index=0;index<40;index++) {
@@ -51,10 +54,21 @@ try {
       const image = await api.get(url.href);assert.equal(image.status(),200);assert((await image.body()).length > 0);
     }
     const ready = await api.post(`${origin}/api/human-benchmark/present`,{headers:mutationHeaders,data:{trialId:trial.trialId}});assert.equal(ready.status(),200);assert.equal((await ready.json()).ready,true);
-    const payload = {trialId:trial.trialId,action:index === 1 ? "skip" : index === 2 ? "timeout" : "answer",solveTimeMs:index === 2 ? 120000 : 1000,interrupted:index === 2};
+    let payload = {trialId:trial.trialId,action:index === 1 ? "skip" : index === 2 ? "timeout" : "answer",solveTimeMs:index === 2 ? 120000 : 1000,interrupted:index === 2};
     if(payload.action === "answer") payload.answer = trial.challenge.type === "image-selection" ? [] : trial.challenge.ui.options[0];
-    const submitted = await api.post(`${origin}/api/human-benchmark/trial`,{headers:mutationHeaders,data:payload});assert.equal(submitted.status(),200);
-    const accepted = await submitted.json();noFeedback(accepted);assert.equal(accepted.accepted,true);assert.equal(accepted.progress.completed,index+1);
+    let submitted, browserAccepted;
+    if(index === 0) {
+      if(trial.challenge.type === "single-choice") await page.getByRole("button",{name:trial.challenge.ui.options[0],exact:true}).click();
+      const delivered = page.waitForResponse(response => response.url().endsWith("/human-benchmark/trial") && response.request().method() === "POST");
+      await page.getByRole("button",{name:/Submit (response|\(None Match\))/}).click();
+      submitted = await delivered;payload = submitted.request().postDataJSON();
+      browserAccepted = await submitted.json();
+      await page.getByRole("heading",{name:"Question 2 of 40"}).waitFor();
+      // Finish through the API with the visual player closed to avoid double timing.
+      await page.goto("about:blank");
+    } else submitted = await api.post(`${origin}/api/human-benchmark/trial`,{headers:mutationHeaders,data:payload});
+    assert.equal(submitted.status(),200);
+    const accepted = browserAccepted ?? await submitted.json();noFeedback(accepted);assert.equal(accepted.accepted,true);assert.equal(accepted.progress.completed,index+1);
     if(index === 0 || index === 39) {
       const duplicate = await api.post(`${origin}/api/human-benchmark/trial`,{headers:mutationHeaders,data:payload});assert.equal(duplicate.status(),200);
       const different = await api.post(`${origin}/api/human-benchmark/trial`,{headers:mutationHeaders,data:{...payload,interrupted:!payload.interrupted}});assert.equal(different.status(),409);
@@ -76,8 +90,12 @@ try {
   const matching = exported.rows.filter(row => evidence.trials.some(t => t.trialId === row.trial_id));assert.equal(matching.length,40);assert.equal(new Set(matching.map(row => row.session_id)).size,1);
   const csv = await api.get(`${origin}/api/human-benchmark/admin/export.csv?cohort=smoke`,{headers:secretHeaders});assert.equal(csv.status(),200);assert((await csv.text()).startsWith("session_id,participant_id,protocol_version,cohort"));
   evidence.personalAggregate = finished.summary;
-  evidence.checks = ["admin authentication","smoke creation authorization","secure HttpOnly cookie","desktop/tablet/mobile visuals","40 persisted accepted trials","hidden active correctness","same-payload idempotency","changed replay rejection","completed writes locked","aggregate-only completion","main cohort unchanged","JSON and CSV exports"];
+  evidence.checks = ["admin authentication","smoke creation authorization","secure HttpOnly cookie","desktop/tablet/mobile visuals and browser presentation acknowledgement","live browser submission and progression","40 persisted accepted trials","hidden active correctness","same-payload idempotency","changed replay rejection","completed writes locked","aggregate-only completion","main cohort unchanged","JSON and CSV exports"];
   evidence.finishedAt = new Date().toISOString();
   fs.mkdirSync(path.dirname(output),{recursive:true});fs.writeFileSync(output,JSON.stringify(evidence,null,2));
   console.log(`Smoke completed; main sessions unchanged. Evidence: ${output}`);
+} catch(error) {
+  // A failed smoke run is retained as abandoned, never as a completed sample.
+  if(smokeStarted) await api.post(`${origin}/api/human-benchmark/stop`,{headers:mutationHeaders,data:{}}).catch(() => {});
+  throw error;
 } finally {await browser.close();}
