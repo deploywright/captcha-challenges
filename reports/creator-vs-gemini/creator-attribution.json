@@ -1,0 +1,25 @@
+{
+  "session_id": "73fac77a-7985-4755-a26d-16ea9046541f",
+  "stored_cohort": "main",
+  "analysis_role": "creator",
+  "attribution_status": "creator_confirmed",
+  "protocol_version": "human-v1",
+  "reason": "The project creator directly confirmed personally completing this session through the production Creator Baseline URL. It began before creator cohort support was deployed; the later cross-cohort resume behavior is reproduced and its UI cause is documented in creator-session-investigation.md. Production D1 contains no creator-cohort session. Raw provenance remains main.",
+  "confirmed_completion": {
+    "status": "completed",
+    "assigned_trials": 40,
+    "finalized_trials": 40,
+    "correct_trials": 30,
+    "skipped_trials": 3,
+    "timed_out_trials": 1,
+    "median_solve_time_ms_rounds_to_seconds": 7.7,
+    "quotas": {
+      "street-grid": 6,
+      "hard-street-grid": 6,
+      "checker-shadow": 6,
+      "routing-puzzle": 18,
+      "degraded-vision": 4
+    },
+    "unique_challenge_ids": 40
+  }
+}

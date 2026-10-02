@@ -2,7 +2,7 @@
 
 Production D1 checked at 2026-10-02T18:15:50.452Z. Database: `captcha-human-benchmark` (`a88c2d6f-d809-4de4-beeb-ebf11347dc26`).
 
-**No completed creator session exists:** completed human-v1 creator records = 0; creator records across all statuses = 0. The main record is not attributed to the user and must not be used as the Creator Baseline.
+**No D1 row is stored in the creator cohort:** completed human-v1 creator records = 0; creator records across all statuses = 0. The project creator later directly confirmed that session `73fac77a-7985-4755-a26d-16ea9046541f` is their completion through the production Creator Baseline URL. Its raw counters and all 40 trial rows match the recorded completion. Its stored cohort remains `main`; the explicit analysis role is recorded separately in [creator-attribution.json](creator-attribution.json).
 
 ## Production records
 
@@ -15,9 +15,9 @@ Production D1 checked at 2026-10-02T18:15:50.452Z. Database: `captcha-human-benc
 
 No creator assignment revision or challenge-exposure rows are present. The deployed schema permits creator and has the creator-specific unique index. The missing session is not explained by an unapplied creator schema migration.
 
-## Timeline of the unattributed main record
+## Timeline of the main-stored creator session
 
-This timeline describes an anonymous production record, not the creator's identity.
+The project creator confirmed the identity after this read-only production investigation. The D1 timeline predates creator cohort support; this report preserves the stored cohort and records attribution only in the analysis layer.
 
 | Event | UTC |
 | --- | --- |
@@ -28,7 +28,7 @@ This timeline describes an anonymous production record, not the creator's identi
 
 Creator-support version: `ed26276e-ee49-486d-815c-917423858a43`. Current deployment versions: `ed26276e-ee49-486d-815c-917423858a43` (100%).
 
-The main record was created before creator support existed. Its first trial was interrupted and finalized much later; those timing fields do not identify a participant or prove which URL was visited.
+The session was created before creator support existed. The creator confirms completing it through the Creator URL. Historical browser navigation was not logged in D1; attribution rests on that direct confirmation plus the exact session ID and completion invariants, not on inference from timing fields.
 
 ## Confirmed mechanisms
 
@@ -37,7 +37,7 @@ The main record was created before creator support existed. Its first trial was 
 3. **Resume navigation:** Resume opens `/human-benchmark/run`, which loads the cookie-bound session. It does not create, convert, or transfer a session to creator.
 4. **Current fresh start:** Start sends the requested creator cohort, and server creation stores that value. A creator-start request with an active main cookie is rejected with HTTP 409; the server does not silently create a new main session.
 
-The interface can therefore promise Creator Baseline storage while actually resuming an existing main session. This is a confirmed UI mismatch. It explains how visiting the Creator URL can end with main data without any database relabeling, but the historical path taken by the user remains unverified.
+The interface could therefore promise Creator Baseline storage while actually resuming an existing main session. The project creator confirms that they completed through the Creator URL. The pre-deployment fallback and cross-cohort resume behavior explain why this session remained stored as main, without any database relabeling.
 
 ## Controlled production browser reproduction
 
@@ -54,15 +54,11 @@ The deployed HTML and JavaScript were loaded, but every participant API request 
 
 The excluded main record `73fac77a-7985-4755-a26d-16ea9046541f` has 40 assigned and 40 finalized trials, 40 unique positions and 40 unique challenge IDs. Raw outcomes: 30/40, median 7.683 seconds, 3 skips including 1 timeout; 37 answered. Session counters agree with raw rows: true.
 
-These checks establish record consistency only. They do not establish creator identity, and the matching completion-screen values do not authorize attribution. There are no creator trial rows to validate.
+The user-confirmed completion matches the raw record: 30/40 correct (75.0%), median 7.683 seconds (7.7 seconds as displayed), 3 skips including 1 timeout, and 37 answered. The frozen variant quotas are 6/6/6/18/4 and all 40 challenge IDs are unique. The exact session ID and all these invariants are enforced by the generator; no other main record can use this attribution.
 
-## Limits and next action
+## Final disposition
 
-D1 does not store the requested landing URL, browser navigation history, or an authenticated creator identity. The current evidence cannot determine whether the user first opened an unsupported creator query before deployment or later resumed another cohort through the misleading landing page.
-
-No valid creator-cohort result can be generated from these records under the instruction to exclude main. The comparison remains an anonymous diagnostic draft. The generator's former main-session confirmation override has been removed, so it cannot publish that record as a Creator Baseline.
-
-A future UI repair should check the existing cohort before offering Resume, state any cohort conflict clearly, and preserve the existing server rule and immutable assignments. Such a repair would prevent future confusion; it would not recover or change a missing historical creator record. No application code or deployment was changed during this investigation.
+D1 does not store the requested landing URL or browser navigation history. The user's direct confirmation resolves which session to attribute; no automatic identity inference is used. The comparison uses the existing session and Gemini data without rerunning either benchmark. The landing page now resumes only same-cohort sessions and explains cross-cohort conflicts; the existing server-side HTTP 409 rule remains. The fix and aggregate exclusion are local code changes only; nothing was deployed.
 
 Production rows written: 0. Real participant API requests: 0. No migration, relabeling, model inference, or benchmark rerun was performed.
 

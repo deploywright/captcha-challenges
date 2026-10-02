@@ -34,6 +34,42 @@ test("creator notice, required consent, frozen session and no-feedback player", 
   await expect(page.getByText("Human Benchmark · creator",{exact:true})).toBeVisible();
 });
 
+test("cross-cohort active sessions show a conflict and never offer resume or create", async ({page}) => {
+  const cases = [
+    {existing:"main",requested:"creator",url:"/human-benchmark?cohort=creator"},
+    {existing:"creator",requested:"main",url:"/human-benchmark"},
+    {existing:"pilot",requested:"creator",url:"/human-benchmark?cohort=creator"},
+  ] as const;
+  const mutationRequests: string[] = [];
+  for(const scenario of cases) {
+    const persisted = {status:"active",cohort:scenario.existing,progress:{completed:3,total:40}};
+    await page.unrouteAll();
+    await page.route("**/api/human-benchmark/session",async route => {
+      if(route.request().method() !== "GET") mutationRequests.push(route.request().method());
+      await route.fulfill({status:200,contentType:"application/json",body:JSON.stringify(persisted)});
+    });
+    await page.goto(scenario.url);
+    await expect(page.getByText(`You already have an active ${scenario.existing} session. Finish or stop it before starting ${scenario.requested}.`,{exact:true})).toBeVisible();
+    await expect(page.getByRole("link",{name:"Resume benchmark",exact:true})).toHaveCount(0);
+    await expect(page.getByRole("button",{name:"Start Human Benchmark",exact:true})).toHaveCount(0);
+    if(scenario.requested === "creator") await expect(page.getByText("Creator Baseline",{exact:true})).toBeVisible();
+    expect(persisted).toEqual({status:"active",cohort:scenario.existing,progress:{completed:3,total:40}});
+  }
+  expect(mutationRequests).toEqual([]);
+});
+
+test("same-cohort active creator session still resumes", async ({page}) => {
+  let mutationRequests = 0;
+  await page.route("**/api/human-benchmark/session",async route => {
+    if(route.request().method() !== "GET") mutationRequests++;
+    await route.fulfill({status:200,contentType:"application/json",body:JSON.stringify({status:"active",cohort:"creator",progress:{completed:4,total:40}})});
+  });
+  await page.goto("/human-benchmark?cohort=creator");
+  await expect(page.getByText("Your session is saved at question 5 of 40.")).toBeVisible();
+  await expect(page.getByRole("link",{name:"Resume benchmark",exact:true})).toBeVisible();
+  expect(mutationRequests).toBe(0);
+});
+
 test("creator completion keeps the personal aggregate and explicit baseline label", async ({page},testInfo) => {
   test.skip(testInfo.project.name !== "desktop","The aggregate screen is identical across projects.");
   await page.route("**/api/human-benchmark/session",route => route.fulfill({status:200,contentType:"application/json",body:JSON.stringify({status:"completed",cohort:"creator",progress:{completed:40,total:40},summary:{accuracy:.75,medianSolveTimeMs:2000,skipped:2,timedOut:1,total:40}})}));

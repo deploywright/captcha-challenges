@@ -9,6 +9,7 @@ import { adminApi } from "../lib/human-benchmark/admin.server";
 import { HumanStore } from "../lib/human-benchmark/store.server";
 import { CATALOG, sessionView, submitTrial } from "../lib/human-benchmark/service.server";
 import { humanSummary, exportPage, csvValue } from "../lib/human-benchmark/analytics.server";
+import creatorAttribution from "../../reports/creator-vs-gemini/creator-attribution.json";
 import type { Cohort } from "../lib/human-benchmark/protocol";
 import { TRIAL_TIMEOUT_MS } from "../lib/human-benchmark/protocol";
 import { checkOrigin, checkAdmin, readBody } from "../lib/human-benchmark/security.server";
@@ -20,8 +21,11 @@ let now = 1_800_000_000_000;
 function request(path: string, body?: unknown, cookie = "", headers: Record<string,string> = {}) {
   return new NextRequest(`https://benchmark.test/api/human-benchmark/${path}`,{method:body === undefined ? "GET" : "POST",headers:{origin:"https://benchmark.test","content-type":"application/json",cookie,...headers},body:body === undefined ? undefined : JSON.stringify(body)});
 }
-async function create(cohort: Cohort = "main", participant = crypto.randomUUID()) {
-  return store.create(participant,cohort,"desktop","large",CATALOG);
+async function create(cohort: Cohort = "main", participant = crypto.randomUUID(), sessionId?: string) {
+  if (!sessionId) return store.create(participant,cohort,"desktop","large",CATALOG);
+  const uuid = vi.spyOn(crypto,"randomUUID").mockReturnValueOnce(sessionId);
+  try { return await store.create(participant,cohort,"desktop","large",CATALOG); }
+  finally { uuid.mockRestore(); }
 }
 async function complete(sessionId: string) {
   for(let i=0;i<40;i++) {
@@ -29,6 +33,16 @@ async function complete(sessionId: string) {
     await store.present(session,trial.trial_id);
     const entry = CATALOG.find(c => c.id === trial.challenge_id)!;
     await submitTrial(store,session,{trialId:trial.trial_id,action:"answer",answer:entry.type === "image-selection" ? [] : entry.ui.options![0],solveTimeMs:1000+i,interrupted:false});
+    now += 2000;
+  }
+}
+async function completeAttributedMainFixture(sessionId: string) {
+  for(let index=0;index<40;index++) {
+    const session = await store.getSession(sessionId); const trial = (await store.current(sessionId))!;
+    await store.present(session,trial.trial_id);
+    const skipped = index < 3; const timedOut = index === 0;
+    const correct = !skipped && index < 33;
+    await store.finish(session,trial,`analysis-test-${index}`,undefined,correct,skipped,timedOut,1000+index,false);
     now += 2000;
   }
 }
@@ -153,6 +167,8 @@ describe("persistent participant API and private grading", () => {
   it("accepts creator with the frozen protocol, separate exposure, and per-participant uniqueness", async () => {
     const participant = crypto.randomUUID();
     const main = await create("main",participant);
+    await expect(participantApi(request("session",{consent:true,cohort:"creator",deviceClass:"desktop",viewportBucket:"large"},`hb_session_token=${main.token}`),"start",store)).rejects.toMatchObject({status:409});
+    expect(await store.db.prepare("SELECT COUNT(*) count FROM human_sessions WHERE participant_id = ? AND cohort = 'creator'").bind(participant).first()).toEqual({count:0});
     const mainBefore = await store.db.prepare("SELECT * FROM human_challenge_exposure WHERE cohort = 'main' ORDER BY challenge_id").all();
     const response = await participantApi(request("session",{consent:true,cohort:"creator",deviceClass:"desktop",viewportBucket:"large"},`hb_participant_id=${participant}`),"start",store);
     expect(response.status).toBe(201);
@@ -177,7 +193,7 @@ describe("persistent participant API and private grading", () => {
   it("filters creator summary and exports while keeping main defaults and all inclusion", async () => {
     for(const cohort of ["creator","main","pilot","smoke"] as const) {const {session} = await create(cohort);await complete(session.session_id);}
     const headers = {authorization:"Bearer admin-test-key"};
-    const main = await humanSummary(store.db);expect(main.completedSessions).toBe(1);expect(main.overall.assignedTrials).toBe(40);
+    const main = await humanSummary(store.db);expect(main.completedSessions).toBe(1);expect(main.overall.assignedTrials).toBe(40);expect(main.analysisExcludedSessions).toBe(0);
     const creatorResponse = await adminApi(request("admin/summary?cohort=creator",undefined,"",headers),"summary",store.db,"admin-test-key");
     const creator = await creatorResponse.json() as Awaited<ReturnType<typeof humanSummary>>;
     expect(creator).toMatchObject({cohort:"creator",completedParticipants:1,completedSessions:1,overall:{assignedTrials:40,primaryExactAccuracy:1}});
@@ -190,8 +206,33 @@ describe("persistent participant API and private grading", () => {
     const exported = await json.json() as {rows:{cohort:string}[]};expect(exported.rows).toHaveLength(40);expect(exported.rows.every(row => row.cohort === "creator")).toBe(true);
     const csv = await adminApi(request("admin/export.csv?cohort=creator",undefined,"",headers),"csv",store.db,"admin-test-key");
     const text = await csv.text();expect(text.split("\r\n")).toHaveLength(42);expect(text).toContain('"creator"');expect(text).not.toContain('"main"');
+    expect(text.split("\r\n")[0]).toContain("analysis_role");
     expect((await exportPage(store.db,"main")).rows.every(row => row.cohort === "main")).toBe(true);
     expect((await exportPage(store.db,"all")).rows).toHaveLength(160);
+  },30_000);
+  it("excludes the attributed historical main session from aggregates and annotates raw exports", async () => {
+    const ordinary = await create("main");
+    await complete(ordinary.session.session_id);
+    const historical = await create("main",crypto.randomUUID(),creatorAttribution.session_id);
+    await completeAttributedMainFixture(historical.session.session_id);
+    const stored = await store.getSession(creatorAttribution.session_id);
+    expect(stored).toMatchObject({cohort:"main",protocol_version:"human-v1",status:"completed",assigned_count:40,answered_count:37,skipped_count:3,timeout_count:1});
+    const main = await humanSummary(store.db);
+    expect(main).toMatchObject({cohort:"main",completedSessions:1,completedParticipants:1,analysisExcludedSessions:1,overall:{assignedTrials:40,correctTrials:40}});
+    const all = await humanSummary(store.db,"all");
+    expect(all).toMatchObject({completedSessions:1,completedParticipants:1,analysisExcludedSessions:1,overall:{assignedTrials:40,correctTrials:40}});
+    expect(await humanSummary(store.db,"creator")).toMatchObject({completedSessions:0,completedParticipants:0,analysisExcludedSessions:0});
+    const raw = (await exportPage(store.db,"main")).rows;
+    expect(raw).toHaveLength(80);
+    const annotated = raw.filter(row => row.session_id === creatorAttribution.session_id);
+    expect(annotated).toHaveLength(40);
+    expect(annotated.every(row => row.cohort === "main" && row.analysis_role === "creator")).toBe(true);
+    expect(raw.filter(row => row.session_id === ordinary.session.session_id).every(row => row.cohort === "main" && row.analysis_role === "main")).toBe(true);
+    const csv = await adminApi(request("admin/export.csv?cohort=main",undefined,"",{authorization:"Bearer admin-test-key"}),"csv",store.db,"admin-test-key");
+    const csvText = await csv.text();
+    expect(csvText.split("\r\n")[0]).toContain("analysis_role");
+    expect(csvText).toContain(`"${creatorAttribution.session_id}"`);
+    expect(csvText).toContain('"main","creator"');
   },30_000);
   it("validates every cohort and still requires authorization to start smoke", async () => {
     await expect(participantApi(request("session",{consent:true,cohort:"garbage",deviceClass:"desktop",viewportBucket:"large"}),"start",store,"key")).rejects.toMatchObject({status:400});

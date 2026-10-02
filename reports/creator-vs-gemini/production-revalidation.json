@@ -11,6 +11,7 @@
   "completed_non_smoke_sessions": 1,
   "rows_written": 0,
   "changed_db": false,
-  "identity_confirmation": "pending",
-  "note": "Submitted responses were excluded from this revalidation query. All other requested trial audit fields match the earlier private snapshot exactly."
+  "identity_confirmation": "creator_confirmed_by_user_after_read_only_snapshot; see creator-attribution.json",
+  "analysis_role": "creator",
+  "note": "Submitted responses were excluded from this revalidation query. All other requested trial audit fields match the earlier private snapshot exactly. The explicit analysis attribution preserves stored_cohort=main and did not write to D1."
 }

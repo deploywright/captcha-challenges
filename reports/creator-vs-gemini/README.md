@@ -1,20 +1,18 @@
-# Production session comparison
+# Creator vs Gemini
 
-The reviewable diagnostic artifacts are [candidate-vs-gemini.pending.md](candidate-vs-gemini.pending.md), [JSON](candidate-vs-gemini.pending.json), and [figure](candidate-vs-gemini.pending.png). Production D1 has no completed `creator` session. Its sole completed non-smoke session is stored as `main`, with ID `73fac77a-7985-4755-a26d-16ea9046541f`. The user explicitly excluded this record from Creator Baseline attribution.
+The final report is [creator-vs-gemini.md](creator-vs-gemini.md), with structured metrics in [creator-vs-gemini.json](creator-vs-gemini.json) and comparison figures beside them. The participant directly confirmed session `73fac77a-7985-4755-a26d-16ea9046541f` as their completion through the production Creator Baseline URL. The session remains stored as `cohort=main`; the report uses `analysis_role=creator` under the exact, versioned attribution record in [creator-attribution.json](creator-attribution.json).
 
-A correct completed `human-v1` record stored in `creator` must be identified before generating the attributed `creator-vs-gemini.json` and `.md`. The stored `main` record remains unchanged and unattributed. Matching the supplied UI accuracy does not establish participant identity.
+The session predates production Creator cohort support. Investigation reproduced the landing-page bug: an active session cookie could be resumed from another cohort URL. The UI now resumes only a same-cohort session and explains active cross-cohort conflicts; the server continues to reject a cross-cohort start with HTTP 409. No production D1 rows were modified or relabeled. Main and all-cohort aggregate summaries exclude this exact creator-role record and report the exclusion count; raw exports retain the stored cohort and add `analysis_role`.
+
+The final generator accepts the historical main record only when the exact confirmed session ID and all saved completion invariants match: human-v1, completed, 40 assigned/finalized trials, 30 correct, 3 skips including 1 timeout, 7.7-second median as displayed, frozen stage quotas, and 40 unique challenge IDs. It has no generic main-session attribution override.
 
 Run these commands from the repository root:
 
 ```powershell
-python reports/creator-vs-gemini/generate_comparison.py --unattributed-draft
+python reports/creator-vs-gemini/generate_comparison.py
 python -m unittest discover -s reports/creator-vs-gemini -p test_comparison.py -v
 ```
 
-The generator refuses main-cohort attribution and has no confirmation override. The anonymous diagnostic draft can be regenerated with `--unattributed-draft`.
+Generation uses the ignored read-only D1 audit snapshot, committed attribution record, public challenge catalog, frozen Gemini aggregate, and its five raw run directories. It performs no network requests, model inference, submissions, or database writes. Source hashes are recorded in the report. Public artifacts contain correctness outcomes and public challenge metadata, without submitted responses, model predictions, credentials, token hashes, participant IDs, or answer keys. The ignored audit snapshot contains participant response data and must remain private.
 
-Generation requires Python, NumPy and Matplotlib. Tests additionally use SciPy for an independent exact binomial calculation. Inputs are the frozen canonical aggregate JSON, its five referenced raw run directories, the public challenge catalog, and `.tmp/creator-comparison-production-audit.json`. That ignored local production snapshot contains submitted participant responses and must remain private. Reproduction on another checkout requires an authorized read-only export; reports alone cannot reconstruct those private input rows.
-
-Generation performs no network requests, model inference, submissions or database writes. Source hashes are recorded in report provenance. Public artifacts contain correctness outcomes and public challenge metadata, without submitted responses, model predictions, credentials, participant identifiers or answer keys. The `creator` JSON keys preserve the requested schema; `report_status`, `analysis_label`, `identity_confirmation` and the actual `cohort` identify the pending attribution explicitly.
-
-[Production revalidation](production-revalidation.json) records an earlier read-only D1 check: the requested trial audit fields, excluding submitted responses, remained identical to the private snapshot. [Session investigation](creator-session-investigation.md) and its [JSON evidence](creator-session-investigation.json) contain newer D1, deployment, and controlled browser evidence. No provider credentials or benchmark rerun are needed for this analysis.
+[Production revalidation](production-revalidation.json) and [session investigation](creator-session-investigation.md) document read-only D1 checks, deployment timing, and the reproduced routing cause. No benchmark rerun was performed.

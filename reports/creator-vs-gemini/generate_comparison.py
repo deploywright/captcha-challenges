@@ -16,6 +16,15 @@ from pathlib import Path
 import statistics
 
 ROOT = Path(__file__).resolve().parents[2]
+ATTRIBUTION_PATH = ROOT / "reports/creator-vs-gemini/creator-attribution.json"
+CONFIRMED_SESSION_ID = "73fac77a-7985-4755-a26d-16ea9046541f"
+EXPECTED_CONFIRMED_COMPLETION = {
+    "status": "completed", "assigned_trials": 40, "finalized_trials": 40,
+    "correct_trials": 30, "skipped_trials": 3, "timed_out_trials": 1,
+    "median_solve_time_ms_rounds_to_seconds": 7.7,
+    "quotas": {"street-grid": 6, "hard-street-grid": 6, "checker-shadow": 6,
+               "routing-puzzle": 18, "degraded-vision": 4}, "unique_challenge_ids": 40,
+}
 STAGES = {
     "street-grid": "Level 1", "hard-street-grid": "Level 2A",
     "checker-shadow": "Level 2B", "routing-puzzle": "Level 3A",
@@ -146,13 +155,40 @@ def case_studies(categories):
     }
 
 
-def build_report(audit_path, allow_unattributed_draft=False):
+def validate_confirmed_attribution(audit, attribution):
+    """Allow this one user-confirmed pre-cohort session with all frozen invariants."""
+    session, rows = audit["session"], audit["trials"]
+    require(attribution["session_id"] == CONFIRMED_SESSION_ID == session["session_id"], "Attribution session ID mismatch")
+    require(attribution["stored_cohort"] == "main" and session["cohort"] == "main", "Attribution requires the preserved main stored cohort")
+    require(attribution["analysis_role"] == "creator" and attribution["attribution_status"] == "creator_confirmed", "Explicit creator confirmation is required")
+    require(attribution["protocol_version"] == session["protocol_version"] == "human-v1", "Attribution protocol version mismatch")
+    require(audit["completed_creator_count"] == 0, "D1 reports an existing creator cohort session; resolve it before attribution")
+    require(attribution["confirmed_completion"] == EXPECTED_CONFIRMED_COMPLETION, "Attribution expectations were modified")
+    metrics = validate_creator(audit)
+    require(session["status"] == "completed", "Attributed session is not completed")
+    require(metrics["total"] == session["assigned_count"] == 40, "Attributed session must have 40 assigned trials")
+    require(metrics["answered"] + metrics["skipped"] == EXPECTED_CONFIRMED_COMPLETION["finalized_trials"], "Attributed session must have 40 finalized trials")
+    require(metrics["correct"] == EXPECTED_CONFIRMED_COMPLETION["correct_trials"], "Creator confirmed correct-count mismatch")
+    require(metrics["skipped"] == EXPECTED_CONFIRMED_COMPLETION["skipped_trials"], "Creator confirmed skip-count mismatch")
+    require(metrics["timed_out"] == EXPECTED_CONFIRMED_COMPLETION["timed_out_trials"], "Creator confirmed timeout-count mismatch")
+    require(round(metrics["median_solve_time_ms"] / 1000, 1) == EXPECTED_CONFIRMED_COMPLETION["median_solve_time_ms_rounds_to_seconds"], "Creator confirmed median mismatch")
+    require(Counter(row["variant"] for row in rows) == Counter(QUOTAS), "Creator confirmed stage quota mismatch")
+    require(len({row["challenge_id"] for row in rows}) == EXPECTED_CONFIRMED_COMPLETION["unique_challenge_ids"], "Creator confirmed challenge ID uniqueness mismatch")
+    return metrics
+
+
+def build_report(audit_path, allow_unattributed_draft=False, attribution_path=ATTRIBUTION_PATH):
     audit = read_json(audit_path)
     session, rows = audit["session"], audit["trials"]
-    overall = validate_creator(audit)
-    if session["cohort"] != "creator":
-        require(allow_unattributed_draft, "Cannot attribute a main-cohort session as the Creator Baseline; a completed creator-cohort record is required")
-    pending = session["cohort"] != "creator"
+    attribution = read_json(attribution_path) if attribution_path and attribution_path.exists() else None
+    confirmed = session["cohort"] == "main" and attribution is not None
+    if confirmed:
+        overall = validate_confirmed_attribution(audit, attribution)
+    else:
+        overall = validate_creator(audit)
+        if session["cohort"] != "creator":
+            require(allow_unattributed_draft, "Cannot attribute a main-cohort session as the Creator Baseline; an exact creator-confirmed attribution record is required")
+    pending = session["cohort"] != "creator" and not confirmed
     canonical, gemini, sources = load_gemini(ROOT / "AI-Solver/reports/gemini-zero-shot-baseline.json")
     catalog_path = ROOT / "web/public/challenges/catalog.json"
     catalog = {r["id"]: r for r in read_json(catalog_path)}
@@ -214,6 +250,10 @@ def build_report(audit_path, allow_unattributed_draft=False):
     ]
     if session["cohort"] != "creator":
         limitations.insert(0, "Storage anomaly: there are zero completed creator-cohort sessions. This diagnostic session is stored as main and is explicitly excluded from Creator Baseline attribution. A correct completed creator record must be identified; no D1 row was relabeled or changed.")
+    if confirmed:
+        limitations = [note for note in limitations if "A correct completed creator record must be identified" not in note]
+        limitations.insert(0, "Historical routing anomaly: the creator-confirmed human-v1 session was stored as main because the session began before creator cohort support. The Creator URL can resume an active cookie-bound session without checking cohort. Raw D1 cohort remains main and is never rewritten; analysis_role is creator under the explicit attribution record.")
+        limitations.append("Main and all-cohort aggregate human-sample analytics exclude the exact annotated creator-role session; authenticated raw exports preserve cohort=main and provide analysis_role=creator separately.")
     if pending:
         limitations = [note.replace("Exactly one creator; this is a single-participant creator baseline", "Exactly one participant; this is an unattributed candidate session")
                       .replace("The creator knows the project and may have more context than a naive participant; prior exposure is not measured by this session.",
@@ -225,8 +265,10 @@ def build_report(audit_path, allow_unattributed_draft=False):
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "report_status": "creator_session_missing" if pending else "attributed",
         "creator": {"protocol_version": session["protocol_version"], "cohort": session["cohort"],
-                    "session_id": session["session_id"], "analysis_label": "unattributed main-cohort diagnostic; excluded from creator baseline" if pending else "single-participant creator baseline",
-                    "identity_confirmation": "not_attributed" if pending else "creator_cohort_record",
+                    "stored_cohort": session["cohort"], "analysis_role": attribution["analysis_role"] if confirmed else session["cohort"],
+                    "attribution_status": attribution["attribution_status"] if confirmed else "not_attributed",
+                    "session_id": session["session_id"], "analysis_label": "single-participant creator baseline; historically stored in main" if confirmed else "unattributed main-cohort diagnostic; excluded from creator baseline" if pending else "single-participant creator baseline",
+                    "identity_confirmation": "creator_confirmed_by_user" if confirmed else "not_attributed" if pending else "creator_cohort_record",
                     "session_wall_time_ms": session["completed_at"] - session["started_at"],
                     **overall, "observed_accuracy": overall["accuracy"], "by_stage": by_stage,
                     "by_subtype": grouping(routing, "subtype", SUBTYPES),
@@ -266,6 +308,7 @@ def build_report(audit_path, allow_unattributed_draft=False):
         "provenance": {"production_database": audit["database_name"], "production_database_id": audit["database_id"],
                        "retrieved_at": audit["retrieved_at"], "session_created_at": session["created_at"],
                        "session_completed_at": session["completed_at"], "sources": sources + [provenance(catalog_path), provenance(audit_path)],
+                       "creator_attribution": {"path": str(attribution_path.relative_to(ROOT)).replace("\\", "/"), "sha256": provenance(attribution_path)["sha256"], "status": attribution["attribution_status"]} if confirmed else None,
                        "thinking_provenance": "MINIMAL is recorded in the frozen canonical aggregate; the raw run configs do not separately persist a thinking-level field."},
         "methodology_notes": limitations,
     }
@@ -287,10 +330,14 @@ def outcome(value):
 def markdown(report):
     c, g, m = report["creator"], report["gemini"], report["matched"]
     full = g["full_population_metrics"]
+    is_creator_attributed = c["analysis_role"] == "creator" and c["attribution_status"] == "creator_confirmed"
+    participant_label = "Creator" if is_creator_attributed else "Candidate"
     lines = ["# Creator vs Gemini Benchmark", "", f"Generated: {report['generated_at']}", "",
              "## Executive Summary", "", "**Single-participant creator baseline; matched challenge comparison is primary.**", ""]
-    if c["cohort"] != "creator":
-        identity_note = "This main-cohort record is excluded from Creator Baseline attribution by the user's instruction. These results describe only an anonymous diagnostic session; a correct completed creator-cohort record is still required."
+    if is_creator_attributed and c["stored_cohort"] == "main":
+        lines += [f"**Attribution:** creator confirmed in project conversation. Raw D1 stored cohort is **`{c['stored_cohort']}`**; analysis role is **`{c['analysis_role']}`**; attribution status is **`{c['attribution_status']}`**. The session began before creator cohort support and was completed through the confirmed cross-cohort resume behavior. D1 history was not rewritten. Future main/all aggregate analytics exclude this exact session; raw exports retain the stored cohort and show analysis role separately. No human or Gemini benchmark was rerun and no production D1 writes were issued.", ""]
+    elif c["cohort"] != "creator":
+        identity_note = "This main-cohort record is excluded from Creator Baseline attribution. These results describe only an anonymous diagnostic session; a correct completed creator-cohort record is still required."
         lines += [f"**Storage anomaly:** D1 contains zero completed `creator` sessions. Session `{c['session_id']}` is stored in **`{c['cohort']}`**, started before creator-cohort deployment. {identity_note} No session or trial was moved, edited, or recreated.", ""]
     lines += [f"The production session contains **{c['correct']}/{c['total']} correct ({pct(c['observed_accuracy'])})**, median solve time **{seconds(c['median_solve_time_ms'])}**, {c['skipped']} skips **including** {c['timed_out']} timeout. All {c['total']} assigned trials were finalized; skips/timeouts count as failures.", "",
               f"On those exact {m['total']} IDs, Gemini achieved **{m['gemini_correct']}/{m['total']} ({pct(m['gemini_accuracy'])})**. Creator minus Gemini is **{m['accuracy_gap_pp']:+.2f} percentage points**. This describes one participant on this subset, not human-versus-AI superiority.", "",
@@ -319,12 +366,12 @@ def markdown(report):
         for row in m["outcome_categories"][category]:
             lines.append("| " + " | ".join(str(row[key]) if row[key] is not None else "—" for key in ["challenge_id","stage","variant","subtype","difficulty","resolution","series_id"]) + " |")
         lines += [""]
-    lines += ["## Creator Breakdown", "", f"Answered {c['answered']}; secondary answered-only accuracy {pct(c['secondary_answered_only_accuracy'])}. Skipped {c['skipped']} includes timed-out {c['timed_out']}, so timeout is not a fourth disjoint failure category. Interrupted trials: {c['interrupted']}. p95 solve time: {seconds(c['p95_solve_time_ms'])} (nearest rank).", "",
+    lines += [f"## {participant_label} Breakdown", "", f"Answered {c['answered']}; secondary answered-only accuracy {pct(c['secondary_answered_only_accuracy'])}. Skipped {c['skipped']} includes timed-out {c['timed_out']}, so timeout is not a fourth disjoint failure category. Interrupted trials: {c['interrupted']}. p95 solve time: {seconds(c['p95_solve_time_ms'])} (nearest rank).", "",
               "| Stage | Correct / N | Primary accuracy | Median solve time |", "| --- | ---: | ---: | ---: |"]
     for stage, metric in c["by_stage"].items():
         lines.append(f"| {stage} | {metric['correct']}/{metric['total']} | {pct(metric['accuracy'])} | {seconds(metric['median_solve_time_ms'])} |")
     lines += ["", "### Optical Illusions", "", "Named subtype is absent from the stored rows and public catalog. The exact public task and ID identify each of the six cases; no subtype names or correct options are inferred.", "",
-              "| Challenge ID | Public task | Creator | Gemini | Creator status |", "| --- | --- | --- | --- | --- |"]
+              f"| Challenge ID | Public task | {participant_label} | Gemini | {participant_label} status |", "| --- | --- | --- | --- | --- |"]
     for row in c["optical_illusions"]:
         lines.append(f"| {row['challenge_id']} | {row['public_instruction']} | {outcome(row['creator_correct'])} | {outcome(row['gemini_correct'])} | {row['status']} |")
     for key, title in [("by_subtype","Routing by Subtype"),("by_difficulty","Routing by Difficulty"),("by_resolution","Degraded Vision by Resolution"),("by_series","Degraded Vision by Series")]:
@@ -338,31 +385,31 @@ def markdown(report):
     for subtype, cells in c["subtype_by_difficulty"].items():
         lines.append("| " + subtype + " | " + " | ".join(f"{cells[d]['correct']}/{cells[d]['total']}" if cells[d]["total"] else "— (N=0)" for d in DIFFICULTIES) + " |")
     lines += ["", "## Full Gemini Baseline Context", "", f"Canonical model **{g['model']}**, **{g['mode']}**, thinking **{g['thinking_level']}**. Full coverage is {full['total']}/{full['total']}; this run was not rerun.", "",
-              "| Stage | Gemini full benchmark | Creator subset (different IDs/weights) |", "| --- | ---: | ---: |"]
+              f"| Stage | Gemini full benchmark | {participant_label} subset (different IDs/weights) |", "| --- | ---: | ---: |"]
     for stage, metric in full["by_stage"].items():
         cm = c["by_stage"][stage]
         lines.append(f"| {stage} | {metric['correct_count']}/{metric['challenge_count']} ({pct(metric['exact_challenge_accuracy'])}) | {cm['correct']}/{cm['total']} ({pct(cm['accuracy'])}) |")
     lines += [f"| Overall (unmatched populations) | {full['correct']}/{full['total']} ({pct(full['accuracy'])}) | {c['correct']}/{c['total']} ({pct(c['observed_accuracy'])}) |", "",
               "**These overall percentages come from different challenge populations and weighting schemes and should not be interpreted as a paired head-to-head score.** The matched 40-trial comparison above is the direct descriptive comparison.", "",
-              "| Stage | Creator weight | Gemini full weight |", "| --- | ---: | ---: |"]
+              f"| Stage | {participant_label} weight | Gemini full weight |", "| --- | ---: | ---: |"]
     for stage, weight in report["stage_weights"].items():
         lines.append(f"| {stage} | {weight['creator_total']}/{c['total']} ({pct(weight['creator_weight'])}) | {weight['gemini_full_total']}/{full['total']} ({pct(weight['gemini_full_weight'])}) |")
     lines += ["", f"**Creator stage-standardized descriptive estimate:** {pct(report['creator_stage_standardized_accuracy'])}, computed as Σ (Gemini full stage N/{full['total']}) × creator stage accuracy. It is not observed accuracy on 134 trials; observed creator accuracy remains {pct(c['observed_accuracy'])}.", "",
               "## Timing", "", "| Process | Population | Median | p95 |", "| --- | --- | ---: | ---: |",
-              f"| Creator human solve time, visual readiness to final response | Assigned 40, presented trials including skips/timeouts | {seconds(c['median_solve_time_ms'])} | {seconds(c['p95_solve_time_ms'])} |",
+              f"| {participant_label} human solve time, visual readiness to final response | Assigned 40, presented trials including skips/timeouts | {seconds(c['median_solve_time_ms'])} | {seconds(c['p95_solve_time_ms'])} |",
               f"| Gemini provider inference latency | Matched 40 | {seconds(g['matched_median_inference_time_ms'])} | {seconds(g['matched_p95_inference_time_ms'])} |",
               f"| Gemini provider inference latency | Full 134 | {seconds(full['median_inference_time_ms'])} | {seconds(full['p95_inference_time_ms'])} |", "",
               "Client human timing is primary; server elapsed is an audit interval including different network/resume semantics. Provider inference may include retries. These are different processes, so no equivalent faster/slower claim is made.", "",
-              "## Verification and Provenance", "", f"Session: `{c['session_id']}`; stored cohort `{c['cohort']}`; protocol `{c['protocol_version']}`. Read-only production D1 retrieval at {report['provenance']['retrieved_at']}. Counters agree with raw rows; positions 1..40 and IDs are unique, quotas are 6/6/6/18/4, and degraded series are distinct. Canonical raw correctness totals reproduce the JSON aggregate exactly and all 40 IDs match. UI values are cross-checks only.", "",
+              "## Verification and Provenance", "", f"Session: `{c['session_id']}`; stored cohort `{c['stored_cohort']}`; analysis role `{c['analysis_role']}`; attribution status `{c['attribution_status']}`; protocol `{c['protocol_version']}`. Read-only production D1 retrieval at {report['provenance']['retrieved_at']}. Counters agree with raw rows; positions 1..40 and IDs are unique, quotas are 6/6/6/18/4, and degraded series are distinct. Canonical raw correctness totals reproduce the JSON aggregate exactly and all 40 IDs match. UI values are cross-checks only.", "",
               "The public JSON contains hashes/source paths and outcomes, never submitted answers, predictions, secret cookies, token hashes, participant IDs, or ground-truth keys. The ignored local audit contains only the requested submitted-response fields and source timestamps. Raw Gemini files and canonical reports remain unchanged.", "",
               report["provenance"]["thinking_provenance"], "", "## Methodological Limitations", ""]
     for row in report["verification"]["long_server_elapsed_trials"]:
         lines[lines.index("## Verification and Provenance"):lines.index("## Verification and Provenance")] = [
             f"Quality audit: trial {row['position']} (`{row['challenge_id']}`) was {row['status']}, interrupted={str(row['interrupted']).lower()}, with capped client time {seconds(row['client_solve_time_ms'])} and server elapsed {seconds(row['server_elapsed_ms'])}. The Boolean flag cannot identify the cause of the long interval. It remains a primary failure and is not dropped. Session wall time was {seconds(c['session_wall_time_ms'])}; this is not summed active solve time.", ""]
     lines += [f"{i}. {note}" for i, note in enumerate(report["methodology_notes"], 1)]
-    lines += ["", "## Reproduction", "", "Run the local generator against the ignored read-only production audit snapshot. Only a completed creator-cohort record may produce an attributed Creator Baseline; a main-cohort snapshot is restricted to an anonymous diagnostic draft. All statistics and Markdown numbers derive from the same structured result.", ""]
+    lines += ["", "## Reproduction", "", "Run the local generator against the ignored read-only production audit snapshot and the committed creator attribution record. It validates the exact session ID, user confirmation, stored cohort, protocol, completion, outcomes, median display rounding, quotas, and unique challenge IDs. Main/all aggregate analytics apply the same annotation as an exclusion; raw exports preserve the stored cohort and include analysis_role separately. All report statistics derive from the structured result.", ""]
     rendered = "\n".join(lines)
-    if c["cohort"] != "creator":
+    if c["cohort"] != "creator" and not is_creator_attributed:
         rendered = rendered.replace("Creator", "Candidate").replace("creator baseline", "unattributed candidate session")
         rendered = rendered.replace("creator stage accuracy", "candidate stage accuracy").replace("observed creator accuracy", "observed candidate accuracy")
         rendered = rendered.replace("# Candidate vs Gemini Benchmark", "# Anonymous main session vs Gemini — diagnostic only", 1)
@@ -381,7 +428,7 @@ def plot(report, folder):
     labels = [f"{stage.replace('Level ', 'L')}\nN={m['total']}" for stage, m in matched["by_stage"].items()] + [f"Overall\nN={matched['total']}"]
     figure, axes = plt.subplots(1, 2, figsize=(13, 5.3), gridspec_kw={"width_ratios": [1.65, 1]})
     positions = np.arange(len(metrics))
-    role = "Candidate" if report["creator"]["cohort"] != "creator" else "Creator"
+    role = "Creator" if report["creator"]["analysis_role"] == "creator" else "Candidate"
     for offset, field, color, label in [(-.19, "creator_accuracy", "#2563eb", f"{role} (one participant)"),(.19, "gemini_accuracy", "#f59e0b", "Gemini zero-shot")]:
         bars = axes[0].bar(positions+offset, [100*m[field] for m in metrics], width=.36, color=color, label=label)
         for bar, metric in zip(bars, metrics):
@@ -401,23 +448,27 @@ def plot(report, folder):
         for j in range(2):
             axes[1].text(j, i, str(values[i, j]), ha="center", va="center", fontsize=24, color="white" if values[i, j] > values.max()/2 else "#172554")
     axes[1].set_title(f"Paired outcomes, N={matched['total']}\nExact McNemar p={matched['mcnemar_exact_p_value']:.5f}")
-    figure.suptitle(f"{'Anonymous main session (excluded from Creator Baseline)' if role == 'Candidate' else 'Single-participant creator baseline'} vs Gemini: matched 40 challenges", fontsize=12)
+    figure.suptitle(f"{'Single-participant Creator Baseline (stored cohort: main)' if role == 'Creator' and report['creator']['stored_cohort'] == 'main' else 'Anonymous main session (excluded from Creator Baseline)' if role == 'Candidate' else 'Single-participant creator baseline'} vs Gemini: matched 40 challenges", fontsize=12)
     figure.text(.5, .02, "Descriptive selected-subset comparison. No population-level human/AI inference.", ha="center", fontsize=9)
     figure.tight_layout(rect=(0, .05, 1, .93))
     stem = "candidate-vs-gemini.pending" if role == "Candidate" else "creator-vs-gemini"
     figure.savefig(folder / f"{stem}.png", dpi=180)
-    figure.savefig(folder / f"{stem}.svg")
+    svg_path = folder / f"{stem}.svg"
+    figure.savefig(svg_path)
+    svg_lines = svg_path.read_text(encoding="utf-8").splitlines()
+    svg_path.write_text("\n".join(line.rstrip() for line in svg_lines) + "\n", encoding="utf-8")
     plt.close(figure)
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--audit", type=Path, default=ROOT / ".tmp/creator-comparison-production-audit.json")
+    parser.add_argument("--attribution", type=Path, default=ATTRIBUTION_PATH)
     parser.add_argument("--unattributed-draft", action="store_true", help="Create an anonymous main-session diagnostic; never attribute it as the Creator Baseline")
     args = parser.parse_args()
-    report = build_report(args.audit.resolve(), args.unattributed_draft)
+    report = build_report(args.audit.resolve(), args.unattributed_draft, args.attribution.resolve() if args.attribution.exists() else None)
     folder = Path(__file__).resolve().parent
-    stem = "candidate-vs-gemini.pending" if report["creator"]["cohort"] != "creator" else "creator-vs-gemini"
+    stem = "creator-vs-gemini" if report["creator"]["analysis_role"] == "creator" else "candidate-vs-gemini.pending"
     output = folder / f"{stem}.json"
     output.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     # Render Markdown from the serialized deliverable rather than a second calculation.
