@@ -7,10 +7,10 @@ from typing import Any
 import httpx
 
 from ..client import RETRY_STATUSES
-from ..contracts import VLMSelection
+from ..contracts import VLMSelection, VLMSingleChoice
 from ..errors import ModelError
 from .base import ProviderResponse
-from .level_1_vlm import image_mime_type, tile_prompt
+from .level_1_vlm import image_mime_type, single_choice_prompt, tile_prompt
 
 
 class GeminiVisionProvider:
@@ -50,27 +50,48 @@ class GeminiVisionProvider:
         if self._owns_client:
             self._client.close()
 
-    def infer(self, instruction: str, assets: list[bytes], *, recovery: bool) -> ProviderResponse:
+    def infer(
+        self,
+        instruction: str,
+        assets: list[bytes],
+        *,
+        recovery: bool = False,
+        options: list[str] | None = None,
+    ) -> ProviderResponse:
         from google.genai import errors, types
 
-        parts = [
-            types.Part.from_text(text=tile_prompt(instruction, len(assets), recovery=recovery))
-        ]
-        for index, asset in enumerate(assets):
-            parts.append(types.Part.from_text(text=f"Tile {index}"))
-            parts.append(types.Part.from_bytes(data=asset, mime_type=image_mime_type(asset)))
-        schema = VLMSelection.model_json_schema()
-        schema["properties"]["confidence"] = {"type": "null"}
+        if options is not None:
+            parts = [
+                types.Part.from_text(
+                    text=single_choice_prompt(instruction, options, recovery=recovery)
+                )
+            ]
+            for asset in assets:
+                parts.append(types.Part.from_bytes(data=asset, mime_type=image_mime_type(asset)))
+            schema = VLMSingleChoice.model_json_schema()
+            schema["properties"]["confidence"] = {"type": "null"}
+        else:
+            parts = [
+                types.Part.from_text(text=tile_prompt(instruction, len(assets), recovery=recovery))
+            ]
+            for index, asset in enumerate(assets):
+                parts.append(types.Part.from_text(text=f"Tile {index}"))
+                parts.append(types.Part.from_bytes(data=asset, mime_type=image_mime_type(asset)))
+            schema = VLMSelection.model_json_schema()
+            schema["properties"]["confidence"] = {"type": "null"}
+
         config = types.GenerateContentConfig(
             response_mime_type="application/json",
             response_json_schema=schema,
-            candidate_count=1,
             max_output_tokens=8192,
+            thinking_config=types.ThinkingConfig(thinking_level=types.ThinkingLevel.LOW),
             automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
         )
         calls = 0
         for attempt in range(self.max_retries + 1):
             calls += 1
+            status_code = None
+            status = None
             try:
                 response = self._client.models.generate_content(
                     model=self.model_name,
@@ -116,5 +137,8 @@ class GeminiVisionProvider:
             if not retryable or attempt == self.max_retries:
                 failure.api_request_count = calls
                 raise failure from None
-            self._sleep(min(0.5 * 2**attempt, 8))
+            if status_code == 429 or status == "RESOURCE_EXHAUSTED":
+                self._sleep(5.0 * (attempt + 1))
+            else:
+                self._sleep(min(0.5 * 2**attempt, 8))
         raise AssertionError("Unreachable Gemini retry state")

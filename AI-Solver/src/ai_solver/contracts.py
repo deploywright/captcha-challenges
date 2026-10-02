@@ -11,6 +11,15 @@ Identifier = Annotated[str, Field(pattern=r"^[A-Za-z0-9_-]+$", min_length=1)]
 Milliseconds = Annotated[float, Field(ge=0, allow_inf_nan=False)]
 Answer = list[StrictInt] | str | StrictInt
 
+SUPPORTED_VARIANTS = {
+    "street-grid",
+    "hard-street-grid",
+    "checker-shadow",
+    "routing-puzzle",
+    "degraded-vision",
+    "tangled-cables",
+}
+
 
 class PublicModel(BaseModel):
     model_config = ConfigDict(extra="ignore", strict=True)
@@ -41,6 +50,11 @@ class CatalogEntry(PublicModel):
     level: int
     variant: str
     challengeUrl: str
+    subtype: str | None = None
+    difficulty: str | None = None
+    resolution: int | None = None
+    seriesId: str | None = None
+    assetCount: int | None = None
 
 
 class SubmissionResponse(PublicModel):
@@ -72,10 +86,20 @@ class VLMSelection(BaseModel):
     confidence: Annotated[float, Field(ge=0, le=1, allow_inf_nan=False)] | None
 
 
+class VLMSingleChoice(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+    selected_option_index: StrictInt
+    confidence: Annotated[float, Field(ge=0, le=1, allow_inf_nan=False)] | None
+
+
 class ChallengeResult(BaseModel):
     challenge_id: str
     variant: str
     level: int
+    subtype: str | None = None
+    difficulty: str | None = None
+    resolution: int | None = None
+    series_id: str | None = None
     solver: str
     model: str
     prediction: Answer | None = None
@@ -131,11 +155,36 @@ def validate_indices(indices: Any, asset_count: int) -> list[int]:
     return sorted(set(indices))
 
 
+def validate_option_index(index: Any, option_count: int) -> int:
+    if type(index) is not int or isinstance(index, bool):
+        raise ModelResponseError("Selection must be an integer zero-based option index")
+    if index < 0 or index >= option_count:
+        raise ModelResponseError("Selection index is outside the public options range")
+    return index
+
+
+def validate_challenge_and_assets(challenge: PublicChallenge, assets: list[bytes]) -> None:
+    if challenge.variant not in SUPPORTED_VARIANTS:
+        raise ChallengeContractError(f"Unsupported challenge variant: {challenge.variant}")
+    if not assets or any(not x for x in assets):
+        raise ChallengeContractError("Challenge assets cannot be empty")
+    if len(assets) != len(challenge.assets):
+        raise ChallengeContractError("Asset count or content does not match public challenge")
+    if challenge.type == "image-selection":
+        if challenge.ui.rows and challenge.ui.columns:
+            if challenge.ui.rows * challenge.ui.columns != len(assets):
+                raise ChallengeContractError("Public grid dimensions do not match asset count")
+    elif challenge.type == "single-choice":
+        options = challenge.ui.options
+        if not isinstance(options, list) or len(options) < 2:
+            raise ChallengeContractError("Single-choice challenge requires at least two options")
+        if any(not isinstance(opt, str) or not opt.strip() for opt in options):
+            raise ChallengeContractError("Single-choice options must be non-empty strings")
+    else:
+        raise ChallengeContractError(f"Unsupported challenge type: {challenge.type}")
+
+
 def validate_street_grid(challenge: PublicChallenge, assets: list[bytes]) -> None:
     if challenge.variant != "street-grid" or challenge.type != "image-selection":
         raise ChallengeContractError("v0.1 supports street-grid image-selection only")
-    if len(assets) != len(challenge.assets) or not assets or any(not x for x in assets):
-        raise ChallengeContractError("Asset count or content does not match public challenge")
-    if challenge.ui.rows and challenge.ui.columns:
-        if challenge.ui.rows * challenge.ui.columns != len(assets):
-            raise ChallengeContractError("Public grid dimensions do not match asset count")
+    validate_challenge_and_assets(challenge, assets)

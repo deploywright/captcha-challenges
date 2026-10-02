@@ -22,6 +22,13 @@ class ProviderResponse:
 class VisionProvider(Protocol):
     model_name: str
 
-    def infer(self, instruction: str, assets: list[bytes], *, recovery: bool) -> ProviderResponse:
+    def infer(
+        self,
+        instruction: str,
+        assets: list[bytes],
+        *,
+        recovery: bool = False,
+        options: list[str] | None = None,
+    ) -> ProviderResponse:
         """Receives only the public instruction and image bytes, never benchmark feedback."""
         ...

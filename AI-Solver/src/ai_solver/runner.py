@@ -16,12 +16,36 @@ from .metrics import aggregate_metrics
 from .solvers.base import Solver
 
 
+def infer_illusion_subtype(instruction: str) -> str:
+    lower = instruction.lower()
+    if "mortar" in lower or "parallel" in lower or "row" in lower:
+        return "cafe-wall"
+    if "orange" in lower or "center circle" in lower or "size" in lower:
+        return "ebbinghaus"
+    if "shade of grey" in lower:
+        return "simultaneous-contrast"
+    if "shade" in lower or "square" in lower:
+        return "checker-shadow"
+    if "bar" in lower:
+        return "ponzo"
+    if "horizontal line" in lower:
+        return "muller-lyer"
+    return "checker-shadow"
+
+
 def select_entries(
     catalog: list[CatalogEntry],
     variant: str,
     limit: int | None = None,
 ) -> list[CatalogEntry]:
-    entries = [entry for entry in catalog if entry.variant == variant]
+    if variant == "all":
+        entries = catalog
+    elif variant in ("routing-puzzle", "tangled-cables"):
+        entries = [
+            entry for entry in catalog if entry.variant in ("routing-puzzle", "tangled-cables")
+        ]
+    else:
+        entries = [entry for entry in catalog if entry.variant == variant]
     return entries if limit is None else entries[:limit]
 
 
@@ -77,6 +101,13 @@ class BenchmarkRunner:
         try:
             challenge: PublicChallenge = self.client.get_challenge(entry)
             row.variant, row.level = challenge.variant, challenge.level
+            if isinstance(entry, CatalogEntry):
+                row.subtype = entry.subtype
+                row.difficulty = entry.difficulty
+                row.resolution = entry.resolution
+                row.series_id = entry.seriesId
+            if challenge.level == 2 and challenge.variant == "checker-shadow" and not row.subtype:
+                row.subtype = infer_illusion_subtype(challenge.instruction)
             phase = "assets"
             phase_start = time.perf_counter()
             assets = self.client.download_assets(challenge)
@@ -143,28 +174,79 @@ class BenchmarkRunner:
 
     def run(self) -> tuple[Path, dict]:
         started = datetime.now(UTC)
-        run_id = f"{started:%Y%m%dT%H%M%S%fZ}_level1_{self.config.solver}_{uuid.uuid4().hex[:8]}"
-        output = self.config.output_dir / run_id
-        output.mkdir(parents=True, exist_ok=False)
-        metadata = {
-            "run_id": run_id,
-            "started_at": started.isoformat(),
-            "base_url": self.client.base_url,
-            "solver": self.solver.name,
-            "model": self.solver.model_name,
-            "variant": self.config.variant,
-            "challenge_count": 0,
-            "discovered_challenge_count": None,
-            "git_commit": _git_commit(),
-            "config": self.config.model_dump(mode="json"),
-            "status": "running",
-            "package_version": "0.1.0",
-            "prompt_version": "level1-v1",
-        }
-        _write_json(output / "run.json", metadata)
-        rows: list[ChallengeResult] = []
+        variant_tag = self.config.variant.replace("-", "_")
+        resumed_dir: Path | None = None
+        if self.config.resume and self.config.output_dir.exists():
+            candidates = [
+                p
+                for p in sorted(self.config.output_dir.iterdir(), reverse=True)
+                if p.is_dir() and (p / "run.json").exists()
+            ]
+            for cand in candidates:
+                try:
+                    meta = json.loads((cand / "run.json").read_text(encoding="utf-8"))
+                    if (
+                        meta.get("variant") == self.config.variant
+                        and meta.get("solver") == self.solver.name
+                    ):
+                        resumed_dir = cand
+                        break
+                except Exception:
+                    pass
+
+        if resumed_dir is not None:
+            output = resumed_dir
+            metadata = json.loads((output / "run.json").read_text(encoding="utf-8"))
+            run_id = metadata["run_id"]
+        else:
+            suffix = f"{variant_tag}_{self.config.solver}_{uuid.uuid4().hex[:8]}"
+            run_id = f"{started:%Y%m%dT%H%M%S%fZ}_{suffix}"
+            output = self.config.output_dir / run_id
+            output.mkdir(parents=True, exist_ok=False)
+            if self.config.variant in ("checker-shadow", "routing-puzzle"):
+                prompt_version = "single-choice-v1"
+            elif self.config.variant in ("street-grid", "hard-street-grid", "degraded-vision"):
+                prompt_version = "image-selection-v1"
+            else:
+                prompt_version = "v1-mixed"
+            metadata = {
+                "run_id": run_id,
+                "started_at": started.isoformat(),
+                "base_url": self.client.base_url,
+                "solver": self.solver.name,
+                "model": self.solver.model_name,
+                "variant": self.config.variant,
+                "challenge_count": 0,
+                "discovered_challenge_count": None,
+                "git_commit": _git_commit(),
+                "config": self.config.model_dump(mode="json"),
+                "status": "running",
+                "package_version": "0.1.0",
+                "prompt_version": prompt_version,
+            }
+            _write_json(output / "run.json", metadata)
+
+        completed_by_id: dict[str, ChallengeResult] = {}
+        pred_path = output / "predictions.jsonl"
+        if pred_path.exists():
+            for line in pred_path.read_text(encoding="utf-8").splitlines():
+                if line.strip():
+                    try:
+                        res = ChallengeResult.model_validate_json(line)
+                        if res.status in ("evaluated", "dry_run") and not res.error:
+                            completed_by_id[res.challenge_id] = res
+                    except Exception:
+                        pass
+            if resumed_dir is not None:
+                clean_content = "".join(
+                    r.model_dump_json() + "\n" for r in completed_by_id.values()
+                )
+                pred_path.write_text(clean_content, encoding="utf-8")
+
+        rows: list[ChallengeResult] = list(completed_by_id.values())
         fatal: SolverError | None = None
-        with (output / "predictions.jsonl").open("x", encoding="utf-8") as predictions:
+        mode = "a" if resumed_dir is not None else "x"
+        with pred_path.open(mode, encoding="utf-8") as predictions:
             try:
                 catalog = self.client.get_catalog()
                 discovered = select_entries(catalog, self.config.variant)
@@ -173,14 +255,22 @@ class BenchmarkRunner:
                 metadata["challenge_count"] = len(entries)
                 _write_json(output / "run.json", metadata)
                 self.progress(
-                    f"Discovered {len(discovered)} street-grid challenges; running {len(entries)}"
+                    f"Discovered {len(discovered)} {self.config.variant} challenges; "
+                    f"running {len(entries)}"
                 )
-                for entry in entries:
+                for idx, entry in enumerate(entries):
+                    if entry.id in completed_by_id:
+                        self.progress(
+                            f"{entry.id}: resumed; correct={completed_by_id[entry.id].correct}"
+                        )
+                        continue
                     row = self.evaluate(entry, submit=not self.config.dry_run)
+                    self.progress(f"{entry.id}: {row.status}; correct={row.correct}")
+                    if self.config.request_interval_seconds > 0 and idx < len(entries) - 1:
+                        time.sleep(self.config.request_interval_seconds)
                     rows.append(row)
                     predictions.write(row.model_dump_json() + "\n")
                     predictions.flush()
-                    self.progress(f"{entry.id}: {row.status}; correct={row.correct}")
             except SolverError as exc:
                 fatal = exc
                 metadata["error_type"] = type(exc).__name__

@@ -14,6 +14,26 @@ def _median(values: list[float]) -> float | None:
     return statistics.median(values) if values else None
 
 
+def _group_summary(subset: list[ChallengeResult]) -> dict:
+    correct = sum(row.correct is True for row in subset)
+    incorrect = sum(row.correct is False for row in subset)
+    evaluated = correct + incorrect
+    completed_inference = [
+        row.inference_time_ms
+        for row in subset
+        if row.prediction is not None and row.inference_time_ms is not None
+    ]
+    return {
+        "challenge_count": len(subset),
+        "evaluated_count": evaluated,
+        "correct_count": correct,
+        "incorrect_count": incorrect,
+        "exact_challenge_accuracy": correct / evaluated if evaluated else None,
+        "mean_inference_time_ms": _mean(completed_inference),
+        "median_inference_time_ms": _median(completed_inference),
+    }
+
+
 def aggregate_metrics(
     results: list[ChallengeResult],
     *,
@@ -50,6 +70,56 @@ def aggregate_metrics(
             sum(input_tokens) * input_price_per_million
             + sum(output_tokens) * output_price_per_million
         ) / 1_000_000
+
+    by_level: dict[int, dict] = {}
+    for level in sorted({row.level for row in results}):
+        by_level[level] = _group_summary([row for row in results if row.level == level])
+
+    by_variant: dict[str, dict] = {}
+    for variant in sorted({row.variant for row in results}):
+        by_variant[variant] = _group_summary([row for row in results if row.variant == variant])
+
+    by_subtype: dict[str, dict] = {}
+    subtypes = sorted({row.subtype for row in results if row.subtype is not None})
+    for st in subtypes:
+        by_subtype[st] = _group_summary([row for row in results if row.subtype == st])
+
+    by_difficulty: dict[str, dict] = {}
+    diffs = sorted({row.difficulty for row in results if row.difficulty is not None})
+    for df in diffs:
+        by_difficulty[df] = _group_summary([row for row in results if row.difficulty == df])
+
+    by_resolution: dict[int, dict] = {}
+    resolutions = sorted({row.resolution for row in results if row.resolution is not None})
+    for res in resolutions:
+        by_resolution[res] = _group_summary([row for row in results if row.resolution == res])
+
+    by_series: dict[str, dict] = {}
+    series_ids = sorted({row.series_id for row in results if row.series_id is not None})
+    for s_id in series_ids:
+        by_series[s_id] = _group_summary([row for row in results if row.series_id == s_id])
+
+    subtype_by_difficulty: dict[str, dict[str, dict]] = {}
+    for st in subtypes:
+        st_rows = [row for row in results if row.subtype == st]
+        st_diffs = sorted({row.difficulty for row in st_rows if row.difficulty is not None})
+        if st_diffs:
+            subtype_by_difficulty[st] = {
+                df: _group_summary([row for row in st_rows if row.difficulty == df])
+                for df in st_diffs
+            }
+
+    level_accuracies = [
+        s["exact_challenge_accuracy"]
+        for s in by_level.values()
+        if s["exact_challenge_accuracy"] is not None
+    ]
+    variant_accuracies = [
+        s["exact_challenge_accuracy"]
+        for s in by_variant.values()
+        if s["exact_challenge_accuracy"] is not None
+    ]
+
     return {
         "challenge_count": len(results),
         "evaluated_count": evaluated,
@@ -77,4 +147,14 @@ def aggregate_metrics(
         "estimated_api_request_count": sum(row.api_request_count for row in results),
         "estimated_cost_usd": cost,
         "p95_method": "nearest-rank",
+        "by_level": by_level,
+        "by_variant": by_variant,
+        "by_subtype": by_subtype,
+        "by_difficulty": by_difficulty,
+        "by_resolution": by_resolution,
+        "by_series": by_series,
+        "subtype_by_difficulty": subtype_by_difficulty,
+        "micro_accuracy": correct / evaluated if evaluated else None,
+        "macro_level_accuracy": _mean(level_accuracies),
+        "macro_variant_accuracy": _mean(variant_accuracies),
     }

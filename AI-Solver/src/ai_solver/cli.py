@@ -29,7 +29,17 @@ def _parser() -> argparse.ArgumentParser:
         cmd.add_argument("--config", type=Path)
         cmd.add_argument("--env-file", type=Path, default=Path(".env"))
         cmd.add_argument("--base-url")
-        cmd.add_argument("--variant", choices=["street-grid"])
+        cmd.add_argument(
+            "--variant",
+            choices=[
+                "street-grid",
+                "hard-street-grid",
+                "checker-shadow",
+                "routing-puzzle",
+                "degraded-vision",
+                "all",
+            ],
+        )
         cmd.add_argument("--solver", choices=["vlm", "random"])
         cmd.add_argument("--provider", choices=["gemini", "openai"])
         cmd.add_argument("--model")
@@ -40,6 +50,8 @@ def _parser() -> argparse.ArgumentParser:
         cmd.add_argument("--selection-probability", type=float)
         cmd.add_argument("--limit", type=int)
         cmd.add_argument("--dry-run", action="store_true", default=None)
+        cmd.add_argument("--request-interval-seconds", type=float)
+        cmd.add_argument("--resume", action="store_true", default=None)
     return parser
 
 

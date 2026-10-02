@@ -12,8 +12,10 @@ from ..contracts import (
     PublicChallenge,
     SolverPrediction,
     VLMSelection,
+    VLMSingleChoice,
+    validate_challenge_and_assets,
     validate_indices,
-    validate_street_grid,
+    validate_option_index,
 )
 from ..errors import ModelError, ModelResponseError
 from .base import ProviderResponse, VisionProvider
@@ -36,7 +38,7 @@ _SAFE_PROVIDER_CODES = _NONRETRY_PROVIDER_CODES | {
 }
 
 
-def tile_prompt(instruction: str, count: int, *, recovery: bool = False) -> str:
+def image_selection_prompt(instruction: str, count: int, *, recovery: bool = False) -> str:
     prompt = f"""You are solving an image-selection CAPTCHA benchmark.
 Task:
 {instruction}
@@ -56,6 +58,33 @@ Return the zero-based indices of every tile that visibly contains the requested 
         prompt += (
             "This is the single output-format recovery request. Return an integer array, "
             f"all indices in [0, {count - 1}], no duplicates, and confidence: null."
+        )
+    return prompt
+
+
+tile_prompt = image_selection_prompt
+
+
+def single_choice_prompt(instruction: str, options: list[str], *, recovery: bool = False) -> str:
+    options_text = "\n".join(f"{i}: {opt}" for i, opt in enumerate(options))
+    prompt = f"""You are solving a visual single-choice CAPTCHA benchmark.
+Task:
+{instruction}
+
+Options:
+{options_text}
+
+Inspect the challenge image carefully.
+Select the single correct option index (from 0 to {len(options) - 1}) that answers the task.
+- Return JSON only with selected_option_index and confidence.
+- selected_option_index must be an integer index matching one of the options listed above.
+- Use confidence: null; no calibrated selection confidence is provided by this API.
+"""
+    if recovery:
+        prompt += (
+            "This is the single output-format recovery request. "
+            f"Return an integer in [0, {len(options) - 1}] "
+            "for selected_option_index, and confidence: null."
         )
     return prompt
 
@@ -113,20 +142,46 @@ class OpenAIVisionProvider:
         if self._owns_client:
             self._client.close()
 
-    def infer(self, instruction: str, assets: list[bytes], *, recovery: bool) -> ProviderResponse:
+    def infer(
+        self,
+        instruction: str,
+        assets: list[bytes],
+        *,
+        recovery: bool = False,
+        options: list[str] | None = None,
+    ) -> ProviderResponse:
         from openai import APIConnectionError, APIStatusError
 
-        content = [
-            {"type": "input_text", "text": tile_prompt(instruction, len(assets), recovery=recovery)}
-        ]
-        for index, asset in enumerate(assets):
-            content.append({"type": "input_text", "text": f"Tile {index}"})
-            content.append(
-                {"type": "input_image", "image_url": image_data_url(asset), "detail": "high"}
-            )
-        schema = VLMSelection.model_json_schema()
-        # Calibrated confidence is not available. Enforce null at the provider boundary.
-        schema["properties"]["confidence"] = {"type": "null"}
+        if options is not None:
+            content = [
+                {
+                    "type": "input_text",
+                    "text": single_choice_prompt(instruction, options, recovery=recovery),
+                }
+            ]
+            for asset in assets:
+                content.append(
+                    {"type": "input_image", "image_url": image_data_url(asset), "detail": "high"}
+                )
+            schema = VLMSingleChoice.model_json_schema()
+            schema["properties"]["confidence"] = {"type": "null"}
+            schema_name = "single_choice"
+        else:
+            content = [
+                {
+                    "type": "input_text",
+                    "text": tile_prompt(instruction, len(assets), recovery=recovery),
+                }
+            ]
+            for index, asset in enumerate(assets):
+                content.append({"type": "input_text", "text": f"Tile {index}"})
+                content.append(
+                    {"type": "input_image", "image_url": image_data_url(asset), "detail": "high"}
+                )
+            schema = VLMSelection.model_json_schema()
+            schema["properties"]["confidence"] = {"type": "null"}
+            schema_name = "tile_selection"
+
         calls = 0
         for attempt in range(self.max_retries + 1):
             calls += 1
@@ -137,7 +192,7 @@ class OpenAIVisionProvider:
                     text={
                         "format": {
                             "type": "json_schema",
-                            "name": "tile_selection",
+                            "name": schema_name,
                             "strict": True,
                             "schema": schema,
                         }
@@ -181,8 +236,8 @@ def _sum_known(previous: int | None, current: int | None) -> int | None:
     return (previous or 0) + current
 
 
-class Level1VLMSolver:
-    name = "level-1-vlm-zero-shot"
+class ZeroShotVLMSolver:
+    name = "vlm-zero-shot"
 
     def __init__(self, provider: VisionProvider):
         self.provider = provider
@@ -190,13 +245,28 @@ class Level1VLMSolver:
 
     def solve(self, challenge: PublicChallenge, assets: list[bytes]) -> SolverPrediction:
         start = time.perf_counter()
-        validate_street_grid(challenge, assets)
+        validate_challenge_and_assets(challenge, assets)
         calls = 0
         input_tokens = output_tokens = None
         usage_complete = True
+        is_single_choice = challenge.type == "single-choice"
+        options = challenge.ui.options if is_single_choice else None
+
         for recovery in (False, True):
             try:
-                response = self.provider.infer(challenge.instruction, assets, recovery=recovery)
+                if is_single_choice:
+                    response = self.provider.infer(
+                        challenge.instruction, assets, recovery=recovery, options=options
+                    )
+                else:
+                    try:
+                        response = self.provider.infer(
+                            challenge.instruction, assets, recovery=recovery, options=None
+                        )
+                    except TypeError:
+                        response = self.provider.infer(
+                            challenge.instruction, assets, recovery=recovery
+                        )
             except ModelError as exc:
                 exc.api_request_count += calls
                 exc.input_tokens = _sum_known(input_tokens, exc.input_tokens)
@@ -213,8 +283,14 @@ class Level1VLMSolver:
             input_tokens = _sum_known(input_tokens, response.input_tokens)
             output_tokens = _sum_known(output_tokens, response.output_tokens)
             try:
-                selection = VLMSelection.model_validate_json(response.text)
-                indices = validate_indices(selection.selected_indices, len(assets))
+                if is_single_choice:
+                    choice = VLMSingleChoice.model_validate_json(response.text)
+                    answer = validate_option_index(choice.selected_option_index, len(options or []))
+                    confidence = choice.confidence
+                else:
+                    selection = VLMSelection.model_validate_json(response.text)
+                    answer = validate_indices(selection.selected_indices, len(assets))
+                    confidence = selection.confidence
             except (ValidationError, ModelResponseError):
                 if not recovery:
                     continue
@@ -226,8 +302,8 @@ class Level1VLMSolver:
                 raise failure from None
             return SolverPrediction(
                 challenge_id=challenge.id,
-                answer=indices,
-                confidence=selection.confidence,
+                answer=answer,
+                confidence=confidence,
                 solver_name=self.name,
                 model_name=self.model_name,
                 inference_time_ms=(time.perf_counter() - start) * 1000,
@@ -239,3 +315,7 @@ class Level1VLMSolver:
                 parsing_status="recovered" if recovery else "valid",
             )
         raise AssertionError("Unreachable solver recovery state")
+
+
+class Level1VLMSolver(ZeroShotVLMSolver):
+    name = "level-1-vlm-zero-shot"

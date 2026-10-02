@@ -35,6 +35,14 @@ class RunConfig(BaseModel):
     model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
     base_url: str
     variant: Literal["street-grid"] = "street-grid"
+    variant: Literal[
+        "street-grid",
+        "hard-street-grid",
+        "checker-shadow",
+        "routing-puzzle",
+        "degraded-vision",
+        "all",
+    ] = "street-grid"
     solver: Literal["vlm", "random"] = "vlm"
     provider: Literal["gemini", "openai"] = "gemini"
     model: str = Field(min_length=1)
@@ -45,6 +53,8 @@ class RunConfig(BaseModel):
     max_retries: int = Field(default=2, ge=0, le=10)
     selection_probability: float = Field(default=0.33, ge=0, le=1)
     dry_run: bool = False
+    request_interval_seconds: float = Field(default=0.0, ge=0)
+    resume: bool = False
     input_price_per_million: float | None = Field(default=None, ge=0)
     output_price_per_million: float | None = Field(default=None, ge=0)
 
@@ -60,7 +70,7 @@ class RunConfig(BaseModel):
                 values["model"] = DEFAULT_MODELS[provider]
         return values
 
-    @field_validator("timeout", "selection_probability")
+    @field_validator("timeout", "selection_probability", "request_interval_seconds")
     @classmethod
     def finite_number(cls, value: float) -> float:
         if not math.isfinite(value):

@@ -18,6 +18,7 @@ from .contracts import (
     parse_catalog,
     parse_challenge,
     validate_indices,
+    validate_option_index,
 )
 from .errors import AssetDownloadError, ChallengeContractError, NetworkError, SubmissionError
 from .security import assert_public_json
@@ -186,6 +187,9 @@ class BenchmarkClient:
         answer = prediction.answer
         if challenge.type == "image-selection":
             answer = validate_indices(answer, len(challenge.assets))
+        elif challenge.type == "single-choice":
+            options = challenge.ui.options or []
+            answer = validate_option_index(answer, len(options))
         path = f"/api/challenges/{self._id(challenge.id)}/submit"
         payload = {"answer": answer, "solveTimeMs": prediction.inference_time_ms}
         try:
