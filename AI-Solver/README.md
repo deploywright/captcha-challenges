@@ -30,17 +30,18 @@ From the repository root:
 
 ```bash
 cd AI-Solver
-python -m pip install -e '.[openai,test]'
+python -m pip install -e '.[gemini,test]'
 ```
 
 Copy `.env.example` to `.env`, set `CAPTCHA_BASE_URL` to the production origin,
-and set `OPENAI_API_KEY` locally. `.env` and run outputs are ignored by Git.
+and set `GEMINI_API_KEY` locally. `.env` and run outputs are ignored by Git.
 Secrets are never accepted in YAML or stored in run metadata.
 
 ```env
 CAPTCHA_BASE_URL=https://your-worker.workers.dev
-OPENAI_API_KEY=your-local-secret
-OPENAI_MODEL=gpt-4.1-mini-2025-04-14
+CAPTCHA_PROVIDER=gemini
+GEMINI_API_KEY=your-local-secret
+GEMINI_MODEL=gemini-3.5-flash-lite
 ```
 
 The base URL is configurable; no Cloudflare hostname is embedded in the package.
@@ -51,7 +52,14 @@ Use `--env-file PATH` for an explicit local environment file or `--config
 config.example.yaml` for YAML options. Relative output paths resolve from the
 working directory. Run commands from `AI-Solver` to use its ignored `results/`.
 
-Only the VLM provider needs the `openai` extra. For random/public-only checks:
+The default provider is Gemini. `GOOGLE_API_KEY` is also accepted when
+`GEMINI_API_KEY` is absent. `--provider openai` selects the retained OpenAI adapter
+and requires `pip install -e '.[openai]'` plus `OPENAI_API_KEY`. Each provider
+uses its own model environment variable (`GEMINI_MODEL` or `OPENAI_MODEL`);
+`--model` overrides it. `CAPTCHA_PROVIDER` selects the provider before CLI
+overrides. An old OpenAI model environment variable never sets the Gemini model.
+
+Only a VLM provider needs its optional SDK extra. For random/public-only checks:
 
 ```bash
 python -m pip install -e '.[test]'
@@ -92,7 +100,7 @@ python -m ai_solver.cli solve CHALLENGE_ID --solver vlm
 python -m ai_solver.cli solve CHALLENGE_ID --solver vlm --submit
 ```
 
-Other options: `--base-url`, `--limit`, `--model`, `--output-dir`, `--seed`,
+Other options: `--base-url`, `--limit`, `--provider`, `--model`, `--output-dir`, `--seed`,
 `--timeout` (seconds per HTTP attempt), `--max-retries`, and
 `--selection-probability`. `--dry-run` also overrides `solve --submit`.
 `ai-solver` is an installed console-script equivalent to `python -m ai_solver.cli`.
@@ -135,14 +143,14 @@ rejected), in the asset range, without duplicates. Valid selections are sorted.
 One fresh structured-output recovery request is permitted for invalid output;
 its prompt is fixed and receives no submission feedback. A second invalid output
 is a `ModelResponseError` / `solver_error` and produces no evaluated prediction.
-The OpenAI provider requires `confidence: null`, since it has no calibrated
-selection confidence. Other providers may supply meaningful confidence later.
+Both current providers require `confidence: null`, since neither supplies
+calibrated selection confidence. Future providers may supply meaningful confidence.
 
 Only transport failures and HTTP 429, 502, 503, and 504 are retried, with bounded
 exponential backoff. HTTP 400/401/403/404/500, invalid public contracts, and wrong
-answers are not retried. The OpenAI SDK's automatic retries are disabled in favor
+answers are not retried. Both SDKs' automatic retries are disabled in favor
 of this same explicit policy. Documented credit/quota/spend-limit error codes
-are also not retried, even when HTTP 429; these require provider-account changes.
+from OpenAI are also not retried, even when HTTP 429; these require account changes.
 Known non-secret provider error codes are recorded without provider error bodies.
 A transport retry resends the same submission
 payload; ambiguous network failures can produce repeated delivery of that same
@@ -196,6 +204,12 @@ seed to reconstruct generation and is never tuned using correctness feedback.
 
 ## Verification
 
+The production 1 -> 5 -> full acceptance sequence completed on 2026-10-02 with
+`gemini-3.5-flash-lite`. The full dynamically discovered set measured **14/20
+correct (70% exact challenge accuracy), zero execution errors**, and 6.110 s
+mean inference time. See [VERIFICATION.md](VERIFICATION.md) for stage artifacts,
+test evidence, retries, reported usage limitations, and deferred scope.
+
 Unit tests use mocked HTTP/provider responses. An autouse guard prevents actual
 network access in unit tests. No normal test requires a key or paid API call.
 
@@ -217,10 +231,19 @@ python -m pytest tests/test_integration.py -q -s
 
 ## Provider and future scope
 
-The OpenAI adapter uses the supported
+The default Gemini adapter uses Google GenAI `models.generate_content`,
+[inline multi-image input](https://ai.google.dev/gemini-api/docs/generate-content/image-understanding),
+and [JSON Schema structured output](https://ai.google.dev/gemini-api/docs/generate-content/structured-output).
+Its default model is the stable
+[Gemini 3.5 Flash-Lite](https://ai.google.dev/gemini-api/docs/models/gemini-3.5-flash-lite)
+`gemini-3.5-flash-lite`. All tiles travel in one request; tools, search, file uploads,
+and function calling are not enabled. Provider usage includes generated reasoning
+tokens when supplied in the reported total-minus-prompt token counts.
+
+The optional OpenAI adapter uses the supported
 [Responses API with structured outputs](https://developers.openai.com/api/docs/guides/structured-outputs)
 and [multiple image inputs](https://developers.openai.com/api/docs/guides/images-vision).
-The default model is the pinned
+Its default model is the pinned
 [GPT-4.1 mini snapshot](https://developers.openai.com/api/docs/models/gpt-4.1-mini)
 `gpt-4.1-mini-2025-04-14`. Account access, quotas, refusals, and provider latency
 remain external limitations. No live model result is implied by mocked tests.

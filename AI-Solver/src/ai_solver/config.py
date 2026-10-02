@@ -7,7 +7,9 @@ from typing import Literal
 from urllib.parse import urlsplit, urlunsplit
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
+
+DEFAULT_MODELS = {"gemini": "gemini-3.5-flash-lite", "openai": "gpt-4.1-mini-2025-04-14"}
 
 
 def normalize_base_url(value: str) -> str:
@@ -34,8 +36,8 @@ class RunConfig(BaseModel):
     base_url: str
     variant: Literal["street-grid"] = "street-grid"
     solver: Literal["vlm", "random"] = "vlm"
-    provider: Literal["openai"] = "openai"
-    model: str = Field(default="gpt-4.1-mini-2025-04-14", min_length=1)
+    provider: Literal["gemini", "openai"] = "gemini"
+    model: str = Field(min_length=1)
     output_dir: Path = Path("results")
     limit: int | None = Field(default=None, gt=0)
     seed: int = 42
@@ -47,6 +49,16 @@ class RunConfig(BaseModel):
     output_price_per_million: float | None = Field(default=None, ge=0)
 
     _base_url = field_validator("base_url")(normalize_base_url)
+
+    @model_validator(mode="before")
+    @classmethod
+    def provider_default_model(cls, values):
+        if isinstance(values, dict):
+            values = values.copy()
+            provider = values.get("provider", "gemini")
+            if "model" not in values and provider in DEFAULT_MODELS:
+                values["model"] = DEFAULT_MODELS[provider]
+        return values
 
     @field_validator("timeout", "selection_probability")
     @classmethod
@@ -68,8 +80,12 @@ def load_config(overrides: dict, config_path: Path | None = None) -> RunConfig:
         values.update(data)
     if os.getenv("CAPTCHA_BASE_URL"):
         values["base_url"] = os.environ["CAPTCHA_BASE_URL"]
-    if os.getenv("OPENAI_MODEL"):
-        values["model"] = os.environ["OPENAI_MODEL"]
+    if os.getenv("CAPTCHA_PROVIDER"):
+        values["provider"] = os.environ["CAPTCHA_PROVIDER"]
+    provider = overrides.get("provider") or values.get("provider", "gemini")
+    model_variable = "GEMINI_MODEL" if provider == "gemini" else "OPENAI_MODEL"
+    if os.getenv(model_variable):
+        values["model"] = os.environ[model_variable]
     values.update({key: value for key, value in overrides.items() if value is not None})
     try:
         return RunConfig.model_validate(values)

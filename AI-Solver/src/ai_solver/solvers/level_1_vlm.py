@@ -60,7 +60,7 @@ Return the zero-based indices of every tile that visibly contains the requested 
     return prompt
 
 
-def image_data_url(data: bytes) -> str:
+def image_mime_type(data: bytes) -> str:
     if data.startswith(b"\x89PNG\r\n\x1a\n"):
         mime = "image/png"
     elif data.startswith(b"\xff\xd8\xff"):
@@ -71,7 +71,11 @@ def image_data_url(data: bytes) -> str:
         mime = "image/webp"
     else:
         raise ModelError("Public tile is not a supported image format")
-    return f"data:{mime};base64,{base64.b64encode(data).decode('ascii')}"
+    return mime
+
+
+def image_data_url(data: bytes) -> str:
+    return f"data:{image_mime_type(data)};base64,{base64.b64encode(data).decode('ascii')}"
 
 
 class OpenAIVisionProvider:
