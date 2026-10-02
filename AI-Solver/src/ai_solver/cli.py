@@ -13,6 +13,7 @@ from .errors import SolverError
 from .runner import BenchmarkRunner
 from .solvers.gemini import GeminiVisionProvider
 from .solvers.level_1_vlm import Level1VLMSolver, OpenAIVisionProvider
+from .solvers.openrouter import OpenRouterVisionProvider
 from .solvers.random_baseline import RandomBaseline
 
 
@@ -41,7 +42,7 @@ def _parser() -> argparse.ArgumentParser:
             ],
         )
         cmd.add_argument("--solver", choices=["vlm", "random"])
-        cmd.add_argument("--provider", choices=["gemini", "openai"])
+        cmd.add_argument("--provider", choices=["gemini", "openai", "openrouter"])
         cmd.add_argument("--model")
         cmd.add_argument("--output-dir", type=Path)
         cmd.add_argument("--seed", type=int)
@@ -67,9 +68,12 @@ def main(argv: list[str] | None = None) -> int:
         if config.solver == "random":
             solver = RandomBaseline(seed=config.seed, probability=config.selection_probability)
         else:
-            provider_class = (
-                GeminiVisionProvider if config.provider == "gemini" else OpenAIVisionProvider
-            )
+            if config.provider == "gemini":
+                provider_class = GeminiVisionProvider
+            elif config.provider == "openrouter":
+                provider_class = OpenRouterVisionProvider
+            else:
+                provider_class = OpenAIVisionProvider
             provider = provider_class(
                 config.model,
                 timeout=config.timeout,

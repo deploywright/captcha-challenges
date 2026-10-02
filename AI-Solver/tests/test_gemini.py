@@ -23,9 +23,9 @@ def response(text='{"selected_indices":[0,8],"confidence":null}', *, finish="STO
     )
 
 
-def provider(generate, retries=2):
+def provider(generate, retries=2, model_name="gemini-test"):
     return GeminiVisionProvider(
-        "gemini-test",
+        model_name,
         max_retries=retries,
         sleep=lambda _: None,
         client=SimpleNamespace(models=SimpleNamespace(generate_content=generate)),
@@ -207,3 +207,17 @@ def test_gemini_config_thinking_minimal_and_no_candidates(challenge, assets):
     assert getattr(config, "candidate_count", None) is None
     assert config.automatic_function_calling.disable is True
     assert config.tools is None
+
+
+def test_gemini_38_flash_uses_supported_low_thinking(challenge, assets):
+    calls = []
+
+    def generate(**kwargs):
+        calls.append(kwargs)
+        return response()
+
+    solver = Level1VLMSolver(provider(generate, model_name="gemini-3.8-flash"))
+    solver.solve(challenge, assets)
+
+    config = calls[0]["config"]
+    assert config.thinking_config.thinking_level == types.ThinkingLevel.LOW

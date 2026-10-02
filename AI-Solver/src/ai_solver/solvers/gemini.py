@@ -80,11 +80,16 @@ class GeminiVisionProvider:
             schema = VLMSelection.model_json_schema()
             schema["properties"]["confidence"] = {"type": "null"}
 
+        thinking_level = (
+            types.ThinkingLevel.LOW
+            if self.model_name == "gemini-3.8-flash"
+            else types.ThinkingLevel.MINIMAL
+        )
         config = types.GenerateContentConfig(
             response_mime_type="application/json",
             response_json_schema=schema,
             max_output_tokens=8192,
-            thinking_config=types.ThinkingConfig(thinking_level=types.ThinkingLevel.MINIMAL),
+            thinking_config=types.ThinkingConfig(thinking_level=thinking_level),
             automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
         )
         calls = 0

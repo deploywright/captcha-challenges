@@ -9,7 +9,11 @@ from urllib.parse import urlsplit, urlunsplit
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 
-DEFAULT_MODELS = {"gemini": "gemini-3.5-flash-lite", "openai": "gpt-4.1-mini-2025-04-14"}
+DEFAULT_MODELS = {
+    "gemini": "gemini-3.5-flash-lite",
+    "openai": "gpt-4.1-mini-2025-04-14",
+    "openrouter": "qwen/qwen3.8-27b:free",
+}
 
 
 def normalize_base_url(value: str) -> str:
@@ -43,7 +47,7 @@ class RunConfig(BaseModel):
         "all",
     ] = "street-grid"
     solver: Literal["vlm", "random"] = "vlm"
-    provider: Literal["gemini", "openai"] = "gemini"
+    provider: Literal["gemini", "openai", "openrouter"] = "gemini"
     model: str = Field(min_length=1)
     output_dir: Path = Path("results")
     limit: int | None = Field(default=None, gt=0)
@@ -92,7 +96,12 @@ def load_config(overrides: dict, config_path: Path | None = None) -> RunConfig:
     if os.getenv("CAPTCHA_PROVIDER"):
         values["provider"] = os.environ["CAPTCHA_PROVIDER"]
     provider = overrides.get("provider") or values.get("provider", "gemini")
-    model_variable = "GEMINI_MODEL" if provider == "gemini" else "OPENAI_MODEL"
+    if provider == "gemini":
+        model_variable = "GEMINI_MODEL"
+    elif provider == "openrouter":
+        model_variable = "OPENROUTER_MODEL"
+    else:
+        model_variable = "OPENAI_MODEL"
     if os.getenv(model_variable):
         values["model"] = os.environ[model_variable]
     values.update({key: value for key, value in overrides.items() if value is not None})
