@@ -52,6 +52,10 @@ src/generated-public/
 # Explicitly preserve required static template asset for Level 2B:
 !challenges/assets/level-2b/checker-shadow.png
 
+# Explicitly preserve benchmark report comparison figures:
+!reports/creator-vs-gemini/*.png
+!reports/creator-vs-gemini/*.svg
+
 # ------------------------------------------------------------------------------
 # 3. Python Artifacts & Environments
 # ------------------------------------------------------------------------------

@@ -1,0 +1,540 @@
+{
+  "metadata": {
+    "title": "Level 3A Routing Puzzle: Multi-Model Benchmark & Human Creator Comparison",
+    "benchmark_stage": "Level 3A (routing-puzzle)",
+    "total_benchmark_pool": 60,
+    "matched_creator_quota": 18
+  },
+  "models": {
+    "creator": {
+      "name": "Human Creator",
+      "role": "Single participant audit baseline",
+      "matched_summary": {
+        "evaluated": 18,
+        "correct": 16,
+        "accuracy": 0.8888888888888888
+      },
+      "metrics": {
+        "total": 18,
+        "evaluated": 18,
+        "correct": 16,
+        "accuracy": 0.8888888888888888,
+        "median_time_s": 9.3505,
+        "mean_time_s": 22.405944444444444,
+        "by_subtype": {
+          "laser-maze": {
+            "correct": 5,
+            "total": 5,
+            "accuracy": 1.0
+          },
+          "pipe-flow": {
+            "correct": 4,
+            "total": 5,
+            "accuracy": 0.8
+          },
+          "conveyor-routing": {
+            "correct": 3,
+            "total": 4,
+            "accuracy": 0.75
+          },
+          "device-cables": {
+            "correct": 4,
+            "total": 4,
+            "accuracy": 1.0
+          }
+        },
+        "by_difficulty": {
+          "easy": {
+            "correct": 2,
+            "total": 3,
+            "accuracy": 0.6666666666666666
+          },
+          "medium": {
+            "correct": 4,
+            "total": 4,
+            "accuracy": 1.0
+          },
+          "hard": {
+            "correct": 3,
+            "total": 3,
+            "accuracy": 1.0
+          },
+          "story": {
+            "correct": 4,
+            "total": 4,
+            "accuracy": 1.0
+          },
+          "extreme": {
+            "correct": 3,
+            "total": 4,
+            "accuracy": 0.75
+          }
+        }
+      }
+    },
+    "qwen_3_8_27b": {
+      "name": "Qwen 3.8 27B",
+      "role": "OpenRouter Deep CoT (~10k thinking tokens)",
+      "matched_summary": {
+        "evaluated": 12,
+        "correct": 8,
+        "accuracy": 0.6666666666666666
+      },
+      "metrics": {
+        "total": 54,
+        "evaluated": 46,
+        "correct": 34,
+        "accuracy": 0.7391304347826086,
+        "median_time_s": 41.24824424999998,
+        "mean_time_s": 57.82396969999998,
+        "by_subtype": {
+          "laser-maze": {
+            "correct": 12,
+            "total": 15,
+            "accuracy": 0.8
+          },
+          "pipe-flow": {
+            "correct": 7,
+            "total": 7,
+            "accuracy": 1.0
+          },
+          "conveyor-routing": {
+            "correct": 11,
+            "total": 15,
+            "accuracy": 0.7333333333333333
+          },
+          "device-cables": {
+            "correct": 4,
+            "total": 9,
+            "accuracy": 0.4444444444444444
+          }
+        },
+        "by_difficulty": {
+          "easy": {
+            "correct": 5,
+            "total": 5,
+            "accuracy": 1.0
+          },
+          "medium": {
+            "correct": 8,
+            "total": 9,
+            "accuracy": 0.8888888888888888
+          },
+          "hard": {
+            "correct": 5,
+            "total": 9,
+            "accuracy": 0.5555555555555556
+          },
+          "story": {
+            "correct": 14,
+            "total": 17,
+            "accuracy": 0.8235294117647058
+          },
+          "extreme": {
+            "correct": 2,
+            "total": 6,
+            "accuracy": 0.3333333333333333
+          }
+        }
+      }
+    },
+    "gemini_3_5_flash_lite": {
+      "name": "Gemini 3.5 Flash-Lite",
+      "role": "Canonical Zero-Shot Baseline (minimal thinking)",
+      "matched_summary": {
+        "evaluated": 18,
+        "correct": 6,
+        "accuracy": 0.3333333333333333
+      },
+      "metrics": {
+        "total": 60,
+        "evaluated": 60,
+        "correct": 26,
+        "accuracy": 0.43333333333333335,
+        "median_time_s": 1.6445070500003567,
+        "mean_time_s": 3.9995634033332257,
+        "by_subtype": {
+          "laser-maze": {
+            "correct": 4,
+            "total": 15,
+            "accuracy": 0.26666666666666666
+          },
+          "pipe-flow": {
+            "correct": 9,
+            "total": 15,
+            "accuracy": 0.6
+          },
+          "conveyor-routing": {
+            "correct": 9,
+            "total": 15,
+            "accuracy": 0.6
+          },
+          "device-cables": {
+            "correct": 4,
+            "total": 15,
+            "accuracy": 0.26666666666666666
+          }
+        },
+        "by_difficulty": {
+          "easy": {
+            "correct": 6,
+            "total": 8,
+            "accuracy": 0.75
+          },
+          "medium": {
+            "correct": 3,
+            "total": 12,
+            "accuracy": 0.25
+          },
+          "hard": {
+            "correct": 6,
+            "total": 12,
+            "accuracy": 0.5
+          },
+          "story": {
+            "correct": 7,
+            "total": 20,
+            "accuracy": 0.35
+          },
+          "extreme": {
+            "correct": 4,
+            "total": 8,
+            "accuracy": 0.5
+          }
+        }
+      }
+    },
+    "gemini_3_1_enhanced": {
+      "name": "Gemini 3.1 Flash-Lite (Enhanced)",
+      "role": "Guided Micro-CoT + Thinking Level LOW (~200 tokens)",
+      "matched_summary": {
+        "evaluated": 18,
+        "correct": 6,
+        "accuracy": 0.3333333333333333
+      },
+      "metrics": {
+        "total": 60,
+        "evaluated": 60,
+        "correct": 20,
+        "accuracy": 0.3333333333333333,
+        "median_time_s": 8.81584070000099,
+        "mean_time_s": 10.08445546666626,
+        "by_subtype": {
+          "laser-maze": {
+            "correct": 6,
+            "total": 15,
+            "accuracy": 0.4
+          },
+          "pipe-flow": {
+            "correct": 11,
+            "total": 15,
+            "accuracy": 0.7333333333333333
+          },
+          "conveyor-routing": {
+            "correct": 2,
+            "total": 15,
+            "accuracy": 0.13333333333333333
+          },
+          "device-cables": {
+            "correct": 1,
+            "total": 15,
+            "accuracy": 0.06666666666666667
+          }
+        },
+        "by_difficulty": {
+          "easy": {
+            "correct": 5,
+            "total": 8,
+            "accuracy": 0.625
+          },
+          "medium": {
+            "correct": 4,
+            "total": 12,
+            "accuracy": 0.3333333333333333
+          },
+          "hard": {
+            "correct": 4,
+            "total": 12,
+            "accuracy": 0.3333333333333333
+          },
+          "story": {
+            "correct": 4,
+            "total": 20,
+            "accuracy": 0.2
+          },
+          "extreme": {
+            "correct": 3,
+            "total": 8,
+            "accuracy": 0.375
+          }
+        }
+      }
+    },
+    "gemini_3_1_base": {
+      "name": "Gemini 3.1 Flash-Lite (Base)",
+      "role": "Baseline Zero-Shot (no CoT, minimal thinking)",
+      "matched_summary": {
+        "evaluated": 18,
+        "correct": 3,
+        "accuracy": 0.16666666666666666
+      },
+      "metrics": {
+        "total": 60,
+        "evaluated": 60,
+        "correct": 17,
+        "accuracy": 0.2833333333333333,
+        "median_time_s": 6.140147150000075,
+        "mean_time_s": 6.289024208333342,
+        "by_subtype": {
+          "laser-maze": {
+            "correct": 2,
+            "total": 15,
+            "accuracy": 0.13333333333333333
+          },
+          "pipe-flow": {
+            "correct": 11,
+            "total": 15,
+            "accuracy": 0.7333333333333333
+          },
+          "conveyor-routing": {
+            "correct": 2,
+            "total": 15,
+            "accuracy": 0.13333333333333333
+          },
+          "device-cables": {
+            "correct": 2,
+            "total": 15,
+            "accuracy": 0.13333333333333333
+          }
+        },
+        "by_difficulty": {
+          "easy": {
+            "correct": 3,
+            "total": 8,
+            "accuracy": 0.375
+          },
+          "medium": {
+            "correct": 6,
+            "total": 12,
+            "accuracy": 0.5
+          },
+          "hard": {
+            "correct": 4,
+            "total": 12,
+            "accuracy": 0.3333333333333333
+          },
+          "story": {
+            "correct": 4,
+            "total": 20,
+            "accuracy": 0.2
+          },
+          "extreme": {
+            "correct": 0,
+            "total": 8,
+            "accuracy": 0.0
+          }
+        }
+      }
+    }
+  },
+  "matched_challenges": [
+    {
+      "challenge_id": "lvl3a_conveyor_lyqxa9",
+      "subtype": "conveyor-routing",
+      "difficulty": "easy",
+      "creator_correct": false,
+      "creator_time_s": 120.0,
+      "gemini_3_5_correct": true,
+      "gemini_3_1_base_correct": false,
+      "gemini_3_1_enh_correct": true,
+      "qwen_27b_correct": true
+    },
+    {
+      "challenge_id": "lvl3a_cables_9k688m",
+      "subtype": "device-cables",
+      "difficulty": "hard",
+      "creator_correct": true,
+      "creator_time_s": 7.3,
+      "gemini_3_5_correct": false,
+      "gemini_3_1_base_correct": false,
+      "gemini_3_1_enh_correct": false,
+      "qwen_27b_correct": null
+    },
+    {
+      "challenge_id": "lvl3a_laser_9xyskd",
+      "subtype": "laser-maze",
+      "difficulty": "hard",
+      "creator_correct": true,
+      "creator_time_s": 15.41,
+      "gemini_3_5_correct": false,
+      "gemini_3_1_base_correct": false,
+      "gemini_3_1_enh_correct": false,
+      "qwen_27b_correct": false
+    },
+    {
+      "challenge_id": "lvl3a_conveyor_v7s2yz",
+      "subtype": "conveyor-routing",
+      "difficulty": "medium",
+      "creator_correct": true,
+      "creator_time_s": 6.8,
+      "gemini_3_5_correct": true,
+      "gemini_3_1_base_correct": false,
+      "gemini_3_1_enh_correct": false,
+      "qwen_27b_correct": true
+    },
+    {
+      "challenge_id": "lvl3a_pipe_801x42",
+      "subtype": "pipe-flow",
+      "difficulty": "hard",
+      "creator_correct": true,
+      "creator_time_s": 86.19,
+      "gemini_3_5_correct": true,
+      "gemini_3_1_base_correct": true,
+      "gemini_3_1_enh_correct": true,
+      "qwen_27b_correct": true
+    },
+    {
+      "challenge_id": "lvl3a_pipe_35jwu5",
+      "subtype": "pipe-flow",
+      "difficulty": "story",
+      "creator_correct": true,
+      "creator_time_s": 19.89,
+      "gemini_3_5_correct": false,
+      "gemini_3_1_base_correct": false,
+      "gemini_3_1_enh_correct": true,
+      "qwen_27b_correct": true
+    },
+    {
+      "challenge_id": "lvl3a_cables_1sbi07",
+      "subtype": "device-cables",
+      "difficulty": "medium",
+      "creator_correct": true,
+      "creator_time_s": 6.96,
+      "gemini_3_5_correct": false,
+      "gemini_3_1_base_correct": false,
+      "gemini_3_1_enh_correct": false,
+      "qwen_27b_correct": null
+    },
+    {
+      "challenge_id": "lvl3a_conveyor_ychwk1",
+      "subtype": "conveyor-routing",
+      "difficulty": "extreme",
+      "creator_correct": true,
+      "creator_time_s": 14.97,
+      "gemini_3_5_correct": true,
+      "gemini_3_1_base_correct": false,
+      "gemini_3_1_enh_correct": false,
+      "qwen_27b_correct": false
+    },
+    {
+      "challenge_id": "lvl3a_laser_5lmdur",
+      "subtype": "laser-maze",
+      "difficulty": "medium",
+      "creator_correct": true,
+      "creator_time_s": 10.57,
+      "gemini_3_5_correct": false,
+      "gemini_3_1_base_correct": true,
+      "gemini_3_1_enh_correct": false,
+      "qwen_27b_correct": true
+    },
+    {
+      "challenge_id": "lvl3a_laser_5m0pzq",
+      "subtype": "laser-maze",
+      "difficulty": "extreme",
+      "creator_correct": true,
+      "creator_time_s": 15.04,
+      "gemini_3_5_correct": false,
+      "gemini_3_1_base_correct": false,
+      "gemini_3_1_enh_correct": false,
+      "qwen_27b_correct": true
+    },
+    {
+      "challenge_id": "lvl3a_pipe_oj4oct",
+      "subtype": "pipe-flow",
+      "difficulty": "extreme",
+      "creator_correct": false,
+      "creator_time_s": 47.39,
+      "gemini_3_5_correct": false,
+      "gemini_3_1_base_correct": false,
+      "gemini_3_1_enh_correct": true,
+      "qwen_27b_correct": null
+    },
+    {
+      "challenge_id": "lvl3a_conveyor_p0gcxa",
+      "subtype": "conveyor-routing",
+      "difficulty": "story",
+      "creator_correct": true,
+      "creator_time_s": 8.13,
+      "gemini_3_5_correct": false,
+      "gemini_3_1_base_correct": false,
+      "gemini_3_1_enh_correct": false,
+      "qwen_27b_correct": true
+    },
+    {
+      "challenge_id": "lvl3a_pipe_zqe8jr",
+      "subtype": "pipe-flow",
+      "difficulty": "medium",
+      "creator_correct": true,
+      "creator_time_s": 7.87,
+      "gemini_3_5_correct": true,
+      "gemini_3_1_base_correct": true,
+      "gemini_3_1_enh_correct": true,
+      "qwen_27b_correct": null
+    },
+    {
+      "challenge_id": "lvl3a_cables_cu8tha",
+      "subtype": "device-cables",
+      "difficulty": "story",
+      "creator_correct": true,
+      "creator_time_s": 7.15,
+      "gemini_3_5_correct": false,
+      "gemini_3_1_base_correct": false,
+      "gemini_3_1_enh_correct": false,
+      "qwen_27b_correct": null
+    },
+    {
+      "challenge_id": "lvl3a_laser_ykg18w",
+      "subtype": "laser-maze",
+      "difficulty": "story",
+      "creator_correct": true,
+      "creator_time_s": 10.61,
+      "gemini_3_5_correct": false,
+      "gemini_3_1_base_correct": false,
+      "gemini_3_1_enh_correct": false,
+      "qwen_27b_correct": false
+    },
+    {
+      "challenge_id": "lvl3a_pipe_mwfaeh",
+      "subtype": "pipe-flow",
+      "difficulty": "easy",
+      "creator_correct": true,
+      "creator_time_s": 5.37,
+      "gemini_3_5_correct": false,
+      "gemini_3_1_base_correct": false,
+      "gemini_3_1_enh_correct": true,
+      "qwen_27b_correct": null
+    },
+    {
+      "challenge_id": "lvl3a_cables_r4ut85",
+      "subtype": "device-cables",
+      "difficulty": "extreme",
+      "creator_correct": true,
+      "creator_time_s": 8.08,
+      "gemini_3_5_correct": false,
+      "gemini_3_1_base_correct": false,
+      "gemini_3_1_enh_correct": false,
+      "qwen_27b_correct": false
+    },
+    {
+      "challenge_id": "lvl3a_laser_345s9l",
+      "subtype": "laser-maze",
+      "difficulty": "easy",
+      "creator_correct": true,
+      "creator_time_s": 5.58,
+      "gemini_3_5_correct": true,
+      "gemini_3_1_base_correct": false,
+      "gemini_3_1_enh_correct": false,
+      "qwen_27b_correct": true
+    }
+  ]
+}
