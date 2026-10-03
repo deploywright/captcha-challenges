@@ -74,15 +74,24 @@ Task:
 Options:
 {options_text}
 
-Inspect the challenge image carefully.
-Visual routing guidelines:
-- If tracing a path (cables, laser, conveyor, pipes): trace the path step-by-step.
-- Cables: find the true wire color at the socket (ignore card badge styling).
-  Follow that continuous wire through crossings without jumping tracks.
-- Laser: reflect beam off 45-degree mirrors to the perimeter target.
-- Conveyors/pipes: follow active switch indicators (amber arm + green dot) or open valves.
-- In 'trace', briefly state the key route steps taken.
-- Select the single correct option index (from 0 to {len(options) - 1}) that answers the task.
+Inspect the challenge image carefully. Apply visual domain rules:
+- CABLES: Locate [TARGET]. Socket circle / card border is UI styling (indigo/lavender).
+  Identify the true wire color (Red, Blue, Green, Orange, Purple, Cyan, Pink) emerging
+  from that socket. Trace it through crossing bridges without jumping lines. Verify that the
+  matching device/outlet on the opposite side has the same wire color attached.
+- LASER: Start at 'LASER IN'. Follow straight beam lines until striking a 45-degree mirror:
+  * For '/' mirror: DOWN->LEFT, UP->RIGHT, RIGHT->UP, LEFT->DOWN.
+  * For '\\' mirror: DOWN->RIGHT, UP->LEFT, RIGHT->DOWN, LEFT->UP.
+  Trace reflections to the destination sensor target.
+- CONVEYOR: Start at 'PACKAGE'. At each circular hub, the package CAN ONLY exit along the
+  active branch marked by the amber diverter arm and green indicator dot. Follow active
+  branches to the destination Bin.
+- PIPES: Trace flow from inlet downwards. GREEN valves are OPEN, RED valves are CLOSED.
+  Follow only open paths to find the filled tank.
+
+Format:
+- In 'trace', briefly state the key route steps, colors, or reflections observed.
+- In 'selected_option_index', select the single integer index (0 to {len(options) - 1}).
 - Return JSON with trace, selected_option_index, and confidence: null.
 """
     if recovery:
