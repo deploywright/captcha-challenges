@@ -88,6 +88,10 @@ class VLMSelection(BaseModel):
 
 class VLMSingleChoice(BaseModel):
     model_config = ConfigDict(extra="forbid", strict=True)
+    trace: str = Field(
+        default="",
+        description="Step-by-step visual trace of the path from start to destination.",
+    )
     selected_option_index: StrictInt
     confidence: Annotated[float, Field(ge=0, le=1, allow_inf_nan=False)] | None
 

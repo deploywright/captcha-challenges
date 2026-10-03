@@ -170,6 +170,10 @@ class OpenAIVisionProvider:
                 )
             schema = VLMSingleChoice.model_json_schema()
             schema["properties"]["confidence"] = {"type": "null"}
+            if "trace" in schema.get("properties", {}) and "trace" not in schema.get(
+                "required", []
+            ):
+                schema.setdefault("required", []).insert(0, "trace")
             schema_name = "single_choice"
         else:
             content = [

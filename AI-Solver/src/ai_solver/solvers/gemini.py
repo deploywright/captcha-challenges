@@ -70,6 +70,10 @@ class GeminiVisionProvider:
                 parts.append(types.Part.from_bytes(data=asset, mime_type=image_mime_type(asset)))
             schema = VLMSingleChoice.model_json_schema()
             schema["properties"]["confidence"] = {"type": "null"}
+            if "trace" in schema.get("properties", {}) and "trace" not in schema.get(
+                "required", []
+            ):
+                schema.setdefault("required", []).insert(0, "trace")
         else:
             parts = [
                 types.Part.from_text(text=tile_prompt(instruction, len(assets), recovery=recovery))
