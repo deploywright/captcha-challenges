@@ -75,10 +75,15 @@ Options:
 {options_text}
 
 Inspect the challenge image carefully.
-Select the single correct option index (from 0 to {len(options) - 1}) that answers the task.
-- Return JSON only with selected_option_index and confidence.
-- selected_option_index must be an integer index matching one of the options listed above.
-- Use confidence: null; no calibrated selection confidence is provided by this API.
+Visual routing guidelines:
+- If tracing a path (cables, laser, conveyor, pipes): trace the path step-by-step.
+- Cables: find the true wire color at the socket (ignore card badge styling).
+  Follow that continuous wire through crossings without jumping tracks.
+- Laser: reflect beam off 45-degree mirrors to the perimeter target.
+- Conveyors/pipes: follow active switch indicators (amber arm + green dot) or open valves.
+- In 'trace', briefly state the key route steps taken.
+- Select the single correct option index (from 0 to {len(options) - 1}) that answers the task.
+- Return JSON with trace, selected_option_index, and confidence: null.
 """
     if recovery:
         prompt += (
