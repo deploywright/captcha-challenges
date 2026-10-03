@@ -1,0 +1,360 @@
+{
+  "provider": "Google GenAI",
+  "model": "gemini-3.1-flash-lite",
+  "stage": "Level 3A",
+  "variant": "routing-puzzle",
+  "run_id": "20261003T134401595186Z_routing_puzzle_vlm_13406160",
+  "started_at": "2026-10-03T13:44:01.595186+00:00",
+  "finished_at": "2026-10-03T13:52:22.037933+00:00",
+  "summary": {
+    "challenge_count": 60,
+    "evaluated_count": 60,
+    "correct_count": 17,
+    "incorrect_count": 43,
+    "error_count": 0,
+    "solver_error_count": 0,
+    "dry_run_count": 0,
+    "exact_challenge_accuracy": 0.2833333333333333,
+    "evaluation_coverage": 1.0,
+    "inference_sample_count": 60,
+    "mean_inference_time_ms": 6289.024208333341,
+    "median_inference_time_ms": 6140.147150000075,
+    "p95_inference_time_ms": 10752.194099999997,
+    "mean_inference_attempt_time_ms": 6289.024208333341,
+    "mean_total_time_ms": 7345.163739999991,
+    "median_total_time_ms": 7294.395500000064,
+    "input_tokens": 72652,
+    "output_tokens": 1200,
+    "usage_complete": false,
+    "estimated_api_request_count": 69,
+    "estimated_cost_usd": null,
+    "p95_method": "nearest-rank",
+    "by_stage": {
+      "Level 3A": {
+        "challenge_count": 60,
+        "evaluated_count": 60,
+        "correct_count": 17,
+        "incorrect_count": 43,
+        "exact_challenge_accuracy": 0.2833333333333333,
+        "mean_inference_time_ms": 6289.024208333341,
+        "median_inference_time_ms": 6140.147150000075
+      }
+    },
+    "macro_stage_accuracy": 0.2833333333333333,
+    "by_numeric_level": {
+      "3": {
+        "challenge_count": 60,
+        "evaluated_count": 60,
+        "correct_count": 17,
+        "incorrect_count": 43,
+        "exact_challenge_accuracy": 0.2833333333333333,
+        "mean_inference_time_ms": 6289.024208333341,
+        "median_inference_time_ms": 6140.147150000075
+      }
+    },
+    "by_level": {
+      "3": {
+        "challenge_count": 60,
+        "evaluated_count": 60,
+        "correct_count": 17,
+        "incorrect_count": 43,
+        "exact_challenge_accuracy": 0.2833333333333333,
+        "mean_inference_time_ms": 6289.024208333341,
+        "median_inference_time_ms": 6140.147150000075
+      }
+    },
+    "by_variant": {
+      "routing-puzzle": {
+        "challenge_count": 60,
+        "evaluated_count": 60,
+        "correct_count": 17,
+        "incorrect_count": 43,
+        "exact_challenge_accuracy": 0.2833333333333333,
+        "mean_inference_time_ms": 6289.024208333341,
+        "median_inference_time_ms": 6140.147150000075
+      }
+    },
+    "by_subtype": {
+      "conveyor-routing": {
+        "challenge_count": 15,
+        "evaluated_count": 15,
+        "correct_count": 2,
+        "incorrect_count": 13,
+        "exact_challenge_accuracy": 0.13333333333333333,
+        "mean_inference_time_ms": 5499.597679999943,
+        "median_inference_time_ms": 5530.341200000066
+      },
+      "device-cables": {
+        "challenge_count": 15,
+        "evaluated_count": 15,
+        "correct_count": 2,
+        "incorrect_count": 13,
+        "exact_challenge_accuracy": 0.13333333333333333,
+        "mean_inference_time_ms": 6967.339506666697,
+        "median_inference_time_ms": 6907.735900000034
+      },
+      "laser-maze": {
+        "challenge_count": 15,
+        "evaluated_count": 15,
+        "correct_count": 2,
+        "incorrect_count": 13,
+        "exact_challenge_accuracy": 0.13333333333333333,
+        "mean_inference_time_ms": 6535.8878,
+        "median_inference_time_ms": 6655.44490000002
+      },
+      "pipe-flow": {
+        "challenge_count": 15,
+        "evaluated_count": 15,
+        "correct_count": 11,
+        "incorrect_count": 4,
+        "exact_challenge_accuracy": 0.7333333333333333,
+        "mean_inference_time_ms": 6153.2718466667275,
+        "median_inference_time_ms": 5842.8900999997495
+      }
+    },
+    "by_difficulty": {
+      "easy": {
+        "challenge_count": 8,
+        "evaluated_count": 8,
+        "correct_count": 3,
+        "incorrect_count": 5,
+        "exact_challenge_accuracy": 0.375,
+        "mean_inference_time_ms": 5416.317774999981,
+        "median_inference_time_ms": 6073.688299999844
+      },
+      "extreme": {
+        "challenge_count": 8,
+        "evaluated_count": 8,
+        "correct_count": 0,
+        "incorrect_count": 8,
+        "exact_challenge_accuracy": 0.0,
+        "mean_inference_time_ms": 4651.932112500021,
+        "median_inference_time_ms": 4613.268199999993
+      },
+      "hard": {
+        "challenge_count": 12,
+        "evaluated_count": 12,
+        "correct_count": 4,
+        "incorrect_count": 8,
+        "exact_challenge_accuracy": 0.3333333333333333,
+        "mean_inference_time_ms": 6333.872600000063,
+        "median_inference_time_ms": 6518.494700000133
+      },
+      "medium": {
+        "challenge_count": 12,
+        "evaluated_count": 12,
+        "correct_count": 6,
+        "incorrect_count": 6,
+        "exact_challenge_accuracy": 0.5,
+        "mean_inference_time_ms": 5478.757916666628,
+        "median_inference_time_ms": 6044.422499999882
+      },
+      "story": {
+        "challenge_count": 20,
+        "evaluated_count": 20,
+        "correct_count": 4,
+        "incorrect_count": 16,
+        "exact_challenge_accuracy": 0.2,
+        "mean_inference_time_ms": 7752.19436000001,
+        "median_inference_time_ms": 7672.059200000035
+      }
+    },
+    "by_resolution": {},
+    "by_series": {},
+    "subtype_by_difficulty": {
+      "conveyor-routing": {
+        "easy": {
+          "challenge_count": 2,
+          "evaluated_count": 2,
+          "correct_count": 1,
+          "incorrect_count": 1,
+          "exact_challenge_accuracy": 0.5,
+          "mean_inference_time_ms": 4261.778799999888,
+          "median_inference_time_ms": 4261.778799999888
+        },
+        "extreme": {
+          "challenge_count": 2,
+          "evaluated_count": 2,
+          "correct_count": 0,
+          "incorrect_count": 2,
+          "exact_challenge_accuracy": 0.0,
+          "mean_inference_time_ms": 2449.771549999923,
+          "median_inference_time_ms": 2449.771549999923
+        },
+        "hard": {
+          "challenge_count": 3,
+          "evaluated_count": 3,
+          "correct_count": 0,
+          "incorrect_count": 3,
+          "exact_challenge_accuracy": 0.0,
+          "mean_inference_time_ms": 5052.707600000001,
+          "median_inference_time_ms": 5530.341200000066
+        },
+        "medium": {
+          "challenge_count": 3,
+          "evaluated_count": 3,
+          "correct_count": 1,
+          "incorrect_count": 2,
+          "exact_challenge_accuracy": 0.3333333333333333,
+          "mean_inference_time_ms": 6212.327299999894,
+          "median_inference_time_ms": 6245.954900000015
+        },
+        "story": {
+          "challenge_count": 5,
+          "evaluated_count": 5,
+          "correct_count": 0,
+          "incorrect_count": 5,
+          "exact_challenge_accuracy": 0.0,
+          "mean_inference_time_ms": 7055.1519599999665,
+          "median_inference_time_ms": 7505.0330999999915
+        }
+      },
+      "device-cables": {
+        "easy": {
+          "challenge_count": 2,
+          "evaluated_count": 2,
+          "correct_count": 1,
+          "incorrect_count": 1,
+          "exact_challenge_accuracy": 0.5,
+          "mean_inference_time_ms": 8466.070300000069,
+          "median_inference_time_ms": 8466.070300000069
+        },
+        "extreme": {
+          "challenge_count": 2,
+          "evaluated_count": 2,
+          "correct_count": 0,
+          "incorrect_count": 2,
+          "exact_challenge_accuracy": 0.0,
+          "mean_inference_time_ms": 5809.241600000064,
+          "median_inference_time_ms": 5809.241600000064
+        },
+        "hard": {
+          "challenge_count": 3,
+          "evaluated_count": 3,
+          "correct_count": 1,
+          "incorrect_count": 2,
+          "exact_challenge_accuracy": 0.3333333333333333,
+          "mean_inference_time_ms": 7664.031433333396,
+          "median_inference_time_ms": 8091.275500000165
+        },
+        "medium": {
+          "challenge_count": 3,
+          "evaluated_count": 3,
+          "correct_count": 0,
+          "incorrect_count": 3,
+          "exact_challenge_accuracy": 0.0,
+          "mean_inference_time_ms": 3866.229199999983,
+          "median_inference_time_ms": 2484.0761000000384
+        },
+        "story": {
+          "challenge_count": 5,
+          "evaluated_count": 5,
+          "correct_count": 0,
+          "incorrect_count": 5,
+          "exact_challenge_accuracy": 0.0,
+          "mean_inference_time_ms": 8273.737380000011,
+          "median_inference_time_ms": 6609.906500000079
+        }
+      },
+      "laser-maze": {
+        "easy": {
+          "challenge_count": 2,
+          "evaluated_count": 2,
+          "correct_count": 0,
+          "incorrect_count": 2,
+          "exact_challenge_accuracy": 0.0,
+          "mean_inference_time_ms": 5047.988199999963,
+          "median_inference_time_ms": 5047.988199999963
+        },
+        "extreme": {
+          "challenge_count": 2,
+          "evaluated_count": 2,
+          "correct_count": 0,
+          "incorrect_count": 2,
+          "exact_challenge_accuracy": 0.0,
+          "mean_inference_time_ms": 5172.058849999985,
+          "median_inference_time_ms": 5172.058849999985
+        },
+        "hard": {
+          "challenge_count": 3,
+          "evaluated_count": 3,
+          "correct_count": 0,
+          "incorrect_count": 3,
+          "exact_challenge_accuracy": 0.0,
+          "mean_inference_time_ms": 7369.891333333423,
+          "median_inference_time_ms": 8235.864500000389
+        },
+        "medium": {
+          "challenge_count": 3,
+          "evaluated_count": 3,
+          "correct_count": 2,
+          "incorrect_count": 1,
+          "exact_challenge_accuracy": 0.6666666666666666,
+          "mean_inference_time_ms": 3949.735766666587,
+          "median_inference_time_ms": 3614.064100000178
+        },
+        "story": {
+          "challenge_count": 5,
+          "evaluated_count": 5,
+          "correct_count": 0,
+          "incorrect_count": 5,
+          "exact_challenge_accuracy": 0.0,
+          "mean_inference_time_ms": 8727.868320000016,
+          "median_inference_time_ms": 8432.003899999927
+        }
+      },
+      "pipe-flow": {
+        "easy": {
+          "challenge_count": 2,
+          "evaluated_count": 2,
+          "correct_count": 1,
+          "incorrect_count": 1,
+          "exact_challenge_accuracy": 0.5,
+          "mean_inference_time_ms": 3889.433800000006,
+          "median_inference_time_ms": 3889.433800000006
+        },
+        "extreme": {
+          "challenge_count": 2,
+          "evaluated_count": 2,
+          "correct_count": 0,
+          "incorrect_count": 2,
+          "exact_challenge_accuracy": 0.0,
+          "mean_inference_time_ms": 5176.6564500001095,
+          "median_inference_time_ms": 5176.6564500001095
+        },
+        "hard": {
+          "challenge_count": 3,
+          "evaluated_count": 3,
+          "correct_count": 3,
+          "incorrect_count": 0,
+          "exact_challenge_accuracy": 1.0,
+          "mean_inference_time_ms": 5248.860033333433,
+          "median_inference_time_ms": 6072.406200000387
+        },
+        "medium": {
+          "challenge_count": 3,
+          "evaluated_count": 3,
+          "correct_count": 3,
+          "incorrect_count": 0,
+          "exact_challenge_accuracy": 1.0,
+          "mean_inference_time_ms": 7886.739400000049,
+          "median_inference_time_ms": 7166.901200000211
+        },
+        "story": {
+          "challenge_count": 5,
+          "evaluated_count": 5,
+          "correct_count": 4,
+          "incorrect_count": 1,
+          "exact_challenge_accuracy": 0.8,
+          "mean_inference_time_ms": 6952.019780000046,
+          "median_inference_time_ms": 4836.019899999883
+        }
+      }
+    },
+    "macro_level_accuracy": 0.2833333333333333,
+    "macro_variant_accuracy": 0.2833333333333333,
+    "run_id": "20261003T134401595186Z_routing_puzzle_vlm_13406160",
+    "status": "completed",
+    "requested_challenge_count": 60
+  }
+}
