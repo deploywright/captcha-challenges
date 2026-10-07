@@ -42,15 +42,15 @@ Only **one** challenge level (`Level 3A — Tangled Cables`) uses full procedura
 | :--- | :--- | :--- | :--- |
 | **Level 1** | `level_1_street_grid` | `street-grid` | **Real BDD100K (`val` split only)**: Selects easy, clearly visible daytime examples (`3×3` grid, default target `motorcycle`) using BDD100K bounding box area, aspect ratio, occlusion, truncation, and weather/timeofday annotations. Rejects microscopic (`< 28 px`) and orphan-rider ambiguous samples. |
 | **Level 2A** | `level_2a_hard_street_grid` | `hard-street-grid` | **Real BDD100K (`val` split only)**: Selects harder real-world street scenes (`4×4` or `5×5` grid) featuring smaller targets, partial occlusion, truncation, night/dawn/dusk, rain/fog, dense traffic, and confusable distractors (`bicycle`, `rider`) while filtering out microscopic/unrecognizable specks. |
-| **Level 2B** | `level_2b_checker_shadow` | `checker-shadow` | **Static External Asset**: Packages the existing Edward H. Adelson (1995) Checker Shadow Illusion image (`assets/level-2b/checker-shadow.png`) and documented provenance (`assets/level-2b/metadata.json`). No procedural synthesis. |
-| **Level 3A** | `level_3a_tangled_cables` | `tangled-cables` | **Procedural Generation (Graph-First)**: Generates a 1-to-1 bijection between `server_1..N` and `port_1..N`, routes smooth monotone-X Bezier cables, verifies bounds/intersections, and renders over/under bridges. |
+| **Level 2B** | `level_2b_checker_shadow` | `checker-shadow` | **Static External Asset**: Packages the existing Edward H. Adelson (1995) Checker Shadow Illusion image (`assets/level-2b/checker-shadow.png`) and documented provenance (`assets/level-2b/metadata.json`). |
+| **Level 3A** | `level_3a_routing_puzzles` | `routing-puzzle` | **Procedural Generation (Topological Routing)**: Generates 4 distinct procedural routing puzzles across 5 difficulty presets (`easy`, `medium`, `hard`, `story`, `extreme`):<br>• `laser-maze`: $45^\circ$ mirror optical ray reflection tracing.<br>• `conveyor-routing`: Multi-diverter mechanical package sorting.<br>• `pipe-flow`: Deep fluid network with closed valve gate branch tracing.<br>• `device-cables`: Multi-waypoint smooth bridge cable tracing. |
 | **Level 3B** | `level_3b_degraded_vision` | `degraded-vision` | **Real BDD100K (`val` split only) + Controlled Degradation**: Takes copies of real BDD100K `val` images and applies controlled `downsample -> nearest-neighbor upscale` across the resolution ladder `64, 48, 32, 24, 16, 12, 8` without modifying original BDD100K files. |
 
 ---
 
 ## 3. CLI Usage
 
-Run all commands from `Challenges/`:
+Run all commands from `challenges/`:
 
 ```bash
 # Check dataset & asset readiness and BDD100K val class statistics
@@ -63,10 +63,13 @@ python -m challenge_engine generate --level 1 --count 20 --seed 100
 python -m challenge_engine generate --level 2a --count 20 --seed 100
 
 # Package Level 2B (static Adelson Checker Shadow asset)
-python -m challenge_engine generate --level 2b --count 1 --seed 100
+python -m challenge_engine generate --level 2b --count 6 --seed 100
 
-# Generate Level 3A (procedural Tangled Cables)
-python -m challenge_engine generate --level 3a --count 4 --seed 100 --difficulty hard
+# Generate Level 3A (60 procedural routing puzzles across all 4 subtypes)
+python -m challenge_engine generate --level 3a --count 15 --seed 100 --subtype laser-maze
+python -m challenge_engine generate --level 3a --count 15 --seed 100 --subtype conveyor-routing
+python -m challenge_engine generate --level 3a --count 15 --seed 100 --subtype pipe-flow
+python -m challenge_engine generate --level 3a --count 15 --seed 100 --subtype device-cables
 
 # Generate Level 3B multi-resolution series across the full ladder (64,48,32,24,16,12,8)
 python -m challenge_engine generate --level 3b --count 4 --seed 100 --resolutions 64,48,32,24,16,12,8
@@ -74,6 +77,6 @@ python -m challenge_engine generate --level 3b --count 4 --seed 100 --resolution
 # Validate all generated challenges and the benchmark manifest
 python -m challenge_engine validate generated/
 
-# Run full pytest suite
+# Run full pytest suite (180 tests passing)
 python -m pytest -v
 ```
