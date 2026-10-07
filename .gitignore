@@ -57,6 +57,11 @@ src/generated-public/
 !reports/creator-vs-gemini/*.svg
 
 # ------------------------------------------------------------------------------
+# 2.5. YouTube Production & Video Assets (Never commit to Git)
+# ------------------------------------------------------------------------------
+youtube.md
+youtube_production/
+youtube*/
 # 3. Python Artifacts & Environments
 # ------------------------------------------------------------------------------
 __pycache__/
