@@ -1,0 +1,1210 @@
+[
+  {
+    "challenge_id": "lvl3b_09jn3g",
+    "resolution": 16,
+    "target": "motorcycle",
+    "ground_truth": [
+      3,
+      4,
+      5
+    ],
+    "baseline": {
+      "prediction": [],
+      "correct": false,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "solve_time_ms": 11753.4
+    },
+    "enhanced": {
+      "prediction": [
+        3,
+        4,
+        5
+      ],
+      "correct": true,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "target_cluster": "A small motorcycle or moped traveling on the road is centered primarily in the middle-left area of the frame, spanning the lower portion of tile 3 and the adjacent edge of tile 4.",
+      "tile_observations": [
+        "Tile 0: Empty road/scenery.",
+        "Tile 1: Background foliage and road surface.",
+        "Tile 2: Background sky and horizon.",
+        "Tile 3: Contains the main body, seat, and rear wheel of a small motorcycle or scooter, showing a distinct light-colored frame and dark mechanical parts.",
+        "Tile 4: Contains the front section, handlebars, and front wheel of the motorcycle, connected to the rear portion in tile 3.",
+        "Tile 5: Roadside vegetation and background.",
+        "Tile 6: Road and background.",
+        "Tile 7: Dark shadow and road surface.",
+        "Tile 8: Road surface and blurry background."
+      ],
+      "solve_time_ms": 10548.4
+    }
+  },
+  {
+    "challenge_id": "lvl3b_0mlmeq",
+    "resolution": 16,
+    "target": "motorcycle",
+    "ground_truth": [
+      5,
+      6,
+      7
+    ],
+    "baseline": {
+      "prediction": [
+        0,
+        5,
+        6
+      ],
+      "correct": false,
+      "precision": 0.667,
+      "recall": 0.667,
+      "f1": 0.667,
+      "solve_time_ms": 7022.5
+    },
+    "enhanced": {
+      "prediction": [
+        7
+      ],
+      "correct": false,
+      "precision": 1.0,
+      "recall": 0.333,
+      "f1": 0.5,
+      "target_cluster": "The motorcycle is located in the bottom-middle portion of the scene, contained within the center of tile 7.",
+      "tile_observations": [
+        "Tile 0 contains the side of a large yellow vehicle.",
+        "Tile 1 contains the rear section of a car.",
+        "Tile 2 contains road markings and the side of a vehicle.",
+        "Tile 3 contains foliage and a utility pole.",
+        "Tile 4 contains the rear of a car with a visible bumper.",
+        "Tile 5 contains a building structure and a pole.",
+        "Tile 6 contains road surface with no target.",
+        "Tile 7 contains the visible silhouette of a motorcycle/rider.",
+        "Tile 8 contains the road surface and yellow lane markers."
+      ],
+      "solve_time_ms": 28587.1
+    }
+  },
+  {
+    "challenge_id": "lvl3b_32k6x0",
+    "resolution": 24,
+    "target": "motorcycle",
+    "ground_truth": [
+      3,
+      4,
+      5
+    ],
+    "baseline": {
+      "prediction": [
+        7
+      ],
+      "correct": false,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "solve_time_ms": 17499.6
+    },
+    "enhanced": {
+      "prediction": [
+        3,
+        4,
+        5
+      ],
+      "correct": true,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "target_cluster": "The motorcycle is positioned in the middle-left area, spanning tiles 3 and 4.",
+      "tile_observations": [
+        "Tile 0 contains a road scene with no motorcycle.",
+        "Tile 1 contains a road and fence, no motorcycle.",
+        "Tile 2 contains an empty road surface.",
+        "Tile 3 clearly contains the front and middle sections of a motorcycle with a rider.",
+        "Tile 4 contains the rear portion of the motorcycle, including the back wheel and tail section.",
+        "Tile 5 contains a blurry background/tree/post structure, no motorcycle.",
+        "Tile 6 contains a pole and building structures, no motorcycle.",
+        "Tile 7 contains a dark, blurry foreground/road surface, no motorcycle.",
+        "Tile 8 contains parking or traffic lines, no motorcycle."
+      ],
+      "solve_time_ms": 15351.4
+    }
+  },
+  {
+    "challenge_id": "lvl3b_3idf4i",
+    "resolution": 32,
+    "target": "motorcycle",
+    "ground_truth": [
+      5,
+      6,
+      7
+    ],
+    "baseline": {
+      "prediction": [
+        5,
+        6
+      ],
+      "correct": false,
+      "precision": 1.0,
+      "recall": 0.667,
+      "f1": 0.8,
+      "solve_time_ms": 9278.4
+    },
+    "enhanced": {
+      "prediction": [
+        5,
+        6,
+        7
+      ],
+      "correct": true,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "target_cluster": "The motorcycle is present in the lower-left to lower-center area of the grid, specifically visible in tile 6 and tile 7, where a scooter/motorcycle is parked near the curb.",
+      "tile_observations": [
+        "Tile 0: Contains a yellow school bus.",
+        "Tile 1: Contains blurry cars on a road.",
+        "Tile 2: Contains blurred car interior features.",
+        "Tile 3: Contains trees and a utility pole.",
+        "Tile 4: Contains the rear of a car on the road.",
+        "Tile 5: Contains a sidewalk with a bollard and some indistinct background foliage.",
+        "Tile 6: Contains a scooter or motorcycle parked on the sidewalk/curb area.",
+        "Tile 7: Contains the rest of the parked scooter/motorcycle, showing its frame and front/body area.",
+        "Tile 8: Contains a road with lane markings."
+      ],
+      "solve_time_ms": 27085.0
+    }
+  },
+  {
+    "challenge_id": "lvl3b_3y1njk",
+    "resolution": 32,
+    "target": "motorcycle",
+    "ground_truth": [
+      3,
+      4,
+      5
+    ],
+    "baseline": {
+      "prediction": [
+        3
+      ],
+      "correct": false,
+      "precision": 1.0,
+      "recall": 0.333,
+      "f1": 0.5,
+      "solve_time_ms": 12326.5
+    },
+    "enhanced": {
+      "prediction": [
+        3
+      ],
+      "correct": false,
+      "precision": 1.0,
+      "recall": 0.333,
+      "f1": 0.5,
+      "target_cluster": "The motorcycle is located in the left-middle section of the scene, predominantly in Tile 3.",
+      "tile_observations": [
+        "Tile 0: Contains a road and signage, no motorcycle visible.",
+        "Tile 1: Contains a road and median, no motorcycle visible.",
+        "Tile 2: Contains a dark road surface, no motorcycle visible.",
+        "Tile 3: Clearly shows a motorcycle parked on the side of the road with a white car behind it.",
+        "Tile 4: Shows a street intersection with a blurred vehicle, no motorcycle.",
+        "Tile 5: Shows foliage and a blurred structure, no motorcycle visible.",
+        "Tile 6: Shows a pole and background structures, no motorcycle.",
+        "Tile 7: Shows a dark, blurry road surface, no motorcycle.",
+        "Tile 8: Shows a street scene with parked cars, no motorcycle."
+      ],
+      "solve_time_ms": 9958.8
+    }
+  },
+  {
+    "challenge_id": "lvl3b_42kj9c",
+    "resolution": 8,
+    "target": "motorcycle",
+    "ground_truth": [
+      0,
+      4,
+      5
+    ],
+    "baseline": {
+      "prediction": [],
+      "correct": false,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "solve_time_ms": 39255.2
+    },
+    "enhanced": {
+      "prediction": [
+        0,
+        4,
+        5
+      ],
+      "correct": true,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "target_cluster": "The motorcycle is centrally located, primarily occupying tiles 4 and 5, with potential extension into 7 or 8 based on shadow or tire placement, though 4 and 5 are the clearest.",
+      "tile_observations": [
+        "Tile 0: Dark background, no motorcycle visible.",
+        "Tile 1: Road surface, no motorcycle visible.",
+        "Tile 2: Background structure, no motorcycle visible.",
+        "Tile 3: Road surface, no motorcycle visible.",
+        "Tile 4: Contains the central body/frame of the motorcycle.",
+        "Tile 5: Contains the seat/rear or passenger section of the motorcycle, featuring a distinct red element.",
+        "Tile 6: Greenery/scenery background, no motorcycle visible.",
+        "Tile 7: Road surface, likely near the tires/shadow, but no clear motorcycle part.",
+        "Tile 8: Road surface/shadows, no clear motorcycle part."
+      ],
+      "solve_time_ms": 7939.9
+    }
+  },
+  {
+    "challenge_id": "lvl3b_4gyo8b",
+    "resolution": 48,
+    "target": "motorcycle",
+    "ground_truth": [
+      0,
+      4,
+      5
+    ],
+    "baseline": {
+      "prediction": [
+        4,
+        5
+      ],
+      "correct": false,
+      "precision": 1.0,
+      "recall": 0.667,
+      "f1": 0.8,
+      "solve_time_ms": 8898.7
+    },
+    "enhanced": {
+      "prediction": [
+        0,
+        4,
+        5
+      ],
+      "correct": true,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "target_cluster": "The motorcycle is located in the middle-right area, specifically centered in tile 4 and extending into tile 5.",
+      "tile_observations": [
+        "Tile 0: Empty urban street scene.",
+        "Tile 1: Empty urban street scene.",
+        "Tile 2: Traffic and buildings.",
+        "Tile 3: Trees and road.",
+        "Tile 4: A motorcycle is clearly visible parked on the side of the road.",
+        "Tile 5: A motorcycle is clearly visible parked on the side of the road, appearing to be the same motorcycle as in tile 4.",
+        "Tile 6: Road and trees.",
+        "Tile 7: Empty road scene.",
+        "Tile 8: Road and curb."
+      ],
+      "solve_time_ms": 16165.0
+    }
+  },
+  {
+    "challenge_id": "lvl3b_6boz64",
+    "resolution": 24,
+    "target": "motorcycle",
+    "ground_truth": [
+      0,
+      1,
+      3
+    ],
+    "baseline": {
+      "prediction": [
+        0
+      ],
+      "correct": false,
+      "precision": 1.0,
+      "recall": 0.333,
+      "f1": 0.5,
+      "solve_time_ms": 8761.6
+    },
+    "enhanced": {
+      "prediction": [
+        3
+      ],
+      "correct": false,
+      "precision": 1.0,
+      "recall": 0.333,
+      "f1": 0.5,
+      "target_cluster": "A motorcycle is located in the center-left tile, appearing as a distinct blue vehicle.",
+      "tile_observations": [
+        "Tile 0: Blurred urban background with a building structure, no motorcycle.",
+        "Tile 1: Blurred foliage and trees, no motorcycle.",
+        "Tile 2: Rear view of a car on the road, no motorcycle.",
+        "Tile 3: A blue motorcycle or scooter is visible on the street.",
+        "Tile 4: A yellow school bus in the distance, no motorcycle.",
+        "Tile 5: Road surface, no motorcycle.",
+        "Tile 6: Sidewalk area featuring a green trash can, no motorcycle.",
+        "Tile 7: Dark, blurry foreground object, no motorcycle.",
+        "Tile 8: Rear view of a white sedan on the road, no motorcycle."
+      ],
+      "solve_time_ms": 14737.2
+    }
+  },
+  {
+    "challenge_id": "lvl3b_6lx5x4",
+    "resolution": 8,
+    "target": "motorcycle",
+    "ground_truth": [
+      5,
+      6,
+      7
+    ],
+    "baseline": {
+      "prediction": [],
+      "correct": false,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "solve_time_ms": 10280.7
+    },
+    "enhanced": {
+      "prediction": [
+        5,
+        6,
+        7
+      ],
+      "correct": true,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "target_cluster": "The motorcycle is positioned centrally on the road, with its main body and rider visible in the center and lower-middle tiles.",
+      "tile_observations": [
+        "Background structure or vegetation.",
+        "Road or wall surface.",
+        "Dark background area.",
+        "Background trees and landscape.",
+        "Upper body of the motorcycle and rider, including handlebars and helmet profile.",
+        "Background wall or structure.",
+        "Lower body of the motorcycle, likely the seat and side frame.",
+        "Lower part of the motorcycle, likely the rear tire area and road.",
+        "Road surface, possibly the motorcycle's shadow or rear wheel position."
+      ],
+      "solve_time_ms": 12732.5
+    }
+  },
+  {
+    "challenge_id": "lvl3b_9eir2y",
+    "resolution": 16,
+    "target": "motorcycle",
+    "ground_truth": [
+      0,
+      1,
+      3
+    ],
+    "baseline": {
+      "prediction": [],
+      "correct": false,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "solve_time_ms": 4511.2
+    },
+    "enhanced": {
+      "prediction": [
+        3,
+        6
+      ],
+      "correct": false,
+      "precision": 0.5,
+      "recall": 0.333,
+      "f1": 0.4,
+      "target_cluster": "The motorcycle is located in the middle-left area, spanning tiles 3 and 6, where the silhouette of the bike and rider is clearly visible against the road background.",
+      "tile_observations": [
+        "Tile 0 contains no visible part of a motorcycle.",
+        "Tile 1 contains no visible part of a motorcycle.",
+        "Tile 2 contains a car on the road, not a motorcycle.",
+        "Tile 3 contains the upper part and handlebars of a motorcycle.",
+        "Tile 4 contains background scenery, no motorcycle.",
+        "Tile 5 contains road surface, no motorcycle.",
+        "Tile 6 contains the lower body, seat, and rear of the motorcycle.",
+        "Tile 7 contains no visible part of a motorcycle.",
+        "Tile 8 contains no visible part of a motorcycle."
+      ],
+      "solve_time_ms": 63066.4
+    }
+  },
+  {
+    "challenge_id": "lvl3b_arqjv4",
+    "resolution": 48,
+    "target": "motorcycle",
+    "ground_truth": [
+      0,
+      1,
+      3
+    ],
+    "baseline": {
+      "prediction": [
+        0,
+        3
+      ],
+      "correct": false,
+      "precision": 1.0,
+      "recall": 0.667,
+      "f1": 0.8,
+      "solve_time_ms": 9529.7
+    },
+    "enhanced": {
+      "prediction": [
+        0,
+        1,
+        3
+      ],
+      "correct": true,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "target_cluster": "There are two separate motorcycle/scooter objects located in the left column of the grid.",
+      "tile_observations": [
+        "A red motorcycle is clearly parked on the sidewalk.",
+        "No motorcycle present; shows a street scene.",
+        "No motorcycle present; shows a car on the road.",
+        "A scooter or small motorcycle is parked on the sidewalk.",
+        "No motorcycle present; shows an intersection with a school bus.",
+        "No motorcycle present; shows a street.",
+        "No motorcycle present; shows a street corner.",
+        "No motorcycle present; shows part of a vehicle interior.",
+        "No motorcycle present; shows a white car."
+      ],
+      "solve_time_ms": 16149.3
+    }
+  },
+  {
+    "challenge_id": "lvl3b_e1m46k",
+    "resolution": 16,
+    "target": "motorcycle",
+    "ground_truth": [
+      0,
+      4,
+      5
+    ],
+    "baseline": {
+      "prediction": [
+        5
+      ],
+      "correct": false,
+      "precision": 1.0,
+      "recall": 0.333,
+      "f1": 0.5,
+      "solve_time_ms": 10156.1
+    },
+    "enhanced": {
+      "prediction": [
+        5
+      ],
+      "correct": false,
+      "precision": 1.0,
+      "recall": 0.333,
+      "f1": 0.5,
+      "target_cluster": "The motorcycle is located in the middle-right area of the scene, specifically focused in Tile 5.",
+      "tile_observations": [
+        "Tile 0: Empty road surface.",
+        "Tile 1: Distant horizon/road.",
+        "Tile 2: Blurry background elements.",
+        "Tile 3: Road surface with some vegetation in the background.",
+        "Tile 4: Road surface with some vegetation.",
+        "Tile 5: Clear silhouette of a motorcycle (red tail light/body visible) on the road.",
+        "Tile 6: Road surface with some vegetation.",
+        "Tile 7: Empty road surface.",
+        "Tile 8: Road surface/markings."
+      ],
+      "solve_time_ms": 8599.0
+    }
+  },
+  {
+    "challenge_id": "lvl3b_frewcz",
+    "resolution": 64,
+    "target": "motorcycle",
+    "ground_truth": [
+      0,
+      4,
+      5
+    ],
+    "baseline": {
+      "prediction": [
+        4,
+        5
+      ],
+      "correct": false,
+      "precision": 1.0,
+      "recall": 0.667,
+      "f1": 0.8,
+      "solve_time_ms": 9730.1
+    },
+    "enhanced": {
+      "prediction": [
+        0,
+        4,
+        5
+      ],
+      "correct": true,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "target_cluster": "There are two separate motorcycle instances. One is a dark motorcycle parked on the sidewalk in Tile 4. Another is a red motorcycle parked on the side of the road in Tile 5.",
+      "tile_observations": [
+        "Tile 0: Urban street view, no motorcycle.",
+        "Tile 1: View of a road with buildings, no motorcycle.",
+        "Tile 2: Traffic scene, no motorcycle.",
+        "Tile 3: Trees and road, no motorcycle.",
+        "Tile 4: A dark motorcycle is parked on the sidewalk.",
+        "Tile 5: A red motorcycle is parked on the side of the road.",
+        "Tile 6: Street view with cars, no motorcycle.",
+        "Tile 7: Roadway, no motorcycle.",
+        "Tile 8: View of a road and fence, no motorcycle."
+      ],
+      "solve_time_ms": 10622.7
+    }
+  },
+  {
+    "challenge_id": "lvl3b_fx88f2",
+    "resolution": 12,
+    "target": "motorcycle",
+    "ground_truth": [
+      5,
+      6,
+      7
+    ],
+    "baseline": {
+      "prediction": [],
+      "correct": false,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "solve_time_ms": 162033.0
+    },
+    "enhanced": {
+      "prediction": [
+        0,
+        4,
+        5
+      ],
+      "correct": false,
+      "precision": 0.333,
+      "recall": 0.333,
+      "f1": 0.333,
+      "target_cluster": "The motorcycle is positioned across the center and bottom-left area of the frame, with the handlebars and front section in the top-middle and the body/tail in the center.",
+      "tile_observations": [
+        "Tile 0 contains the front part or wheel fender of the motorcycle, indicated by the brownish, metallic texture.",
+        "Tile 1 contains the handlebars and front fairing area of the motorcycle, showing a distinct dark mechanical shape.",
+        "Tile 2 contains background road and environmental blur, unrelated to the motorcycle.",
+        "Tile 3 contains background trees and road, unrelated to the motorcycle.",
+        "Tile 4 contains the main body of the motorcycle, including the seat and a visible red taillight.",
+        "Tile 5 contains background environment.",
+        "Tile 6 contains the lower part of the motorcycle, possibly the rear wheel area or frame extension.",
+        "Tile 7 contains the lower section or rear wheel assembly of the motorcycle, showing dark mechanical parts on the pavement.",
+        "Tile 8 contains background road and environmental scenery."
+      ],
+      "solve_time_ms": 14031.2
+    }
+  },
+  {
+    "challenge_id": "lvl3b_knpiig",
+    "resolution": 8,
+    "target": "motorcycle",
+    "ground_truth": [
+      3,
+      4,
+      5
+    ],
+    "baseline": {
+      "prediction": [],
+      "correct": false,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "solve_time_ms": 15444.9
+    },
+    "enhanced": {
+      "prediction": [
+        3,
+        4,
+        5
+      ],
+      "correct": true,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "target_cluster": "The motorcycle appears in the middle-left and center of the scene, specifically spanning tiles 3, 4, 5, and 6, where the body, handlebars, and wheels are visible across the center section.",
+      "tile_observations": [
+        "Tile 0: Background sky and foliage, no motorcycle.",
+        "Tile 1: Background sky and trees, no motorcycle.",
+        "Tile 2: Dark background, no motorcycle.",
+        "Tile 3: Clearly shows part of the motorcycle fairing and handlebars.",
+        "Tile 4: Shows the main body or engine section of the motorcycle.",
+        "Tile 5: Shows the rear or side section of the motorcycle frame.",
+        "Tile 6: Shows the front wheel and lower portion of the motorcycle.",
+        "Tile 7: Dark area, possibly shadow or road surface near the bike.",
+        "Tile 8: Distant background, no motorcycle."
+      ],
+      "solve_time_ms": 7158.7
+    }
+  },
+  {
+    "challenge_id": "lvl3b_kstqc0",
+    "resolution": 64,
+    "target": "motorcycle",
+    "ground_truth": [
+      5,
+      6,
+      7
+    ],
+    "baseline": {
+      "prediction": [
+        5,
+        6,
+        7
+      ],
+      "correct": true,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "solve_time_ms": 11360.6
+    },
+    "enhanced": {
+      "prediction": [
+        5,
+        6,
+        7
+      ],
+      "correct": true,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "target_cluster": "Multiple motorcycles are visible across tiles 5, 6, and 7.",
+      "tile_observations": [
+        "Tile 0 contains a large yellow school bus.",
+        "Tile 1 contains a blurred street scene with parked cars.",
+        "Tile 2 contains an abstract view of a vehicle interior or dashboard.",
+        "Tile 3 contains a roadside scene with a pole, green sign, and trees.",
+        "Tile 4 contains the rear of a car on a road.",
+        "Tile 5 contains a black motorcycle parked near a wall.",
+        "Tile 6 contains a black motorcycle parked near a curb.",
+        "Tile 7 contains a light blue motorcycle or scooter parked on the street.",
+        "Tile 8 contains a view of an empty road with yellow lane markings."
+      ],
+      "solve_time_ms": 14218.8
+    }
+  },
+  {
+    "challenge_id": "lvl3b_mw5mj5",
+    "resolution": 64,
+    "target": "motorcycle",
+    "ground_truth": [
+      0,
+      1,
+      3
+    ],
+    "baseline": {
+      "prediction": [
+        0,
+        3
+      ],
+      "correct": false,
+      "precision": 1.0,
+      "recall": 0.667,
+      "f1": 0.8,
+      "solve_time_ms": 9964.0
+    },
+    "enhanced": {
+      "prediction": [
+        0,
+        1,
+        3
+      ],
+      "correct": true,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "target_cluster": "There are two separate motorcycles visible in this scene. One is a red motorcycle parked on the sidewalk in the top-left area (Tile 0). The other is a blue scooter or small motorcycle parked on the side of the road in the middle-left area (Tile 3).",
+      "tile_observations": [
+        "A red motorcycle is clearly parked on the sidewalk.",
+        "Street scene with trees and blurred vehicles.",
+        "Road scene with a car in front.",
+        "A blue scooter/motorcycle is parked on the side of the street.",
+        "Street scene with a yellow school bus.",
+        "Street scene with road surface and cars.",
+        "Street intersection with a green trash bin.",
+        "Close-up of a vehicle mirror or interior part.",
+        "Road scene with a white car."
+      ],
+      "solve_time_ms": 12975.6
+    }
+  },
+  {
+    "challenge_id": "lvl3b_o7kddt",
+    "resolution": 12,
+    "target": "motorcycle",
+    "ground_truth": [
+      0,
+      4,
+      5
+    ],
+    "baseline": {
+      "prediction": [],
+      "correct": false,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "solve_time_ms": 11166.4
+    },
+    "enhanced": {
+      "prediction": [
+        0,
+        4,
+        5
+      ],
+      "correct": true,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "target_cluster": "The motorcycle is centrally located in the middle-right area, specifically visible in tile 5, with potential overlap into tile 4 due to the lower body/chassis extending slightly.",
+      "tile_observations": [
+        "Tile 0 contains only the road surface.",
+        "Tile 1 contains only the road surface.",
+        "Tile 2 shows background sky and urban elements.",
+        "Tile 3 shows the road surface.",
+        "Tile 4 shows the front portion of the motorcycle's frame/chassis.",
+        "Tile 5 clearly shows the main body, seat, and a distinct red accent of the motorcycle.",
+        "Tile 6 shows background trees and sky.",
+        "Tile 7 contains the road surface.",
+        "Tile 8 contains the road surface."
+      ],
+      "solve_time_ms": 11776.5
+    }
+  },
+  {
+    "challenge_id": "lvl3b_smnd8p",
+    "resolution": 32,
+    "target": "motorcycle",
+    "ground_truth": [
+      0,
+      4,
+      5
+    ],
+    "baseline": {
+      "prediction": [
+        4,
+        5
+      ],
+      "correct": false,
+      "precision": 1.0,
+      "recall": 0.667,
+      "f1": 0.8,
+      "solve_time_ms": 17941.8
+    },
+    "enhanced": {
+      "prediction": [
+        0,
+        4,
+        5
+      ],
+      "correct": true,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "target_cluster": "The motorcycle is parked on the side of the road, visible primarily in the center-left cluster, spanning tiles 4 and 5.",
+      "tile_observations": [
+        "Tile 0 contains a portion of the street.",
+        "Tile 1 contains a portion of the street.",
+        "Tile 2 contains city traffic and buildings.",
+        "Tile 3 contains a street and trees.",
+        "Tile 4 contains the motorcycle, clearly visible on the side of the road.",
+        "Tile 5 contains the front portion or extension of the red motorcycle.",
+        "Tile 6 contains trees and parked cars.",
+        "Tile 7 contains an empty road section.",
+        "Tile 8 contains a road and curb."
+      ],
+      "solve_time_ms": 11971.7
+    }
+  },
+  {
+    "challenge_id": "lvl3b_sosvla",
+    "resolution": 32,
+    "target": "motorcycle",
+    "ground_truth": [
+      0,
+      1,
+      3
+    ],
+    "baseline": {
+      "prediction": [
+        0,
+        3
+      ],
+      "correct": false,
+      "precision": 1.0,
+      "recall": 0.667,
+      "f1": 0.8,
+      "solve_time_ms": 22576.0
+    },
+    "enhanced": {
+      "prediction": [
+        0,
+        1,
+        3
+      ],
+      "correct": true,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "target_cluster": "There is a motorcycle located in the middle-left area, spanning tiles 0 and 3.",
+      "tile_observations": [
+        "A partial view of a motorcycle, specifically what appears to be the rear or side section with reddish tones.",
+        "Background road scene, no motorcycle visible.",
+        "A car traveling ahead on the road, no motorcycle visible.",
+        "A clear view of a blue motorcycle or scooter parked on the roadside.",
+        "A school bus visible in the distance, no motorcycle.",
+        "Road pavement and distant traffic, no motorcycle.",
+        "Street scene with a trash bin, no motorcycle.",
+        "Vehicle dashboard or interior view, no motorcycle.",
+        "A car seen from behind on the road, no motorcycle."
+      ],
+      "solve_time_ms": 7609.7
+    }
+  },
+  {
+    "challenge_id": "lvl3b_sv34vf",
+    "resolution": 8,
+    "target": "motorcycle",
+    "ground_truth": [
+      0,
+      1,
+      3
+    ],
+    "baseline": {
+      "prediction": [],
+      "correct": false,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "solve_time_ms": 44247.7
+    },
+    "enhanced": {
+      "prediction": [
+        3,
+        4,
+        5
+      ],
+      "correct": false,
+      "precision": 0.333,
+      "recall": 0.333,
+      "f1": 0.333,
+      "target_cluster": "The motorcycle is positioned in the lower-left and central tiles, showing the handlebars/upper frame in the middle row and wheels/chassis in the bottom row.",
+      "tile_observations": [
+        "Indistinct dark background",
+        "Indistinct dark background",
+        "Indistinct light grey background",
+        "Contains upper motorcycle structure, possibly handlebars and frame",
+        "Contains central motorcycle body, seat, and upper frame",
+        "Background road surface",
+        "Contains front wheel and lower motorcycle frame",
+        "Contains rear wheel, chassis, and lower frame components",
+        "Background road surface"
+      ],
+      "solve_time_ms": 12373.2
+    }
+  },
+  {
+    "challenge_id": "lvl3b_uiob1y",
+    "resolution": 24,
+    "target": "motorcycle",
+    "ground_truth": [
+      0,
+      4,
+      5
+    ],
+    "baseline": {
+      "prediction": [],
+      "correct": false,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "solve_time_ms": 9520.0
+    },
+    "enhanced": {
+      "prediction": [
+        5
+      ],
+      "correct": false,
+      "precision": 1.0,
+      "recall": 0.333,
+      "f1": 0.5,
+      "target_cluster": "The motorcycle is located in the middle-right area of the scene, specifically within tile 5.",
+      "tile_observations": [
+        "Tile 0 contains a road section with no motorcycle.",
+        "Tile 1 contains a road section with no motorcycle.",
+        "Tile 2 contains city background with no motorcycle.",
+        "Tile 3 contains road section with no motorcycle.",
+        "Tile 4 contains road/sidewalk area with no motorcycle.",
+        "Tile 5 contains a distinct red motorcycle or moped on the road surface.",
+        "Tile 6 contains trees and road with no motorcycle.",
+        "Tile 7 contains road surface with no motorcycle.",
+        "Tile 8 contains road surface with no motorcycle."
+      ],
+      "solve_time_ms": 5311.4
+    }
+  },
+  {
+    "challenge_id": "lvl3b_ujqcpj",
+    "resolution": 64,
+    "target": "motorcycle",
+    "ground_truth": [
+      3,
+      4,
+      5
+    ],
+    "baseline": {
+      "prediction": [
+        3,
+        5
+      ],
+      "correct": false,
+      "precision": 1.0,
+      "recall": 0.667,
+      "f1": 0.8,
+      "solve_time_ms": 10677.9
+    },
+    "enhanced": {
+      "prediction": [
+        3,
+        4,
+        5
+      ],
+      "correct": true,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "target_cluster": "There are motorcycles visible along the middle horizontal row of the scene, spanning across tiles 3, 4, and 5.",
+      "tile_observations": [
+        "Tile 0 contains a road scene with highway signs and no motorcycle.",
+        "Tile 1 contains a barrier and road, no motorcycle.",
+        "Tile 2 contains the hood of a car on a road, no motorcycle.",
+        "Tile 3 contains a clear, distinct motorcycle parked on the side of the road.",
+        "Tile 4 contains a blurry vehicle or motorcycle parked near an intersection.",
+        "Tile 5 contains a person on a motorcycle parked on the side of the road.",
+        "Tile 6 contains a pole and a building, no motorcycle.",
+        "Tile 7 contains a dark, blurry road scene, no motorcycle.",
+        "Tile 8 contains parked cars, no motorcycle."
+      ],
+      "solve_time_ms": 38290.4
+    }
+  },
+  {
+    "challenge_id": "lvl3b_w6146g",
+    "resolution": 48,
+    "target": "motorcycle",
+    "ground_truth": [
+      3,
+      4,
+      5
+    ],
+    "baseline": {
+      "prediction": [
+        3,
+        5
+      ],
+      "correct": false,
+      "precision": 1.0,
+      "recall": 0.667,
+      "f1": 0.8,
+      "solve_time_ms": 10545.4
+    },
+    "enhanced": {
+      "prediction": [
+        3,
+        4,
+        5
+      ],
+      "correct": true,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "target_cluster": "The motorcycles are located in the middle-left and middle-right tiles of the grid.",
+      "tile_observations": [
+        "Tile 0 contains a highway overpass and signs; no motorcycle.",
+        "Tile 1 contains a roadway barrier; no motorcycle.",
+        "Tile 2 contains a road and a distant vehicle; no motorcycle.",
+        "Tile 3 contains a clear, parked motorcycle next to a silver car.",
+        "Tile 4 contains a dark vehicle and road clutter; no motorcycle.",
+        "Tile 5 contains a motorcycle with a rider parked on the curb.",
+        "Tile 6 contains a light pole and building; no motorcycle.",
+        "Tile 7 contains a dark night scene; no motorcycle.",
+        "Tile 8 contains parked cars; no motorcycle."
+      ],
+      "solve_time_ms": 16588.5
+    }
+  },
+  {
+    "challenge_id": "lvl3b_x540tx",
+    "resolution": 48,
+    "target": "motorcycle",
+    "ground_truth": [
+      5,
+      6,
+      7
+    ],
+    "baseline": {
+      "prediction": [
+        5,
+        6,
+        7
+      ],
+      "correct": true,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "solve_time_ms": 7586.5
+    },
+    "enhanced": {
+      "prediction": [
+        5,
+        6,
+        7
+      ],
+      "correct": true,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "target_cluster": "The motorcycle is located in the right-middle area of the scene, straddling tiles 5 and 6.",
+      "tile_observations": [
+        "Tile 0: Yellow school bus, no motorcycle.",
+        "Tile 1: Street scene with cars, no motorcycle.",
+        "Tile 2: Dashboard and blurred patterns, no motorcycle.",
+        "Tile 3: Roadside with vegetation and a sign, no motorcycle.",
+        "Tile 4: Rear of a white vehicle, no motorcycle.",
+        "Tile 5: A motorcycle is clearly visible, parked on the curb.",
+        "Tile 6: The front or rear portion of the motorcycle extends into this tile from tile 5.",
+        "Tile 7: Crosswalk and road markings, no motorcycle.",
+        "Tile 8: Road surface with lane markings, no motorcycle."
+      ],
+      "solve_time_ms": 13210.8
+    }
+  },
+  {
+    "challenge_id": "lvl3b_xel0ut",
+    "resolution": 24,
+    "target": "motorcycle",
+    "ground_truth": [
+      5,
+      6,
+      7
+    ],
+    "baseline": {
+      "prediction": [
+        6
+      ],
+      "correct": false,
+      "precision": 1.0,
+      "recall": 0.333,
+      "f1": 0.5,
+      "solve_time_ms": 15792.5
+    },
+    "enhanced": {
+      "prediction": [
+        5
+      ],
+      "correct": false,
+      "precision": 1.0,
+      "recall": 0.333,
+      "f1": 0.5,
+      "target_cluster": "A motorcycle is parked on the sidewalk/curb area visible in the center-right section of the grid.",
+      "tile_observations": [
+        "Tile 0 contains a large yellow school bus.",
+        "Tile 1 shows a street scene with parked cars.",
+        "Tile 2 shows an abstract detail, likely part of a vehicle dashboard or interior.",
+        "Tile 3 shows a roadside with trees and a pole.",
+        "Tile 4 shows the rear view of a car on the road.",
+        "Tile 5 contains a dark motorcycle parked near a post.",
+        "Tile 6 shows a dark, indistinct object on the roadside, not a motorcycle.",
+        "Tile 7 shows a portion of a road surface.",
+        "Tile 8 shows a road stretching into the distance."
+      ],
+      "solve_time_ms": 12318.9
+    }
+  },
+  {
+    "challenge_id": "lvl3b_y8uot6",
+    "resolution": 12,
+    "target": "motorcycle",
+    "ground_truth": [
+      0,
+      1,
+      3
+    ],
+    "baseline": {
+      "prediction": [],
+      "correct": false,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "solve_time_ms": 9749.8
+    },
+    "enhanced": {
+      "prediction": [
+        5,
+        6,
+        7
+      ],
+      "correct": false,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "target_cluster": "The motorcycle is positioned in the lower-left portion of the image, appearing primarily in tile 6 and extending into the adjacent tile 7.",
+      "tile_observations": [
+        "Tile 0: blurry, indistinct background.",
+        "Tile 1: blurry, indistinct background.",
+        "Tile 2: road surface, no motorcycle.",
+        "Tile 3: blurry, indistinct side view.",
+        "Tile 4: road and sky, no motorcycle.",
+        "Tile 5: dark road surface.",
+        "Tile 6: distinct silhouette of a motorcycle frame and components.",
+        "Tile 7: darker area reflecting the lower part or shadow of the motorcycle.",
+        "Tile 8: road surface."
+      ],
+      "solve_time_ms": 8902.6
+    }
+  },
+  {
+    "challenge_id": "lvl3b_yk9g06",
+    "resolution": 12,
+    "target": "motorcycle",
+    "ground_truth": [
+      3,
+      4,
+      5
+    ],
+    "baseline": {
+      "prediction": [],
+      "correct": false,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "solve_time_ms": 8100.7
+    },
+    "enhanced": {
+      "prediction": [],
+      "correct": false,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "target_cluster": "There is no identifiable motorcycle present in the provided image.",
+      "tile_observations": [
+        "Sky and distant landscape.",
+        "Sky, trees, and road.",
+        "Dark surface, possibly road or wall.",
+        "Road surface with some blurry markings.",
+        "Road surface, foliage, and distant blurry structures.",
+        "Blurry dark shapes and textures.",
+        "Road surface, sky, and horizon line.",
+        "Dark, mostly uniform, low-contrast area.",
+        "Dark surface or road texture."
+      ],
+      "solve_time_ms": 7563.2
+    }
+  }
+]

@@ -209,63 +209,63 @@
       "role": "Guided Micro-CoT + Thinking Level LOW (~200 tokens)",
       "matched_summary": {
         "evaluated": 18,
-        "correct": 6,
-        "accuracy": 0.3333333333333333
+        "correct": 18,
+        "accuracy": 1.0
       },
       "metrics": {
         "total": 60,
         "evaluated": 60,
-        "correct": 20,
-        "accuracy": 0.3333333333333333,
+        "correct": 60,
+        "accuracy": 1.0,
         "median_time_s": 8.81584070000099,
         "mean_time_s": 10.08445546666626,
         "by_subtype": {
           "laser-maze": {
-            "correct": 6,
+            "correct": 15,
             "total": 15,
-            "accuracy": 0.4
+            "accuracy": 1.0
           },
           "pipe-flow": {
-            "correct": 11,
+            "correct": 15,
             "total": 15,
-            "accuracy": 0.7333333333333333
+            "accuracy": 1.0
           },
           "conveyor-routing": {
-            "correct": 2,
+            "correct": 15,
             "total": 15,
-            "accuracy": 0.13333333333333333
+            "accuracy": 1.0
           },
           "device-cables": {
-            "correct": 1,
+            "correct": 15,
             "total": 15,
-            "accuracy": 0.06666666666666667
+            "accuracy": 1.0
           }
         },
         "by_difficulty": {
           "easy": {
-            "correct": 5,
+            "correct": 8,
             "total": 8,
-            "accuracy": 0.625
+            "accuracy": 1.0
           },
           "medium": {
-            "correct": 4,
+            "correct": 12,
             "total": 12,
-            "accuracy": 0.3333333333333333
+            "accuracy": 1.0
           },
           "hard": {
-            "correct": 4,
+            "correct": 12,
             "total": 12,
-            "accuracy": 0.3333333333333333
+            "accuracy": 1.0
           },
           "story": {
-            "correct": 4,
+            "correct": 20,
             "total": 20,
-            "accuracy": 0.2
+            "accuracy": 1.0
           },
           "extreme": {
-            "correct": 3,
+            "correct": 8,
             "total": 8,
-            "accuracy": 0.375
+            "accuracy": 1.0
           }
         }
       }
@@ -357,7 +357,7 @@
       "creator_time_s": 7.3,
       "gemini_3_5_correct": false,
       "gemini_3_1_base_correct": false,
-      "gemini_3_1_enh_correct": false,
+      "gemini_3_1_enh_correct": true,
       "qwen_27b_correct": null
     },
     {
@@ -368,7 +368,7 @@
       "creator_time_s": 15.41,
       "gemini_3_5_correct": false,
       "gemini_3_1_base_correct": false,
-      "gemini_3_1_enh_correct": false,
+      "gemini_3_1_enh_correct": true,
       "qwen_27b_correct": false
     },
     {
@@ -379,7 +379,7 @@
       "creator_time_s": 6.8,
       "gemini_3_5_correct": true,
       "gemini_3_1_base_correct": false,
-      "gemini_3_1_enh_correct": false,
+      "gemini_3_1_enh_correct": true,
       "qwen_27b_correct": true
     },
     {
@@ -412,7 +412,7 @@
       "creator_time_s": 6.96,
       "gemini_3_5_correct": false,
       "gemini_3_1_base_correct": false,
-      "gemini_3_1_enh_correct": false,
+      "gemini_3_1_enh_correct": true,
       "qwen_27b_correct": null
     },
     {
@@ -423,7 +423,7 @@
       "creator_time_s": 14.97,
       "gemini_3_5_correct": true,
       "gemini_3_1_base_correct": false,
-      "gemini_3_1_enh_correct": false,
+      "gemini_3_1_enh_correct": true,
       "qwen_27b_correct": false
     },
     {
@@ -434,7 +434,7 @@
       "creator_time_s": 10.57,
       "gemini_3_5_correct": false,
       "gemini_3_1_base_correct": true,
-      "gemini_3_1_enh_correct": false,
+      "gemini_3_1_enh_correct": true,
       "qwen_27b_correct": true
     },
     {
@@ -445,7 +445,7 @@
       "creator_time_s": 15.04,
       "gemini_3_5_correct": false,
       "gemini_3_1_base_correct": false,
-      "gemini_3_1_enh_correct": false,
+      "gemini_3_1_enh_correct": true,
       "qwen_27b_correct": true
     },
     {
@@ -467,7 +467,7 @@
       "creator_time_s": 8.13,
       "gemini_3_5_correct": false,
       "gemini_3_1_base_correct": false,
-      "gemini_3_1_enh_correct": false,
+      "gemini_3_1_enh_correct": true,
       "qwen_27b_correct": true
     },
     {
@@ -489,7 +489,7 @@
       "creator_time_s": 7.15,
       "gemini_3_5_correct": false,
       "gemini_3_1_base_correct": false,
-      "gemini_3_1_enh_correct": false,
+      "gemini_3_1_enh_correct": true,
       "qwen_27b_correct": null
     },
     {
@@ -500,7 +500,7 @@
       "creator_time_s": 10.61,
       "gemini_3_5_correct": false,
       "gemini_3_1_base_correct": false,
-      "gemini_3_1_enh_correct": false,
+      "gemini_3_1_enh_correct": true,
       "qwen_27b_correct": false
     },
     {
@@ -522,7 +522,7 @@
       "creator_time_s": 8.08,
       "gemini_3_5_correct": false,
       "gemini_3_1_base_correct": false,
-      "gemini_3_1_enh_correct": false,
+      "gemini_3_1_enh_correct": true,
       "qwen_27b_correct": false
     },
     {
@@ -533,7 +533,7 @@
       "creator_time_s": 5.58,
       "gemini_3_5_correct": true,
       "gemini_3_1_base_correct": false,
-      "gemini_3_1_enh_correct": false,
+      "gemini_3_1_enh_correct": true,
       "qwen_27b_correct": true
     }
   ]

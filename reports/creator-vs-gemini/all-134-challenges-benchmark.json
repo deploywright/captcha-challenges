@@ -1,0 +1,1976 @@
+[
+  {
+    "challenge_id": "lvl1_221ies",
+    "level": 1,
+    "variant": "street-grid",
+    "subtype": "motorcycle",
+    "ground_truth": [
+      4,
+      7,
+      8
+    ],
+    "prediction": [
+      4,
+      7,
+      8
+    ],
+    "correct": true,
+    "solve_time_ms": 1820.0
+  },
+  {
+    "challenge_id": "lvl1_2opfoh",
+    "level": 1,
+    "variant": "street-grid",
+    "subtype": "traffic light",
+    "ground_truth": [
+      0,
+      7,
+      8
+    ],
+    "prediction": [
+      0,
+      8
+    ],
+    "correct": false,
+    "solve_time_ms": 1910.0
+  },
+  {
+    "challenge_id": "lvl1_3ssklm",
+    "level": 1,
+    "variant": "street-grid",
+    "subtype": "traffic light",
+    "ground_truth": [
+      3,
+      5,
+      6
+    ],
+    "prediction": [
+      3,
+      5,
+      6
+    ],
+    "correct": true,
+    "solve_time_ms": 1780.0
+  },
+  {
+    "challenge_id": "lvl1_569nec",
+    "level": 1,
+    "variant": "street-grid",
+    "subtype": "pedestrian",
+    "ground_truth": [
+      1,
+      6
+    ],
+    "prediction": [
+      1,
+      6
+    ],
+    "correct": true,
+    "solve_time_ms": 1850.0
+  },
+  {
+    "challenge_id": "lvl1_6j29rx",
+    "level": 1,
+    "variant": "street-grid",
+    "subtype": "bus",
+    "ground_truth": [
+      7,
+      8
+    ],
+    "prediction": [
+      7,
+      8
+    ],
+    "correct": true,
+    "solve_time_ms": 1790.0
+  },
+  {
+    "challenge_id": "lvl1_6nssnc",
+    "level": 1,
+    "variant": "street-grid",
+    "subtype": "truck",
+    "ground_truth": [
+      1,
+      5,
+      6
+    ],
+    "prediction": [
+      1,
+      5,
+      6
+    ],
+    "correct": true,
+    "solve_time_ms": 1840.0
+  },
+  {
+    "challenge_id": "lvl1_92m6az",
+    "level": 1,
+    "variant": "street-grid",
+    "subtype": "traffic light",
+    "ground_truth": [
+      2,
+      3,
+      5
+    ],
+    "prediction": [],
+    "correct": false,
+    "solve_time_ms": 1810.0
+  },
+  {
+    "challenge_id": "lvl1_euprig",
+    "level": 1,
+    "variant": "street-grid",
+    "subtype": "bus",
+    "ground_truth": [
+      0,
+      3,
+      4
+    ],
+    "prediction": [
+      0,
+      3,
+      4
+    ],
+    "correct": true,
+    "solve_time_ms": 1920.0
+  },
+  {
+    "challenge_id": "lvl1_ezw800",
+    "level": 1,
+    "variant": "street-grid",
+    "subtype": "bus",
+    "ground_truth": [
+      3,
+      5,
+      6,
+      7
+    ],
+    "prediction": [
+      3,
+      5,
+      6,
+      7
+    ],
+    "correct": true,
+    "solve_time_ms": 1890.0
+  },
+  {
+    "challenge_id": "lvl1_gb5rr2",
+    "level": 1,
+    "variant": "street-grid",
+    "subtype": "traffic light",
+    "ground_truth": [
+      0,
+      2,
+      4,
+      5
+    ],
+    "prediction": [
+      0,
+      2,
+      4,
+      5
+    ],
+    "correct": true,
+    "solve_time_ms": 1940.0
+  },
+  {
+    "challenge_id": "lvl1_lgouic",
+    "level": 1,
+    "variant": "street-grid",
+    "subtype": "pedestrian",
+    "ground_truth": [
+      0,
+      2,
+      8
+    ],
+    "prediction": [
+      0,
+      2,
+      8
+    ],
+    "correct": true,
+    "solve_time_ms": 1760.0
+  },
+  {
+    "challenge_id": "lvl1_lvfp24",
+    "level": 1,
+    "variant": "street-grid",
+    "subtype": "truck",
+    "ground_truth": [
+      1,
+      4,
+      7
+    ],
+    "prediction": [
+      1,
+      4,
+      7
+    ],
+    "correct": true,
+    "solve_time_ms": 1830.0
+  },
+  {
+    "challenge_id": "lvl1_oqe2qn",
+    "level": 1,
+    "variant": "street-grid",
+    "subtype": "traffic light",
+    "ground_truth": [
+      1,
+      2
+    ],
+    "prediction": [
+      1,
+      2
+    ],
+    "correct": true,
+    "solve_time_ms": 1870.0
+  },
+  {
+    "challenge_id": "lvl1_ot6u5n",
+    "level": 1,
+    "variant": "street-grid",
+    "subtype": "pedestrian",
+    "ground_truth": [
+      2,
+      3,
+      8
+    ],
+    "prediction": [
+      2,
+      3,
+      8
+    ],
+    "correct": true,
+    "solve_time_ms": 1800.0
+  },
+  {
+    "challenge_id": "lvl1_ry1a7l",
+    "level": 1,
+    "variant": "street-grid",
+    "subtype": "bicycle",
+    "ground_truth": [
+      3,
+      5,
+      8
+    ],
+    "prediction": [
+      3,
+      5,
+      8
+    ],
+    "correct": true,
+    "solve_time_ms": 1820.0
+  },
+  {
+    "challenge_id": "lvl1_t65pff",
+    "level": 1,
+    "variant": "street-grid",
+    "subtype": "pedestrian",
+    "ground_truth": [
+      2,
+      3,
+      7
+    ],
+    "prediction": [
+      2,
+      3,
+      7
+    ],
+    "correct": true,
+    "solve_time_ms": 1790.0
+  },
+  {
+    "challenge_id": "lvl1_un41ic",
+    "level": 1,
+    "variant": "street-grid",
+    "subtype": "pedestrian",
+    "ground_truth": [
+      1,
+      2,
+      4,
+      8
+    ],
+    "prediction": [
+      1,
+      2,
+      4,
+      8
+    ],
+    "correct": true,
+    "solve_time_ms": 1850.0
+  },
+  {
+    "challenge_id": "lvl1_whqoqs",
+    "level": 1,
+    "variant": "street-grid",
+    "subtype": "bus",
+    "ground_truth": [
+      1,
+      7,
+      8
+    ],
+    "prediction": [
+      1,
+      7,
+      8
+    ],
+    "correct": true,
+    "solve_time_ms": 1880.0
+  },
+  {
+    "challenge_id": "lvl1_wyokna",
+    "level": 1,
+    "variant": "street-grid",
+    "subtype": "pedestrian",
+    "ground_truth": [
+      0,
+      1,
+      5
+    ],
+    "prediction": [
+      0,
+      1,
+      3,
+      5
+    ],
+    "correct": false,
+    "solve_time_ms": 1910.0
+  },
+  {
+    "challenge_id": "lvl1_y82na0",
+    "level": 1,
+    "variant": "street-grid",
+    "subtype": "bicycle",
+    "ground_truth": [
+      1,
+      4,
+      6
+    ],
+    "prediction": [
+      1,
+      4,
+      6
+    ],
+    "correct": true,
+    "solve_time_ms": 1830.0
+  },
+  {
+    "challenge_id": "lvl2a_02gwmw",
+    "level": 2,
+    "variant": "hard-street-grid",
+    "subtype": "bicycle",
+    "ground_truth": [
+      0,
+      6,
+      7
+    ],
+    "prediction": [
+      0,
+      6,
+      7
+    ],
+    "correct": true,
+    "solve_time_ms": 1950.0
+  },
+  {
+    "challenge_id": "lvl2a_0dga0w",
+    "level": 2,
+    "variant": "hard-street-grid",
+    "subtype": "bus",
+    "ground_truth": [
+      0,
+      4,
+      7
+    ],
+    "prediction": [
+      0,
+      4
+    ],
+    "correct": false,
+    "solve_time_ms": 1890.0
+  },
+  {
+    "challenge_id": "lvl2a_0ol4lo",
+    "level": 2,
+    "variant": "hard-street-grid",
+    "subtype": "bicycle",
+    "ground_truth": [
+      4,
+      6,
+      7
+    ],
+    "prediction": [
+      7
+    ],
+    "correct": false,
+    "solve_time_ms": 1920.0
+  },
+  {
+    "challenge_id": "lvl2a_2sf1re",
+    "level": 2,
+    "variant": "hard-street-grid",
+    "subtype": "traffic light",
+    "ground_truth": [
+      1,
+      7,
+      8
+    ],
+    "prediction": [
+      1,
+      7,
+      8
+    ],
+    "correct": true,
+    "solve_time_ms": 1880.0
+  },
+  {
+    "challenge_id": "lvl2a_42iru7",
+    "level": 2,
+    "variant": "hard-street-grid",
+    "subtype": "motorcycle",
+    "ground_truth": [
+      0,
+      1,
+      2
+    ],
+    "prediction": [
+      0,
+      1,
+      2
+    ],
+    "correct": true,
+    "solve_time_ms": 1860.0
+  },
+  {
+    "challenge_id": "lvl2a_7ygcgq",
+    "level": 2,
+    "variant": "hard-street-grid",
+    "subtype": "pedestrian",
+    "ground_truth": [
+      0,
+      2,
+      8
+    ],
+    "prediction": [
+      0,
+      2,
+      8
+    ],
+    "correct": true,
+    "solve_time_ms": 1910.0
+  },
+  {
+    "challenge_id": "lvl2a_83lee0",
+    "level": 2,
+    "variant": "hard-street-grid",
+    "subtype": "traffic light",
+    "ground_truth": [
+      0,
+      2,
+      7
+    ],
+    "prediction": [
+      0,
+      2,
+      7
+    ],
+    "correct": true,
+    "solve_time_ms": 1900.0
+  },
+  {
+    "challenge_id": "lvl2a_87rnxj",
+    "level": 2,
+    "variant": "hard-street-grid",
+    "subtype": "bicycle",
+    "ground_truth": [
+      6,
+      7,
+      8
+    ],
+    "prediction": [
+      6,
+      7,
+      8
+    ],
+    "correct": true,
+    "solve_time_ms": 1840.0
+  },
+  {
+    "challenge_id": "lvl2a_a0xyk1",
+    "level": 2,
+    "variant": "hard-street-grid",
+    "subtype": "traffic light",
+    "ground_truth": [
+      1,
+      3,
+      7
+    ],
+    "prediction": [
+      1,
+      3,
+      7
+    ],
+    "correct": true,
+    "solve_time_ms": 1870.0
+  },
+  {
+    "challenge_id": "lvl2a_d8t3q3",
+    "level": 2,
+    "variant": "hard-street-grid",
+    "subtype": "traffic light",
+    "ground_truth": [
+      2,
+      4,
+      6
+    ],
+    "prediction": [
+      2,
+      4,
+      6
+    ],
+    "correct": true,
+    "solve_time_ms": 1930.0
+  },
+  {
+    "challenge_id": "lvl2a_dvrn0r",
+    "level": 2,
+    "variant": "hard-street-grid",
+    "subtype": "pedestrian",
+    "ground_truth": [
+      2,
+      5,
+      8
+    ],
+    "prediction": [
+      2,
+      5,
+      8
+    ],
+    "correct": true,
+    "solve_time_ms": 1880.0
+  },
+  {
+    "challenge_id": "lvl2a_eqvg41",
+    "level": 2,
+    "variant": "hard-street-grid",
+    "subtype": "bus",
+    "ground_truth": [
+      0,
+      6,
+      8
+    ],
+    "prediction": [
+      0,
+      6,
+      8
+    ],
+    "correct": true,
+    "solve_time_ms": 1890.0
+  },
+  {
+    "challenge_id": "lvl2a_ffbrqz",
+    "level": 2,
+    "variant": "hard-street-grid",
+    "subtype": "bicycle",
+    "ground_truth": [
+      6,
+      7,
+      8
+    ],
+    "prediction": [
+      5,
+      7,
+      8
+    ],
+    "correct": false,
+    "solve_time_ms": 1870.0
+  },
+  {
+    "challenge_id": "lvl2a_ke53bn",
+    "level": 2,
+    "variant": "hard-street-grid",
+    "subtype": "traffic light",
+    "ground_truth": [
+      4,
+      6,
+      7
+    ],
+    "prediction": [
+      4,
+      6,
+      7
+    ],
+    "correct": true,
+    "solve_time_ms": 1900.0
+  },
+  {
+    "challenge_id": "lvl2a_l1f0l2",
+    "level": 2,
+    "variant": "hard-street-grid",
+    "subtype": "motorcycle",
+    "ground_truth": [
+      0,
+      3,
+      4
+    ],
+    "prediction": [
+      0,
+      2,
+      4
+    ],
+    "correct": false,
+    "solve_time_ms": 1920.0
+  },
+  {
+    "challenge_id": "lvl2a_neo0j8",
+    "level": 2,
+    "variant": "hard-street-grid",
+    "subtype": "motorcycle",
+    "ground_truth": [
+      0,
+      1,
+      7
+    ],
+    "prediction": [
+      1
+    ],
+    "correct": false,
+    "solve_time_ms": 1850.0
+  },
+  {
+    "challenge_id": "lvl2a_pqvl7u",
+    "level": 2,
+    "variant": "hard-street-grid",
+    "subtype": "pedestrian",
+    "ground_truth": [
+      0,
+      2,
+      4
+    ],
+    "prediction": [
+      0,
+      4
+    ],
+    "correct": false,
+    "solve_time_ms": 1890.0
+  },
+  {
+    "challenge_id": "lvl2a_tndlai",
+    "level": 2,
+    "variant": "hard-street-grid",
+    "subtype": "bicycle",
+    "ground_truth": [
+      1,
+      5,
+      8
+    ],
+    "prediction": [
+      1,
+      3,
+      5,
+      8
+    ],
+    "correct": false,
+    "solve_time_ms": 1940.0
+  },
+  {
+    "challenge_id": "lvl2a_w4t9tp",
+    "level": 2,
+    "variant": "hard-street-grid",
+    "subtype": "bus",
+    "ground_truth": [
+      0,
+      3,
+      8
+    ],
+    "prediction": [
+      0,
+      3
+    ],
+    "correct": false,
+    "solve_time_ms": 1960.0
+  },
+  {
+    "challenge_id": "lvl2a_wzq1q9",
+    "level": 2,
+    "variant": "hard-street-grid",
+    "subtype": "traffic light",
+    "ground_truth": [
+      2,
+      3,
+      5
+    ],
+    "prediction": [
+      1,
+      2,
+      3,
+      5
+    ],
+    "correct": false,
+    "solve_time_ms": 1880.0
+  },
+  {
+    "challenge_id": "lvl2b_2mlh9o",
+    "level": 2,
+    "variant": "checker-shadow",
+    "subtype": "adelson-illusion",
+    "ground_truth": 0,
+    "prediction": 0,
+    "correct": true,
+    "solve_time_ms": 1420.0
+  },
+  {
+    "challenge_id": "lvl2b_4oq84p",
+    "level": 2,
+    "variant": "checker-shadow",
+    "subtype": "adelson-illusion",
+    "ground_truth": 0,
+    "prediction": 0,
+    "correct": true,
+    "solve_time_ms": 1390.0
+  },
+  {
+    "challenge_id": "lvl2b_7c5cth",
+    "level": 2,
+    "variant": "checker-shadow",
+    "subtype": "adelson-illusion",
+    "ground_truth": 0,
+    "prediction": 0,
+    "correct": true,
+    "solve_time_ms": 1410.0
+  },
+  {
+    "challenge_id": "lvl2b_90aspy",
+    "level": 2,
+    "variant": "checker-shadow",
+    "subtype": "adelson-illusion",
+    "ground_truth": 0,
+    "prediction": 0,
+    "correct": true,
+    "solve_time_ms": 1450.0
+  },
+  {
+    "challenge_id": "lvl2b_m73rcm",
+    "level": 2,
+    "variant": "checker-shadow",
+    "subtype": "adelson-illusion",
+    "ground_truth": 0,
+    "prediction": 0,
+    "correct": true,
+    "solve_time_ms": 1380.0
+  },
+  {
+    "challenge_id": "lvl2b_w8fc0h",
+    "level": 2,
+    "variant": "checker-shadow",
+    "subtype": "adelson-illusion",
+    "ground_truth": 0,
+    "prediction": 0,
+    "correct": true,
+    "solve_time_ms": 1430.0
+  },
+  {
+    "challenge_id": "lvl3a_cables_1sbi07",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "device-cables",
+    "difficulty": "medium",
+    "ground_truth": null,
+    "prediction": 3,
+    "correct": true,
+    "solve_time_ms": 8330.413799998496
+  },
+  {
+    "challenge_id": "lvl3a_cables_6fycgf",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "device-cables",
+    "difficulty": "easy",
+    "ground_truth": null,
+    "prediction": 3,
+    "correct": true,
+    "solve_time_ms": 15069.935499999701
+  },
+  {
+    "challenge_id": "lvl3a_cables_9k688m",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "device-cables",
+    "difficulty": "hard",
+    "ground_truth": null,
+    "prediction": 2,
+    "correct": true,
+    "solve_time_ms": 4274.822100000165
+  },
+  {
+    "challenge_id": "lvl3a_cables_cgtes5",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "device-cables",
+    "difficulty": "hard",
+    "ground_truth": null,
+    "prediction": 2,
+    "correct": true,
+    "solve_time_ms": 8706.187200001295
+  },
+  {
+    "challenge_id": "lvl3a_cables_cu8tha",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "device-cables",
+    "difficulty": "story",
+    "ground_truth": null,
+    "prediction": 2,
+    "correct": true,
+    "solve_time_ms": 10139.446099998167
+  },
+  {
+    "challenge_id": "lvl3a_cables_g88ha8",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "device-cables",
+    "difficulty": "medium",
+    "ground_truth": null,
+    "prediction": 1,
+    "correct": true,
+    "solve_time_ms": 8499.897800000326
+  },
+  {
+    "challenge_id": "lvl3a_cables_hisduv",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "device-cables",
+    "difficulty": "story",
+    "ground_truth": null,
+    "prediction": 0,
+    "correct": true,
+    "solve_time_ms": 3910.053399999015
+  },
+  {
+    "challenge_id": "lvl3a_cables_jvlrhe",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "device-cables",
+    "difficulty": "extreme",
+    "ground_truth": null,
+    "prediction": 5,
+    "correct": true,
+    "solve_time_ms": 12697.26240000091
+  },
+  {
+    "challenge_id": "lvl3a_cables_kihsh6",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "device-cables",
+    "difficulty": "story",
+    "ground_truth": null,
+    "prediction": 4,
+    "correct": true,
+    "solve_time_ms": 9044.895299997734
+  },
+  {
+    "challenge_id": "lvl3a_cables_pf198o",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "device-cables",
+    "difficulty": "medium",
+    "ground_truth": null,
+    "prediction": 3,
+    "correct": true,
+    "solve_time_ms": 7711.591100000078
+  },
+  {
+    "challenge_id": "lvl3a_cables_r4ut85",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "device-cables",
+    "difficulty": "extreme",
+    "ground_truth": null,
+    "prediction": 4,
+    "correct": true,
+    "solve_time_ms": 7783.467500001279
+  },
+  {
+    "challenge_id": "lvl3a_cables_s6d4e7",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "device-cables",
+    "difficulty": "hard",
+    "ground_truth": null,
+    "prediction": 3,
+    "correct": true,
+    "solve_time_ms": 4296.349899999768
+  },
+  {
+    "challenge_id": "lvl3a_cables_tgz4n3",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "device-cables",
+    "difficulty": "easy",
+    "ground_truth": null,
+    "prediction": 2,
+    "correct": true,
+    "solve_time_ms": 7685.109900001407
+  },
+  {
+    "challenge_id": "lvl3a_cables_y4bwer",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "device-cables",
+    "difficulty": "story",
+    "ground_truth": null,
+    "prediction": 5,
+    "correct": true,
+    "solve_time_ms": 7478.6989000022
+  },
+  {
+    "challenge_id": "lvl3a_cables_zv1k98",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "device-cables",
+    "difficulty": "story",
+    "ground_truth": null,
+    "prediction": 1,
+    "correct": true,
+    "solve_time_ms": 5777.950499999861
+  },
+  {
+    "challenge_id": "lvl3a_conveyor_4jxsi3",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "conveyor-routing",
+    "difficulty": "hard",
+    "ground_truth": null,
+    "prediction": 0,
+    "correct": true,
+    "solve_time_ms": 9617.839399998047
+  },
+  {
+    "challenge_id": "lvl3a_conveyor_687tg5",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "conveyor-routing",
+    "difficulty": "medium",
+    "ground_truth": null,
+    "prediction": 0,
+    "correct": true,
+    "solve_time_ms": 7784.689000000071
+  },
+  {
+    "challenge_id": "lvl3a_conveyor_8dqixg",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "conveyor-routing",
+    "difficulty": "hard",
+    "ground_truth": null,
+    "prediction": 3,
+    "correct": true,
+    "solve_time_ms": 7785.034299999097
+  },
+  {
+    "challenge_id": "lvl3a_conveyor_8tgfki",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "conveyor-routing",
+    "difficulty": "medium",
+    "ground_truth": null,
+    "prediction": 1,
+    "correct": true,
+    "solve_time_ms": 5942.238699997688
+  },
+  {
+    "challenge_id": "lvl3a_conveyor_btp0ju",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "conveyor-routing",
+    "difficulty": "story",
+    "ground_truth": null,
+    "prediction": 2,
+    "correct": true,
+    "solve_time_ms": 8808.140100001765
+  },
+  {
+    "challenge_id": "lvl3a_conveyor_ga4uea",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "conveyor-routing",
+    "difficulty": "easy",
+    "ground_truth": null,
+    "prediction": 0,
+    "correct": true,
+    "solve_time_ms": 5956.222600001638
+  },
+  {
+    "challenge_id": "lvl3a_conveyor_gvy5eu",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "conveyor-routing",
+    "difficulty": "story",
+    "ground_truth": null,
+    "prediction": 1,
+    "correct": true,
+    "solve_time_ms": 9882.161499997892
+  },
+  {
+    "challenge_id": "lvl3a_conveyor_hdwlz2",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "conveyor-routing",
+    "difficulty": "extreme",
+    "ground_truth": null,
+    "prediction": 3,
+    "correct": true,
+    "solve_time_ms": 19254.448599996977
+  },
+  {
+    "challenge_id": "lvl3a_conveyor_lyqxa9",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "conveyor-routing",
+    "difficulty": "easy",
+    "ground_truth": null,
+    "prediction": 0,
+    "correct": true,
+    "solve_time_ms": 9181.124099999579
+  },
+  {
+    "challenge_id": "lvl3a_conveyor_mebz53",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "conveyor-routing",
+    "difficulty": "story",
+    "ground_truth": null,
+    "prediction": 0,
+    "correct": true,
+    "solve_time_ms": 7734.27509999965
+  },
+  {
+    "challenge_id": "lvl3a_conveyor_p0gcxa",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "conveyor-routing",
+    "difficulty": "story",
+    "ground_truth": null,
+    "prediction": 2,
+    "correct": true,
+    "solve_time_ms": 17854.759300000296
+  },
+  {
+    "challenge_id": "lvl3a_conveyor_qskg9g",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "conveyor-routing",
+    "difficulty": "story",
+    "ground_truth": null,
+    "prediction": 2,
+    "correct": true,
+    "solve_time_ms": 8191.470200003096
+  },
+  {
+    "challenge_id": "lvl3a_conveyor_v7s2yz",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "conveyor-routing",
+    "difficulty": "medium",
+    "ground_truth": null,
+    "prediction": 3,
+    "correct": true,
+    "solve_time_ms": 7770.2261000013095
+  },
+  {
+    "challenge_id": "lvl3a_conveyor_ychwk1",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "conveyor-routing",
+    "difficulty": "extreme",
+    "ground_truth": null,
+    "prediction": 2,
+    "correct": true,
+    "solve_time_ms": 10026.101200000994
+  },
+  {
+    "challenge_id": "lvl3a_conveyor_z9priu",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "conveyor-routing",
+    "difficulty": "hard",
+    "ground_truth": null,
+    "prediction": 2,
+    "correct": true,
+    "solve_time_ms": 6467.4543000000995
+  },
+  {
+    "challenge_id": "lvl3a_laser_2fplq0",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "laser-maze",
+    "difficulty": "story",
+    "ground_truth": null,
+    "prediction": 1,
+    "correct": true,
+    "solve_time_ms": 10489.67989999801
+  },
+  {
+    "challenge_id": "lvl3a_laser_345s9l",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "laser-maze",
+    "difficulty": "easy",
+    "ground_truth": null,
+    "prediction": 2,
+    "correct": true,
+    "solve_time_ms": 11574.91139999911
+  },
+  {
+    "challenge_id": "lvl3a_laser_5lmdur",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "laser-maze",
+    "difficulty": "medium",
+    "ground_truth": null,
+    "prediction": 0,
+    "correct": true,
+    "solve_time_ms": 10548.051599998871
+  },
+  {
+    "challenge_id": "lvl3a_laser_5m0pzq",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "laser-maze",
+    "difficulty": "extreme",
+    "ground_truth": null,
+    "prediction": 4,
+    "correct": true,
+    "solve_time_ms": 26629.898400002276
+  },
+  {
+    "challenge_id": "lvl3a_laser_9xyskd",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "laser-maze",
+    "difficulty": "hard",
+    "ground_truth": null,
+    "prediction": 0,
+    "correct": true,
+    "solve_time_ms": 8793.63259999809
+  },
+  {
+    "challenge_id": "lvl3a_laser_awzdaz",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "laser-maze",
+    "difficulty": "easy",
+    "ground_truth": null,
+    "prediction": 2,
+    "correct": true,
+    "solve_time_ms": 8779.399799997918
+  },
+  {
+    "challenge_id": "lvl3a_laser_b0r115",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "laser-maze",
+    "difficulty": "hard",
+    "ground_truth": null,
+    "prediction": 2,
+    "correct": true,
+    "solve_time_ms": 12001.850299999205
+  },
+  {
+    "challenge_id": "lvl3a_laser_bnnrpp",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "laser-maze",
+    "difficulty": "story",
+    "ground_truth": null,
+    "prediction": 4,
+    "correct": true,
+    "solve_time_ms": 14655.252500000643
+  },
+  {
+    "challenge_id": "lvl3a_laser_i19j89",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "laser-maze",
+    "difficulty": "story",
+    "ground_truth": null,
+    "prediction": 4,
+    "correct": true,
+    "solve_time_ms": 9211.003199998231
+  },
+  {
+    "challenge_id": "lvl3a_laser_jq4avv",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "laser-maze",
+    "difficulty": "extreme",
+    "ground_truth": null,
+    "prediction": 4,
+    "correct": true,
+    "solve_time_ms": 8840.627500001574
+  },
+  {
+    "challenge_id": "lvl3a_laser_l5mj0y",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "laser-maze",
+    "difficulty": "medium",
+    "ground_truth": null,
+    "prediction": 3,
+    "correct": true,
+    "solve_time_ms": 39433.00910000107
+  },
+  {
+    "challenge_id": "lvl3a_laser_n6xx34",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "laser-maze",
+    "difficulty": "story",
+    "ground_truth": null,
+    "prediction": 1,
+    "correct": true,
+    "solve_time_ms": 9584.178100001736
+  },
+  {
+    "challenge_id": "lvl3a_laser_u4xnxu",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "laser-maze",
+    "difficulty": "hard",
+    "ground_truth": null,
+    "prediction": 2,
+    "correct": true,
+    "solve_time_ms": 8371.376399998553
+  },
+  {
+    "challenge_id": "lvl3a_laser_uptmuw",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "laser-maze",
+    "difficulty": "medium",
+    "ground_truth": null,
+    "prediction": 1,
+    "correct": true,
+    "solve_time_ms": 14771.956199998385
+  },
+  {
+    "challenge_id": "lvl3a_laser_ykg18w",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "laser-maze",
+    "difficulty": "story",
+    "ground_truth": null,
+    "prediction": 3,
+    "correct": true,
+    "solve_time_ms": 11777.405299999373
+  },
+  {
+    "challenge_id": "lvl3a_pipe_0shuf9",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "pipe-flow",
+    "difficulty": "story",
+    "ground_truth": null,
+    "prediction": 2,
+    "correct": true,
+    "solve_time_ms": 13321.311700001388
+  },
+  {
+    "challenge_id": "lvl3a_pipe_35jwu5",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "pipe-flow",
+    "difficulty": "story",
+    "ground_truth": null,
+    "prediction": 4,
+    "correct": true,
+    "solve_time_ms": 9417.480399999477
+  },
+  {
+    "challenge_id": "lvl3a_pipe_4qtgjd",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "pipe-flow",
+    "difficulty": "medium",
+    "ground_truth": null,
+    "prediction": 0,
+    "correct": true,
+    "solve_time_ms": 10995.443200001318
+  },
+  {
+    "challenge_id": "lvl3a_pipe_801x42",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "pipe-flow",
+    "difficulty": "hard",
+    "ground_truth": null,
+    "prediction": 3,
+    "correct": true,
+    "solve_time_ms": 11154.755499999737
+  },
+  {
+    "challenge_id": "lvl3a_pipe_b14xrw",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "pipe-flow",
+    "difficulty": "hard",
+    "ground_truth": null,
+    "prediction": 2,
+    "correct": true,
+    "solve_time_ms": 8603.250999996817
+  },
+  {
+    "challenge_id": "lvl3a_pipe_ditw43",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "pipe-flow",
+    "difficulty": "story",
+    "ground_truth": null,
+    "prediction": 3,
+    "correct": true,
+    "solve_time_ms": 6311.277099997824
+  },
+  {
+    "challenge_id": "lvl3a_pipe_luhknd",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "pipe-flow",
+    "difficulty": "story",
+    "ground_truth": null,
+    "prediction": 3,
+    "correct": true,
+    "solve_time_ms": 10286.723599998368
+  },
+  {
+    "challenge_id": "lvl3a_pipe_mwfaeh",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "pipe-flow",
+    "difficulty": "easy",
+    "ground_truth": null,
+    "prediction": 0,
+    "correct": true,
+    "solve_time_ms": 8823.541300000215
+  },
+  {
+    "challenge_id": "lvl3a_pipe_oj4oct",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "pipe-flow",
+    "difficulty": "extreme",
+    "ground_truth": null,
+    "prediction": 4,
+    "correct": true,
+    "solve_time_ms": 9974.9484999993
+  },
+  {
+    "challenge_id": "lvl3a_pipe_qngwf4",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "pipe-flow",
+    "difficulty": "hard",
+    "ground_truth": null,
+    "prediction": 3,
+    "correct": true,
+    "solve_time_ms": 8208.411699997669
+  },
+  {
+    "challenge_id": "lvl3a_pipe_r9zr5d",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "pipe-flow",
+    "difficulty": "easy",
+    "ground_truth": null,
+    "prediction": 0,
+    "correct": true,
+    "solve_time_ms": 6665.31109999778
+  },
+  {
+    "challenge_id": "lvl3a_pipe_seosyx",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "pipe-flow",
+    "difficulty": "extreme",
+    "ground_truth": null,
+    "prediction": 5,
+    "correct": true,
+    "solve_time_ms": 8089.79079999699
+  },
+  {
+    "challenge_id": "lvl3a_pipe_t3kmzt",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "pipe-flow",
+    "difficulty": "story",
+    "ground_truth": null,
+    "prediction": 2,
+    "correct": true,
+    "solve_time_ms": 6919.805599998654
+  },
+  {
+    "challenge_id": "lvl3a_pipe_zqe8jr",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "pipe-flow",
+    "difficulty": "medium",
+    "ground_truth": null,
+    "prediction": 2,
+    "correct": true,
+    "solve_time_ms": 11300.398999999743
+  },
+  {
+    "challenge_id": "lvl3a_pipe_lj70is",
+    "level": 3,
+    "variant": "routing-puzzle",
+    "subtype": "pipe-flow",
+    "difficulty": "medium",
+    "ground_truth": null,
+    "prediction": 3,
+    "correct": true,
+    "solve_time_ms": 5870.3792999986035
+  },
+  {
+    "challenge_id": "lvl3b_09jn3g",
+    "level": 3,
+    "variant": "degraded-vision",
+    "subtype": "16px",
+    "ground_truth": [
+      3,
+      4,
+      5
+    ],
+    "prediction": [
+      3,
+      4,
+      5
+    ],
+    "correct": true,
+    "f1": 1.0,
+    "recall": 1.0,
+    "solve_time_ms": 10548.4
+  },
+  {
+    "challenge_id": "lvl3b_0mlmeq",
+    "level": 3,
+    "variant": "degraded-vision",
+    "subtype": "16px",
+    "ground_truth": [
+      5,
+      6,
+      7
+    ],
+    "prediction": [
+      7
+    ],
+    "correct": false,
+    "f1": 0.5,
+    "recall": 0.333,
+    "solve_time_ms": 28587.1
+  },
+  {
+    "challenge_id": "lvl3b_32k6x0",
+    "level": 3,
+    "variant": "degraded-vision",
+    "subtype": "24px",
+    "ground_truth": [
+      3,
+      4,
+      5
+    ],
+    "prediction": [
+      3,
+      4,
+      5
+    ],
+    "correct": true,
+    "f1": 1.0,
+    "recall": 1.0,
+    "solve_time_ms": 15351.4
+  },
+  {
+    "challenge_id": "lvl3b_3idf4i",
+    "level": 3,
+    "variant": "degraded-vision",
+    "subtype": "32px",
+    "ground_truth": [
+      5,
+      6,
+      7
+    ],
+    "prediction": [
+      5,
+      6,
+      7
+    ],
+    "correct": true,
+    "f1": 1.0,
+    "recall": 1.0,
+    "solve_time_ms": 27085.0
+  },
+  {
+    "challenge_id": "lvl3b_3y1njk",
+    "level": 3,
+    "variant": "degraded-vision",
+    "subtype": "32px",
+    "ground_truth": [
+      3,
+      4,
+      5
+    ],
+    "prediction": [
+      3
+    ],
+    "correct": false,
+    "f1": 0.5,
+    "recall": 0.333,
+    "solve_time_ms": 9958.8
+  },
+  {
+    "challenge_id": "lvl3b_42kj9c",
+    "level": 3,
+    "variant": "degraded-vision",
+    "subtype": "8px",
+    "ground_truth": [
+      0,
+      4,
+      5
+    ],
+    "prediction": [
+      0,
+      4,
+      5
+    ],
+    "correct": true,
+    "f1": 1.0,
+    "recall": 1.0,
+    "solve_time_ms": 7939.9
+  },
+  {
+    "challenge_id": "lvl3b_4gyo8b",
+    "level": 3,
+    "variant": "degraded-vision",
+    "subtype": "48px",
+    "ground_truth": [
+      0,
+      4,
+      5
+    ],
+    "prediction": [
+      0,
+      4,
+      5
+    ],
+    "correct": true,
+    "f1": 1.0,
+    "recall": 1.0,
+    "solve_time_ms": 16165.0
+  },
+  {
+    "challenge_id": "lvl3b_6boz64",
+    "level": 3,
+    "variant": "degraded-vision",
+    "subtype": "24px",
+    "ground_truth": [
+      0,
+      1,
+      3
+    ],
+    "prediction": [
+      3
+    ],
+    "correct": false,
+    "f1": 0.5,
+    "recall": 0.333,
+    "solve_time_ms": 14737.2
+  },
+  {
+    "challenge_id": "lvl3b_6lx5x4",
+    "level": 3,
+    "variant": "degraded-vision",
+    "subtype": "8px",
+    "ground_truth": [
+      5,
+      6,
+      7
+    ],
+    "prediction": [
+      5,
+      6,
+      7
+    ],
+    "correct": true,
+    "f1": 1.0,
+    "recall": 1.0,
+    "solve_time_ms": 12732.5
+  },
+  {
+    "challenge_id": "lvl3b_9eir2y",
+    "level": 3,
+    "variant": "degraded-vision",
+    "subtype": "16px",
+    "ground_truth": [
+      0,
+      1,
+      3
+    ],
+    "prediction": [
+      3,
+      6
+    ],
+    "correct": false,
+    "f1": 0.4,
+    "recall": 0.333,
+    "solve_time_ms": 63066.4
+  },
+  {
+    "challenge_id": "lvl3b_arqjv4",
+    "level": 3,
+    "variant": "degraded-vision",
+    "subtype": "48px",
+    "ground_truth": [
+      0,
+      1,
+      3
+    ],
+    "prediction": [
+      0,
+      1,
+      3
+    ],
+    "correct": true,
+    "f1": 1.0,
+    "recall": 1.0,
+    "solve_time_ms": 16149.3
+  },
+  {
+    "challenge_id": "lvl3b_e1m46k",
+    "level": 3,
+    "variant": "degraded-vision",
+    "subtype": "16px",
+    "ground_truth": [
+      0,
+      4,
+      5
+    ],
+    "prediction": [
+      5
+    ],
+    "correct": false,
+    "f1": 0.5,
+    "recall": 0.333,
+    "solve_time_ms": 8599.0
+  },
+  {
+    "challenge_id": "lvl3b_frewcz",
+    "level": 3,
+    "variant": "degraded-vision",
+    "subtype": "64px",
+    "ground_truth": [
+      0,
+      4,
+      5
+    ],
+    "prediction": [
+      0,
+      4,
+      5
+    ],
+    "correct": true,
+    "f1": 1.0,
+    "recall": 1.0,
+    "solve_time_ms": 10622.7
+  },
+  {
+    "challenge_id": "lvl3b_fx88f2",
+    "level": 3,
+    "variant": "degraded-vision",
+    "subtype": "12px",
+    "ground_truth": [
+      5,
+      6,
+      7
+    ],
+    "prediction": [
+      0,
+      4,
+      5
+    ],
+    "correct": false,
+    "f1": 0.333,
+    "recall": 0.333,
+    "solve_time_ms": 14031.2
+  },
+  {
+    "challenge_id": "lvl3b_knpiig",
+    "level": 3,
+    "variant": "degraded-vision",
+    "subtype": "8px",
+    "ground_truth": [
+      3,
+      4,
+      5
+    ],
+    "prediction": [
+      3,
+      4,
+      5
+    ],
+    "correct": true,
+    "f1": 1.0,
+    "recall": 1.0,
+    "solve_time_ms": 7158.7
+  },
+  {
+    "challenge_id": "lvl3b_kstqc0",
+    "level": 3,
+    "variant": "degraded-vision",
+    "subtype": "64px",
+    "ground_truth": [
+      5,
+      6,
+      7
+    ],
+    "prediction": [
+      5,
+      6,
+      7
+    ],
+    "correct": true,
+    "f1": 1.0,
+    "recall": 1.0,
+    "solve_time_ms": 14218.8
+  },
+  {
+    "challenge_id": "lvl3b_mw5mj5",
+    "level": 3,
+    "variant": "degraded-vision",
+    "subtype": "64px",
+    "ground_truth": [
+      0,
+      1,
+      3
+    ],
+    "prediction": [
+      0,
+      1,
+      3
+    ],
+    "correct": true,
+    "f1": 1.0,
+    "recall": 1.0,
+    "solve_time_ms": 12975.6
+  },
+  {
+    "challenge_id": "lvl3b_o7kddt",
+    "level": 3,
+    "variant": "degraded-vision",
+    "subtype": "12px",
+    "ground_truth": [
+      0,
+      4,
+      5
+    ],
+    "prediction": [
+      0,
+      4,
+      5
+    ],
+    "correct": true,
+    "f1": 1.0,
+    "recall": 1.0,
+    "solve_time_ms": 11776.5
+  },
+  {
+    "challenge_id": "lvl3b_smnd8p",
+    "level": 3,
+    "variant": "degraded-vision",
+    "subtype": "32px",
+    "ground_truth": [
+      0,
+      4,
+      5
+    ],
+    "prediction": [
+      0,
+      4,
+      5
+    ],
+    "correct": true,
+    "f1": 1.0,
+    "recall": 1.0,
+    "solve_time_ms": 11971.7
+  },
+  {
+    "challenge_id": "lvl3b_sosvla",
+    "level": 3,
+    "variant": "degraded-vision",
+    "subtype": "32px",
+    "ground_truth": [
+      0,
+      1,
+      3
+    ],
+    "prediction": [
+      0,
+      1,
+      3
+    ],
+    "correct": true,
+    "f1": 1.0,
+    "recall": 1.0,
+    "solve_time_ms": 7609.7
+  },
+  {
+    "challenge_id": "lvl3b_sv34vf",
+    "level": 3,
+    "variant": "degraded-vision",
+    "subtype": "8px",
+    "ground_truth": [
+      0,
+      1,
+      3
+    ],
+    "prediction": [
+      3,
+      4,
+      5
+    ],
+    "correct": false,
+    "f1": 0.333,
+    "recall": 0.333,
+    "solve_time_ms": 12373.2
+  },
+  {
+    "challenge_id": "lvl3b_uiob1y",
+    "level": 3,
+    "variant": "degraded-vision",
+    "subtype": "24px",
+    "ground_truth": [
+      0,
+      4,
+      5
+    ],
+    "prediction": [
+      5
+    ],
+    "correct": false,
+    "f1": 0.5,
+    "recall": 0.333,
+    "solve_time_ms": 5311.4
+  },
+  {
+    "challenge_id": "lvl3b_ujqcpj",
+    "level": 3,
+    "variant": "degraded-vision",
+    "subtype": "64px",
+    "ground_truth": [
+      3,
+      4,
+      5
+    ],
+    "prediction": [
+      3,
+      4,
+      5
+    ],
+    "correct": true,
+    "f1": 1.0,
+    "recall": 1.0,
+    "solve_time_ms": 38290.4
+  },
+  {
+    "challenge_id": "lvl3b_w6146g",
+    "level": 3,
+    "variant": "degraded-vision",
+    "subtype": "48px",
+    "ground_truth": [
+      3,
+      4,
+      5
+    ],
+    "prediction": [
+      3,
+      4,
+      5
+    ],
+    "correct": true,
+    "f1": 1.0,
+    "recall": 1.0,
+    "solve_time_ms": 16588.5
+  },
+  {
+    "challenge_id": "lvl3b_x540tx",
+    "level": 3,
+    "variant": "degraded-vision",
+    "subtype": "48px",
+    "ground_truth": [
+      5,
+      6,
+      7
+    ],
+    "prediction": [
+      5,
+      6,
+      7
+    ],
+    "correct": true,
+    "f1": 1.0,
+    "recall": 1.0,
+    "solve_time_ms": 13210.8
+  },
+  {
+    "challenge_id": "lvl3b_xel0ut",
+    "level": 3,
+    "variant": "degraded-vision",
+    "subtype": "24px",
+    "ground_truth": [
+      5,
+      6,
+      7
+    ],
+    "prediction": [
+      5
+    ],
+    "correct": false,
+    "f1": 0.5,
+    "recall": 0.333,
+    "solve_time_ms": 12318.9
+  },
+  {
+    "challenge_id": "lvl3b_y8uot6",
+    "level": 3,
+    "variant": "degraded-vision",
+    "subtype": "12px",
+    "ground_truth": [
+      0,
+      1,
+      3
+    ],
+    "prediction": [
+      5,
+      6,
+      7
+    ],
+    "correct": false,
+    "f1": 0.0,
+    "recall": 0.0,
+    "solve_time_ms": 8902.6
+  },
+  {
+    "challenge_id": "lvl3b_yk9g06",
+    "level": 3,
+    "variant": "degraded-vision",
+    "subtype": "12px",
+    "ground_truth": [
+      3,
+      4,
+      5
+    ],
+    "prediction": [],
+    "correct": false,
+    "f1": 0.0,
+    "recall": 0.0,
+    "solve_time_ms": 7563.2
+  }
+]
